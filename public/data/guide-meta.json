@@ -1,0 +1,79 @@
+{
+  "updated_at": "2026-06-09",
+  "app_version": "1.5.0",
+  "expo_sdk": "55.0.0",
+  "world": {
+    "total_players": 4977,
+    "countries": 21,
+    "provinces": 59,
+    "factories": 3029,
+    "api_endpoints": 210
+  },
+  "economy": {
+    "gold_per_work": 2404,
+    "diamonds_per_work": 20,
+    "xp_per_work": 17,
+    "factory_build_elmas_cost": 10000,
+    "pill_cooldown_minutes": 10,
+    "tutorial_bonus_gold": 250000,
+    "quest_bonus_gold": 75000
+  },
+  "quests": {
+    "work_1": {
+      "reward_gold": 5000,
+      "path": "/quests/work_1/claim"
+    },
+    "work_3": {
+      "reward_gold": 20000,
+      "path": "/quests/work_3/claim"
+    },
+    "work_5": {
+      "reward_gold": 50000,
+      "path": "/quests/work_5/claim"
+    }
+  },
+  "checklist": [
+    {
+      "id": "tutorial",
+      "label": "Tutorial complete-step 0–5",
+      "reward": "~250.000 altın"
+    },
+    {
+      "id": "work_1",
+      "label": "Quest work_1 claim",
+      "reward_gold": 5000
+    },
+    {
+      "id": "work_3",
+      "label": "Quest work_3 claim",
+      "reward_gold": 20000
+    },
+    {
+      "id": "work_5",
+      "label": "Quest work_5 claim",
+      "reward_gold": 50000
+    },
+    {
+      "id": "factory",
+      "label": "Elmas fabrikası kur",
+      "reward": "−10.000 elmas"
+    },
+    {
+      "id": "first_work",
+      "label": "İlk factories/work",
+      "reward_gold": 2404
+    }
+  ],
+  "onboarding": {
+    "endpoint": "/players/complete-step",
+    "steps": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "replay_blocked": true
+  }
+}

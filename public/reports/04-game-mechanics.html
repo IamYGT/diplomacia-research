@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>04-game-mechanics — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 04-game-mechanics.md</p>
+    <h1>Diplomacia — Oyun Mekanikleri Özeti</h1>
+
+<p>Kaynak: wiki (78 bölüm) + API crawl + client i18n</p>
+
+<h2>Core loop</h2>
+
+<p>1. <strong>Kayıt</strong> → ülke/bağımsız bölge seçimi → <strong>sınıf seç</strong> (kalemiye, asker vb.)</p>
+<p>2. <strong>Günlük rutin:</strong> çalış (HP/can), görevler, günlük ödül</p>
+<p>3. <strong>Ekonomi:</strong> fabrika kur/çalış, pazar, bağış</p>
+<p>4. <strong>Askeriye:</strong> birim eğit, savaşa katkı, kışla yükselt</p>
+<p>5. <strong>Siyaset:</strong> parti, seçim, parlamento, kabine</p>
+<p>6. <strong>Sosyal:</strong> gazete, DM, global chat, konferans</p>
+
+<h2>Kaynaklar</h2>
+
+<table>
+<tr><th>Kaynak</th><th>Kullanım</th></tr>
+<tr><td>Altın (<code>balance</code>)</td><td>Genel para, transfer, market</td></tr>
+<tr><td>Elmas (<code>diamonds</code>)</td><td>Premium, sağlık hapı craft, IAP</td></tr>
+<tr><td>NTE, deri, petrol, altın (kaynak)</td><td>Fabrika/depo</td></tr>
+<tr><td>XP</td><td>Level, unvan</td></tr>
+<tr><td>Sağlık / hap</td><td>Çalışma limiti</td></tr>
+</table>
+
+<h2>Sınıflar (örnek: Kalemiye)</h2>
+
+<ul><li>+50 Kışla Becerisi</li>
+<li>+%20 Elmas Fabrikası Geliri</li>
+<li>+%10 Kaynak Fabrikası Geliri</li>
+</ul>
+<h2>Savaş</h2>
+
+<ul><li><code>war_type: standard</code>, <code>war_goals: [fetih]</code></li>
+<li>Eyalet bazlı: attacker_province vs defender_province</li>
+<li><code>contribute</code>, ateşkes, otomatik savaş modu (<code>auto/status</code>)</li>
+<li>Mutluluk → isyan (rebellion) mekaniği</li>
+</ul>
+<h2>Siyaset</h2>
+
+<ul><li>Siyasi partiler (<code>/parties/*</code>)</li>
+<li>Parlamento teklifleri, veto, vergi (<code>/parliament/*</code>)</li>
+<li>Kabine rolleri: president, foreign_affairs vb.</li>
+<li>Vatandaşlık başvurusu, vize sistemi</li>
+</ul>
+<h2>Otomasyon</h2>
+
+<ul><li><code>auto/work</code> — otomatik çalışma</li>
+<li><code>auto/war</code> — otomatik savaş katkısı</li>
+<li>Bölge günlük kaynak limiti (<code>province_resource_limit</code>)</li>
+</ul>
+<h2>Monetizasyon</h2>
+
+<ul><li>Elmas paketleri (<code>/players/diamonds/packages</code>)</li>
+<li>IAP verify (<code>/players/diamonds/iap-verify</code>)</li>
+<li>Premium hediye (<code>gift-premium</code>)</li>
+</ul>
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

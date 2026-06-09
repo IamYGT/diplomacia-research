@@ -1,0 +1,522 @@
+{
+  "status": 200,
+  "ms": 73,
+  "data": {
+    "countryColors": {},
+    "provinceOwners": {
+      "Washington DC": {
+        "code": null,
+        "color": "#278b79",
+        "name": "Bretonya Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/coats/bretonya.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/washington.png",
+        "countryId": "2aac5361-0f30-4634-8ef3-840b028a1eac"
+      },
+      "Düsseldorf": {
+        "code": null,
+        "color": null,
+        "name": "El Turko",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/9f2a83eb-8a3e-4bb7-8cef-1951a163fb55-1780841274254.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/dusseldorf.png",
+        "countryId": "9f2a83eb-8a3e-4bb7-8cef-1951a163fb55"
+      },
+      "Minnesota": {
+        "code": null,
+        "color": null,
+        "name": "Kingdom Of Ashkelon",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/3bd79998-2f2c-4ffd-bd26-33b55df29e28-1780647126415.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/minnesota.png",
+        "countryId": "3bd79998-2f2c-4ffd-bd26-33b55df29e28"
+      },
+      "Omsk": {
+        "code": null,
+        "color": "#792f98",
+        "name": "ÖTÜKEN",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/coats/sibirya.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/omsk.png",
+        "countryId": "04b82923-b342-4282-a95f-ad73f70906e5"
+      },
+      "Sofya": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/sofya.png"
+      },
+      "Teksas": {
+        "code": null,
+        "color": null,
+        "name": "Kingdom Of Ashkelon",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/3bd79998-2f2c-4ffd-bd26-33b55df29e28-1780647126415.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/texas.png",
+        "countryId": "3bd79998-2f2c-4ffd-bd26-33b55df29e28"
+      },
+      "Kaliforniya": {
+        "code": null,
+        "color": "#9e1f1f",
+        "name": "Kurtlar Konseyi",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/97404ff6-cb29-4a19-87ef-3d84dd9ae45e-1780264950436.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/kaliforniya.png",
+        "countryId": "97404ff6-cb29-4a19-87ef-3d84dd9ae45e"
+      },
+      "Horasan": {
+        "code": null,
+        "color": "#17c417",
+        "name": "İSLAM DEVLETİ",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/29762da9-e294-4d3e-8dea-ada4bbb1f9f1-1780506378858.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/horasan.png",
+        "countryId": "29762da9-e294-4d3e-8dea-ada4bbb1f9f1"
+      },
+      "Samsun": {
+        "code": null,
+        "color": "#2e6f9e",
+        "name": "AYKA-ELTURKO",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/samsun.png",
+        "countryId": "fd3be682-a2f9-4086-9121-1dfd198cddfc"
+      },
+      "Sibirya": {
+        "code": null,
+        "color": "#792f98",
+        "name": "ÖTÜKEN",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/coats/sibirya.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/sibirya.png",
+        "countryId": "04b82923-b342-4282-a95f-ad73f70906e5"
+      },
+      "Altay": {
+        "code": null,
+        "color": "#12cfd9",
+        "name": "TÜRKELİ",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/c0cea031-7de5-4b1b-825f-866057956c9a-1780440318697.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/altay.png",
+        "countryId": "c0cea031-7de5-4b1b-825f-866057956c9a"
+      },
+      "Yakutistan": {
+        "code": null,
+        "color": "#4082c4",
+        "name": "Saha Türk Devleti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/coats/yakutistan.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/yakutistan.png",
+        "countryId": "cd6c383f-eaf7-4535-9841-fa776ffa86b4"
+      },
+      "Diyarbakır": {
+        "code": null,
+        "color": "#c61013",
+        "name": "Türkiye Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780971908111.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/diyarbakir.png",
+        "countryId": "6018c0c2-7c4d-4acd-a086-1b6a2c178361"
+      },
+      "Tahran": {
+        "code": null,
+        "color": "#17c417",
+        "name": "İSLAM DEVLETİ",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/29762da9-e294-4d3e-8dea-ada4bbb1f9f1-1780506378858.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/tahran.png",
+        "countryId": "29762da9-e294-4d3e-8dea-ada4bbb1f9f1"
+      },
+      "Huzistan": {
+        "code": null,
+        "color": "#4e0e17",
+        "name": "İSFAHAN HALK CUMHURİYETİ",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/a2f0298b-0a9c-4cc0-8a45-29030cba9391-1780676604230.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/huzistan.png",
+        "countryId": "a2f0298b-0a9c-4cc0-8a45-29030cba9391"
+      },
+      "Berlin": {
+        "code": null,
+        "color": "#a43432",
+        "name": "Ceriteli",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/6fad2684-8303-4e4a-8927-7d3b6f292dce-1780325182173.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/berlin.png",
+        "countryId": "6fad2684-8303-4e4a-8927-7d3b6f292dce"
+      },
+      "Hamburg": {
+        "code": null,
+        "color": "#c21919",
+        "name": "Hamburg Türk Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/d3cc0025-8331-4b01-b79f-225666b3ba95-1780585804684.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/hamburg.png",
+        "countryId": "d3cc0025-8331-4b01-b79f-225666b3ba95"
+      },
+      "Marsilya": {
+        "code": null,
+        "color": "#1488e1",
+        "name": "Marsilya Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/coats/marsilya.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/marsilya.png",
+        "countryId": "78179d69-494c-4c3f-a1cd-44c8ea77e442"
+      },
+      "Bretonya": {
+        "code": null,
+        "color": "#278b79",
+        "name": "Bretonya Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/coats/bretonya.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/bretonya.png",
+        "countryId": "2aac5361-0f30-4634-8ef3-840b028a1eac"
+      },
+      "Moskova": {
+        "code": null,
+        "color": "#3b1213",
+        "name": "VIERTES REICH",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/12585535-a54c-482e-8bae-af53662bece5-1780658110308.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/moskova.png",
+        "countryId": "12585535-a54c-482e-8bae-af53662bece5"
+      },
+      "Alaska": {
+        "code": null,
+        "color": "#382a89",
+        "name": "Alaska Kemalist Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/ae56faa3-1f83-4958-adb6-1b05c28f5cd1-1780508616139.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/alaska.png",
+        "countryId": "ae56faa3-1f83-4958-adb6-1b05c28f5cd1"
+      },
+      "Güney Azerbaycan": {
+        "code": null,
+        "color": "#2e6f9e",
+        "name": "AYKA-ELTURKO",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/guneyazerbaycan.png",
+        "countryId": "fd3be682-a2f9-4086-9121-1dfd198cddfc"
+      },
+      "Colorado": {
+        "code": null,
+        "color": "#9e1f1f",
+        "name": "Kurtlar Konseyi",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/97404ff6-cb29-4a19-87ef-3d84dd9ae45e-1780264950436.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/colorado.png",
+        "countryId": "97404ff6-cb29-4a19-87ef-3d84dd9ae45e"
+      },
+      "New York": {
+        "code": null,
+        "color": null,
+        "name": "Kingdom Of Ashkelon",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/3bd79998-2f2c-4ffd-bd26-33b55df29e28-1780647126415.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/newyork.png",
+        "countryId": "3bd79998-2f2c-4ffd-bd26-33b55df29e28"
+      },
+      "Varna": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/varna.png"
+      },
+      "Kosova": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/kosova.png"
+      },
+      "Hürmüz": {
+        "code": null,
+        "color": "#17c417",
+        "name": "İSLAM DEVLETİ",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/29762da9-e294-4d3e-8dea-ada4bbb1f9f1-1780506378858.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/hurmuz.png",
+        "countryId": "29762da9-e294-4d3e-8dea-ada4bbb1f9f1"
+      },
+      "Bordo": {
+        "code": null,
+        "color": null,
+        "name": "Kingdom Of Ashkelon",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/3bd79998-2f2c-4ffd-bd26-33b55df29e28-1780647126415.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/bordo.png",
+        "countryId": "3bd79998-2f2c-4ffd-bd26-33b55df29e28"
+      },
+      "İsfahan": {
+        "code": null,
+        "color": "#4e0e17",
+        "name": "İSFAHAN HALK CUMHURİYETİ",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/a2f0298b-0a9c-4cc0-8a45-29030cba9391-1780676604230.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/isfahan.png",
+        "countryId": "a2f0298b-0a9c-4cc0-8a45-29030cba9391"
+      },
+      "Karadağ": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/karadag.png"
+      },
+      "Ural": {
+        "code": null,
+        "color": "#12cfd9",
+        "name": "TÜRKELİ",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/c0cea031-7de5-4b1b-825f-866057956c9a-1780440318697.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/ural.png",
+        "countryId": "c0cea031-7de5-4b1b-825f-866057956c9a"
+      },
+      "Kuzey Makedonya": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/kuzeymakedonya.png"
+      },
+      "Arnavutluk": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/arnavutluk.png"
+      },
+      "Sırbistan": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/sirbistan.png"
+      },
+      "Bosna Hersek": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/bosnahersek.png"
+      },
+      "Hırvatistan": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/hirvatistan.png"
+      },
+      "Bükreş": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/bukres.png"
+      },
+      "Temeşvar": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/temesvar.png"
+      },
+      "Botoşani": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/botosani.png"
+      },
+      "Selanik": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/selanik.png"
+      },
+      "Atina": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/atina.png"
+      },
+      "Mora": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/mora.png"
+      },
+      "Adana": {
+        "code": null,
+        "color": "#b30f0f",
+        "name": "İzmir Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/e4e23132-72ce-44a7-b7a1-bf376d2e5bde-1780265880967.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/adana.png",
+        "countryId": "e4e23132-72ce-44a7-b7a1-bf376d2e5bde"
+      },
+      "Girit ve Adalar": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/giritveadalar.png"
+      },
+      "Normandiya": {
+        "code": null,
+        "color": null,
+        "name": "Batı Roma Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/b75aa15b-68b2-4b12-84ed-04df9e5316b8-1780817117854.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/normandiya.png",
+        "countryId": "b75aa15b-68b2-4b12-84ed-04df9e5316b8"
+      },
+      "Moldova": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/moldova.png"
+      },
+      "Güney Kıbrıs": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/guneykibris.png"
+      },
+      "Kuzey Kıbrıs Türk Cumhuriyeti": {
+        "code": null,
+        "color": "#7a8898",
+        "name": "Bağımsız Bölge",
+        "flag": "🏳️",
+        "independent": true,
+        "coatUrl": "https://diplomacia.com.tr/coats/kuzeykibristurkcumhuriyeti.png"
+      },
+      "Perm": {
+        "code": null,
+        "color": "#3b1213",
+        "name": "VIERTES REICH",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/12585535-a54c-482e-8bae-af53662bece5-1780658110308.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/perm.png",
+        "countryId": "12585535-a54c-482e-8bae-af53662bece5"
+      },
+      "St. Petersburg": {
+        "code": null,
+        "color": "#15701c",
+        "name": "Batı Rus Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/dbb3246e-7ad5-4161-869b-39ce840d7605-1780350686149.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/petersburg.png",
+        "countryId": "dbb3246e-7ad5-4161-869b-39ce840d7605"
+      },
+      "Münih": {
+        "code": null,
+        "color": "#a43432",
+        "name": "Ceriteli",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/6fad2684-8303-4e4a-8927-7d3b6f292dce-1780325182173.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/munchen.png",
+        "countryId": "6fad2684-8303-4e4a-8927-7d3b6f292dce"
+      },
+      "Hessen": {
+        "code": null,
+        "color": "#064746",
+        "name": "AYKA2",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/fe8e4710-49a2-492e-a79e-e9778729c70d-1780265125262.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/hessen.png",
+        "countryId": "fe8e4710-49a2-492e-a79e-e9778729c70d"
+      },
+      "Burgonya": {
+        "code": null,
+        "color": null,
+        "name": "Batı Roma Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/b75aa15b-68b2-4b12-84ed-04df9e5316b8-1780817117854.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/burgonya.png",
+        "countryId": "b75aa15b-68b2-4b12-84ed-04df9e5316b8"
+      },
+      "Paris": {
+        "code": null,
+        "color": null,
+        "name": "Batı Roma Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/b75aa15b-68b2-4b12-84ed-04df9e5316b8-1780817117854.jpeg",
+        "coatUrl": "https://diplomacia.com.tr/coats/paris.png",
+        "countryId": "b75aa15b-68b2-4b12-84ed-04df9e5316b8"
+      },
+      "Ankara": {
+        "code": null,
+        "color": "#c61013",
+        "name": "Türkiye Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780971908111.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/ankara.png",
+        "countryId": "6018c0c2-7c4d-4acd-a086-1b6a2c178361"
+      },
+      "İzmir": {
+        "code": null,
+        "color": "#b30f0f",
+        "name": "İzmir Cumhuriyeti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/e4e23132-72ce-44a7-b7a1-bf376d2e5bde-1780265880967.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/izmir.png",
+        "countryId": "e4e23132-72ce-44a7-b7a1-bf376d2e5bde"
+      },
+      "İstanbul": {
+        "code": null,
+        "color": "#227d9b",
+        "name": "İstanbul Şehir Devleti",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/a4b170ed-bb09-4535-b43e-8fad53e045a0-1780790279720.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/istanbul.png",
+        "countryId": "a4b170ed-bb09-4535-b43e-8fad53e045a0"
+      },
+      "Erzurum": {
+        "code": null,
+        "color": "#2e6f9e",
+        "name": "AYKA-ELTURKO",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/erzurum.png",
+        "countryId": "fd3be682-a2f9-4086-9121-1dfd198cddfc"
+      },
+      "Kafkasya": {
+        "code": null,
+        "color": "#2e6f9e",
+        "name": "AYKA-ELTURKO",
+        "flag": "",
+        "flagUrl": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png",
+        "coatUrl": "https://diplomacia.com.tr/coats/kafkasya.png",
+        "countryId": "fd3be682-a2f9-4086-9121-1dfd198cddfc"
+      }
+    }
+  },
+  "error": null
+}

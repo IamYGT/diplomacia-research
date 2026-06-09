@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "ms": 84,
+  "data": {
+    "operation": {
+      "id": "3d99aeba-f054-4b92-ba18-2f6173fc509f",
+      "war_name": "Askeri Operasyon - Bükreş",
+      "attacker_province": "Bükreş",
+      "attacker_power": "1230467",
+      "ends_at": "2026-06-14T13:27:09.029Z",
+      "status": "active",
+      "participant_count": 28
+    },
+    "is_joined": false,
+    "joined_until": null
+  },
+  "error": null
+}

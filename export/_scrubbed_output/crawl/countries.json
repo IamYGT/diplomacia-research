@@ -1,0 +1,156 @@
+{
+  "status": 200,
+  "ms": 75,
+  "data": {
+    "countries": [
+      {
+        "id": "ae56faa3-1f83-4958-adb6-1b05c28f5cd1",
+        "name": "Alaska Kemalist Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/ae56faa3-1f83-4958-adb6-1b05c28f5cd1-1780508616139.jpeg",
+        "treasury": 1250891,
+        "player_count": "133"
+      },
+      {
+        "id": "fe8e4710-49a2-492e-a79e-e9778729c70d",
+        "name": "AYKA2",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/fe8e4710-49a2-492e-a79e-e9778729c70d-1780265125262.jpeg",
+        "treasury": 1846967,
+        "player_count": "127"
+      },
+      {
+        "id": "fd3be682-a2f9-4086-9121-1dfd198cddfc",
+        "name": "AYKA-ELTURKO",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png",
+        "treasury": 2150968,
+        "player_count": "252"
+      },
+      {
+        "id": "b75aa15b-68b2-4b12-84ed-04df9e5316b8",
+        "name": "Batı Roma Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/b75aa15b-68b2-4b12-84ed-04df9e5316b8-1780817117854.jpeg",
+        "treasury": 3430932,
+        "player_count": "343"
+      },
+      {
+        "id": "dbb3246e-7ad5-4161-869b-39ce840d7605",
+        "name": "Batı Rus Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/dbb3246e-7ad5-4161-869b-39ce840d7605-1780350686149.jpeg",
+        "treasury": 1134744,
+        "player_count": "175"
+      },
+      {
+        "id": "2aac5361-0f30-4634-8ef3-840b028a1eac",
+        "name": "Bretonya Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/coats/bretonya.png",
+        "treasury": 3217837,
+        "player_count": "125"
+      },
+      {
+        "id": "6fad2684-8303-4e4a-8927-7d3b6f292dce",
+        "name": "Ceriteli",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/6fad2684-8303-4e4a-8927-7d3b6f292dce-1780325182173.png",
+        "treasury": 150589,
+        "player_count": "120"
+      },
+      {
+        "id": "9f2a83eb-8a3e-4bb7-8cef-1951a163fb55",
+        "name": "El Turko",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/9f2a83eb-8a3e-4bb7-8cef-1951a163fb55-1780841274254.jpeg",
+        "treasury": 1231307,
+        "player_count": "126"
+      },
+      {
+        "id": "d3cc0025-8331-4b01-b79f-225666b3ba95",
+        "name": "Hamburg Türk Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/d3cc0025-8331-4b01-b79f-225666b3ba95-1780585804684.png",
+        "treasury": 130233,
+        "player_count": "130"
+      },
+      {
+        "id": "a2f0298b-0a9c-4cc0-8a45-29030cba9391",
+        "name": "İSFAHAN HALK CUMHURİYETİ",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/a2f0298b-0a9c-4cc0-8a45-29030cba9391-1780676604230.jpeg",
+        "treasury": 3247972,
+        "player_count": "211"
+      },
+      {
+        "id": "29762da9-e294-4d3e-8dea-ada4bbb1f9f1",
+        "name": "İSLAM DEVLETİ",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/29762da9-e294-4d3e-8dea-ada4bbb1f9f1-1780506378858.jpeg",
+        "treasury": 1838540,
+        "player_count": "205"
+      },
+      {
+        "id": "a4b170ed-bb09-4535-b43e-8fad53e045a0",
+        "name": "İstanbul Şehir Devleti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/a4b170ed-bb09-4535-b43e-8fad53e045a0-1780790279720.png",
+        "treasury": 3985054,
+        "player_count": "126"
+      },
+      {
+        "id": "e4e23132-72ce-44a7-b7a1-bf376d2e5bde",
+        "name": "İzmir Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/e4e23132-72ce-44a7-b7a1-bf376d2e5bde-1780265880967.png",
+        "treasury": 1876609,
+        "player_count": "126"
+      },
+      {
+        "id": "3bd79998-2f2c-4ffd-bd26-33b55df29e28",
+        "name": "Kingdom Of Ashkelon",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/3bd79998-2f2c-4ffd-bd26-33b55df29e28-1780647126415.png",
+        "treasury": 1024388,
+        "player_count": "297"
+      },
+      {
+        "id": "97404ff6-cb29-4a19-87ef-3d84dd9ae45e",
+        "name": "Kurtlar Konseyi",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/97404ff6-cb29-4a19-87ef-3d84dd9ae45e-1780264950436.jpeg",
+        "treasury": 1662877,
+        "player_count": "301"
+      },
+      {
+        "id": "78179d69-494c-4c3f-a1cd-44c8ea77e442",
+        "name": "Marsilya Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/coats/marsilya.png",
+        "treasury": 173288,
+        "player_count": "135"
+      },
+      {
+        "id": "04b82923-b342-4282-a95f-ad73f70906e5",
+        "name": "ÖTÜKEN",
+        "flag_url": "https://diplomacia.com.tr/coats/sibirya.png",
+        "treasury": 300,
+        "player_count": "196"
+      },
+      {
+        "id": "cd6c383f-eaf7-4535-9841-fa776ffa86b4",
+        "name": "Saha Türk Devleti",
+        "flag_url": "https://diplomacia.com.tr/coats/yakutistan.png",
+        "treasury": 154579,
+        "player_count": "134"
+      },
+      {
+        "id": "c0cea031-7de5-4b1b-825f-866057956c9a",
+        "name": "TÜRKELİ",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/c0cea031-7de5-4b1b-825f-866057956c9a-1780440318697.jpeg",
+        "treasury": 2918647,
+        "player_count": "191"
+      },
+      {
+        "id": "6018c0c2-7c4d-4acd-a086-1b6a2c178361",
+        "name": "Türkiye Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780971908111.png",
+        "treasury": 17376504,
+        "player_count": "275"
+      },
+      {
+        "id": "12585535-a54c-482e-8bae-af53662bece5",
+        "name": "VIERTES REICH",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/12585535-a54c-482e-8bae-af53662bece5-1780658110308.png",
+        "treasury": 4850530,
+        "player_count": "139"
+      }
+    ]
+  },
+  "error": null
+}

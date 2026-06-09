@@ -1,0 +1,31 @@
+# Secrets & local runtime
+.env
+**/.env
+bot/data/
+data/
+*.db
+**/import-auth.json
+/root/diplomacia-auth.json
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Logs & large exports
+logs/
+*.log
+export/*.tar.gz
+
+# IDE
+.cursor/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

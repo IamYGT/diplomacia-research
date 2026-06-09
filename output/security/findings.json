@@ -1,0 +1,111 @@
+[
+  {
+    "id": "S1-no-auth",
+    "endpoint": "/init/data",
+    "status": 401,
+    "severity": "OK",
+    "note": "Should be 401 without token"
+  },
+  {
+    "id": "S1-no-auth",
+    "endpoint": "/players/profile",
+    "status": 401,
+    "severity": "OK",
+    "note": "Should be 401 without token"
+  },
+  {
+    "id": "S1-no-auth",
+    "endpoint": "/moderation/reports",
+    "status": 401,
+    "severity": "OK",
+    "note": "Should be 401 without token"
+  },
+  {
+    "id": "S1-no-auth",
+    "endpoint": "/mod/punishment-history",
+    "status": 401,
+    "severity": "OK",
+    "note": "Should be 401 without token"
+  },
+  {
+    "id": "S2-jwt-alg-none",
+    "status": 403,
+    "severity": "OK",
+    "note": "alg:none token should be rejected"
+  },
+  {
+    "id": "S3-idor-fake-player",
+    "endpoint": "/players/00000000-0000-0000-0000-000000000001",
+    "status": 404,
+    "severity": "INFO",
+    "note": "{'error': 'Oyuncu bulunamadı.'}"
+  },
+  {
+    "id": "S4-own-player-by-id",
+    "status": 200,
+    "severity": "OK",
+    "note": "Own profile by UUID"
+  },
+  {
+    "id": "S5-mod-punish",
+    "method": "POST",
+    "endpoint": "/mod/punish",
+    "status": 403,
+    "severity": "OK",
+    "note": "Normal user should get 403",
+    "response": "{'error': 'Moderatör yetkisi gerekli.'}"
+  },
+  {
+    "id": "S5-mod-punishment-history",
+    "method": "GET",
+    "endpoint": "/mod/punishment-history",
+    "status": 403,
+    "severity": "OK",
+    "note": "Normal user should get 403",
+    "response": "{'error': 'Moderatör yetkisi gerekli.'}"
+  },
+  {
+    "id": "S5-mod-00000000-0000-0000-0000-000000000001",
+    "method": "GET",
+    "endpoint": "/mod/status/00000000-0000-0000-0000-000000000001",
+    "status": 403,
+    "severity": "OK",
+    "note": "Normal user should get 403",
+    "response": "{'error': 'Bu bilgiyi görüntüleme yetkiniz yok.'}"
+  },
+  {
+    "id": "S5-mod-reports?status=open",
+    "method": "GET",
+    "endpoint": "/moderation/reports?status=open",
+    "status": 403,
+    "severity": "OK",
+    "note": "Normal user should get 403",
+    "response": "{'error': 'Bu işlem için moderatör yetkisi gerekli.'}"
+  },
+  {
+    "id": "S5-mod-ban-avatar",
+    "method": "POST",
+    "endpoint": "/moderation/ban-avatar",
+    "status": 403,
+    "severity": "OK",
+    "note": "Normal user should get 403",
+    "response": "{'error': 'Bu işlem için moderatör yetkisi gerekli.'}"
+  },
+  {
+    "id": "S9-transfer-fake",
+    "status": 400,
+    "severity": "LOW",
+    "note": "{'error': 'Minimum transfer miktarı $100.'}"
+  },
+  {
+    "id": "S10-public-countries",
+    "status": 200,
+    "severity": "INFO",
+    "note": "May be intentionally public"
+  },
+  {
+    "id": "S11-jwt-structure",
+    "severity": "INFO",
+    "note": "alg=HS256, tv=1, exp_days=7.0"
+  }
+]

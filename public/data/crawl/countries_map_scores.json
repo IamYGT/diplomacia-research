@@ -1,0 +1,219 @@
+{
+  "status": 200,
+  "ms": 82,
+  "data": {
+    "provinceScores": {
+      "İstanbul": {
+        "education": 11,
+        "military": 11,
+        "development": 11,
+        "health": 11
+      },
+      "Düsseldorf": {
+        "education": 11,
+        "military": 1,
+        "development": 11,
+        "health": 11
+      },
+      "Ankara": {
+        "education": 11,
+        "military": 8,
+        "development": 9,
+        "health": 11
+      },
+      "Samsun": {
+        "education": 11,
+        "military": 10,
+        "development": 9,
+        "health": 11
+      },
+      "Kaliforniya": {
+        "education": 9,
+        "military": 4,
+        "development": 11,
+        "health": 7
+      },
+      "Altay": {
+        "education": 8,
+        "military": 9,
+        "development": 8,
+        "health": 9
+      },
+      "Bordo": {
+        "education": 8,
+        "military": 8,
+        "development": 11,
+        "health": 11
+      },
+      "Sibirya": {
+        "education": 7,
+        "military": 7,
+        "development": 7,
+        "health": 8
+      },
+      "Hamburg": {
+        "education": 7,
+        "military": 6,
+        "development": 8,
+        "health": 7
+      },
+      "Alaska": {
+        "education": 6,
+        "military": 5,
+        "development": 8,
+        "health": 11
+      },
+      "İsfahan": {
+        "education": 6,
+        "military": 4,
+        "development": 6,
+        "health": 7
+      },
+      "İzmir": {
+        "education": 5,
+        "military": 7,
+        "development": 5,
+        "health": 6
+      },
+      "Erzurum": {
+        "education": 5,
+        "military": 5,
+        "development": 5,
+        "health": 4
+      },
+      "Colorado": {
+        "education": 5,
+        "military": 8,
+        "development": 11,
+        "health": 8
+      },
+      "Ural": {
+        "education": 4,
+        "military": 11,
+        "development": 8,
+        "health": 7
+      },
+      "Adana": {
+        "education": 3,
+        "military": 4,
+        "development": 3,
+        "health": 5
+      },
+      "Paris": {
+        "education": 3,
+        "military": 5,
+        "development": 3,
+        "health": 4
+      },
+      "St. Petersburg": {
+        "education": 2,
+        "military": 7,
+        "development": 4,
+        "health": 3
+      },
+      "Bretonya": {
+        "education": 2,
+        "military": 3,
+        "development": 2,
+        "health": 3
+      },
+      "Minnesota": {
+        "education": 2,
+        "military": 3,
+        "development": 1,
+        "health": 5
+      },
+      "Marsilya": {
+        "education": 1,
+        "military": 6,
+        "development": 4,
+        "health": 5
+      },
+      "Huzistan": {
+        "education": 1,
+        "military": 2,
+        "development": 2,
+        "health": 2
+      },
+      "Moskova": {
+        "education": 1,
+        "military": 9,
+        "development": 8,
+        "health": 6
+      },
+      "Yakutistan": {
+        "education": 1,
+        "military": 2,
+        "development": 6,
+        "health": 8
+      },
+      "Perm": {
+        "education": 1,
+        "military": 10,
+        "development": 3,
+        "health": 5
+      },
+      "Burgonya": {
+        "education": 1,
+        "military": 1,
+        "development": 1,
+        "health": 2
+      },
+      "Tahran": {
+        "education": 1,
+        "military": 6,
+        "development": 6,
+        "health": 2
+      },
+      "Berlin": {
+        "education": 1,
+        "military": 9,
+        "development": 5,
+        "health": 3
+      },
+      "Kafkasya": {
+        "education": 0,
+        "military": 3,
+        "development": 0,
+        "health": 0
+      },
+      "Omsk": {
+        "education": 0,
+        "military": 3,
+        "development": 2,
+        "health": 3
+      },
+      "Münih": {
+        "education": 0,
+        "military": 2,
+        "development": 0,
+        "health": 0
+      },
+      "Horasan": {
+        "education": 0,
+        "military": 1,
+        "development": 1,
+        "health": 0
+      },
+      "Diyarbakır": {
+        "education": 0,
+        "military": 0,
+        "development": 4,
+        "health": 0
+      },
+      "Normandiya": {
+        "education": 0,
+        "military": 0,
+        "development": 2,
+        "health": 2
+      },
+      "New York": {
+        "education": 0,
+        "military": 0,
+        "development": 1,
+        "health": 0
+      }
+    }
+  },
+  "error": null
+}

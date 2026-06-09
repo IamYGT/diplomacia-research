@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>01-architecture — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 01-architecture.md</p>
+    <h1>Diplomacia — Teknik Mimari</h1>
+
+<h2>Genel bakış</h2>
+
+<pre><code>
+[Browser/Mobile Web]
+    Expo React Native Web SPA (~4.8MB bundle)
+         │
+         ▼
+[Cloudflare] — Turnstile, CSP, HSTS, WAF
+         │
+         ▼
+[diplomacia.com.tr]
+    ├── /           → SPA shell
+    ├── /api/*      → Strategos REST API (JWT)
+    ├── /coats/*    → Ülke arması PNG
+    └── Socket.IO   → Realtime (token auth)
+         │
+         ▼
+[strategos-backend-production.up.railway.app] (internal/proxy)
+</code></pre>
+
+<h2>Frontend</h2>
+
+<ul><li><strong>Framework:</strong> Expo + React Native Web</li>
+<li><strong>Routing:</strong> React Navigation</li>
+<li><strong>Harita:</strong> Leaflet.js</li>
+<li><strong>i18n:</strong> 7+ dil (TR, EN, ES, AR, ID, RU, PT)</li>
+<li><strong>Push:</strong> Expo notifications (<code>projectId: 28b49941-...</code>)</li>
+</ul>
+<h2>Auth</h2>
+
+<table>
+<tr><th>Adım</th><th>Mekanizma</th></tr>
+<tr><td>Kayıt/Giriş</td><td>Email+şifre veya Google OAuth (<code>POST /auth/google</code>)</td></tr>
+<tr><td>Bot koruması</td><td>Cloudflare Turnstile (<code>POST /auth/verify-turnstile</code>)</td></tr>
+<tr><td>Oturum</td><td>JWT HS256 → <code>localStorage.token</code></td></tr>
+<tr><td>API</td><td><code>Authorization: Bearer &lt;jwt&gt;</code></td></tr>
+<tr><td>Socket</td><td><code>io(SOCKET_URL, { auth: { token, lang } })</code></td></tr>
+</table>
+
+<h3>JWT claims</h3>
+
+<table>
+<tr><th>Claim</th><th>Açıklama</th></tr>
+<tr><td><code>id</code></td><td>Oyuncu UUID</td></tr>
+<tr><td><code>username</code></td><td>Görünen ad</td></tr>
+<tr><td><code>tv</code></td><td>Token version (session invalidation)</td></tr>
+<tr><td><code>iat</code> / <code>exp</code></td><td>~7 gün ömür</td></tr>
+</table>
+
+<p>Moderatör/kabine yetkisi JWT&#x27;de değil — <code>players/profile</code> cevabında (<code>is_moderator</code>, <code>cabinet_role</code>).</p>
+
+<h2>API modülleri (client)</h2>
+
+<p>38 modül: auth, players, countries, province, factory, market, war, military, election, party, parliament, cabinet, diplomacy, press, chat, quest, skills, citizenship, visa, transfer, conference, world, upload, block, moderation, mod, auto, trainingWar, militaryOps, economy, xp, passiveSkills</p>
+
+<p>Tam liste: <a href="api-endpoints.json">api-endpoints.json</a></p>
+
+<h2>Wiki</h2>
+
+<p>Statik HTML: <a href="https://wiki.diplomacia.com.tr/wiki">wiki.diplomacia.com.tr</a> — 78 mekanik bölümü</p>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

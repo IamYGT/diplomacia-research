@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>10-quest-claim-stack-cve — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 10-quest-claim-stack-cve.md</p>
+    <h1>Quest Claim Kök Neden + Stack &amp; CVE</h1>
+
+<p><strong>Tarih:</strong> 2026-06-09</p>
+
+<hr>
+
+<h2>Quest claim — bug değil, yanlış endpoint</h2>
+
+<table>
+<tr><th>Deneme</th><th>Sonuç</th></tr>
+<tr><td><code>POST /quests/{uuid}/claim</code></td><td>400 <code>Geçersiz görev.</code></td></tr>
+<tr><td><code>POST /quests/{quest_key}/claim</code></td><td><strong>200</strong> + ödül</td></tr>
+</table>
+
+<p>Client (bundle kanıtı): <code>claimReward(token, e.quest_key)</code> → <code>/quests/work_1/claim</code></p>
+
+<h3>CONFIRMED ödüller (Ercan2)</h3>
+
+<table>
+<tr><th>quest_key</th><th>Ödül</th><th>Replay</th></tr>
+<tr><td><code>work_1</code></td><td>+5.000 altın</td><td><code>Ödül zaten alındı.</code></td></tr>
+<tr><td><code>work_3</code></td><td>+20.000 altın</td><td><code>Ödül zaten alındı.</code></td></tr>
+<tr><td><code>work_5</code></td><td>+50.000 (tamamlanınca)</td><td>tek sefer</td></tr>
+</table>
+
+<p><strong>Sürekli farm:</strong> Hayır — replay kapalı. <strong>Gizli key brute:</strong> Bilinmeyen key → <code>Geçersiz görev.</code></p>
+
+<hr>
+
+<h2>Stack envanteri</h2>
+
+<h3>Frontend (CONFIRMED — bundle manifest)</h3>
+
+<table>
+<tr><th>Bileşen</th><th>Sürüm / kanıt</th></tr>
+<tr><td>Uygulama</td><td><strong>Diplomacia 1.5.0</strong></td></tr>
+<tr><td>Expo SDK</td><td><strong>55.0.0</strong></td></tr>
+<tr><td>Slug / scheme</td><td><code>strategos</code> / <code>com.targan.strategos</code></td></tr>
+<tr><td>React</td><td><strong>19.x</strong> (<code>react.dev/errors</code> in bundle)</td></tr>
+<tr><td>React Navigation</td><td><code>@react-navigation</code></td></tr>
+<tr><td>i18next</td><td>present</td></tr>
+<tr><td>Leaflet</td><td><strong>1.9.4</strong></td></tr>
+<tr><td>Socket.IO client</td><td><strong>Engine.IO 4</strong> (handshake <code>EIO=4</code>)</td></tr>
+<tr><td>Expo projectId</td><td><code>28b49941-1e41-4561-8c11-e3476780997b</code></td></tr>
+</table>
+
+<h3>Edge / CDN</h3>
+
+<table>
+<tr><th>Bileşen</th><th>Kanıt</th></tr>
+<tr><td>Cloudflare</td><td><code>server: cloudflare</code>, Turnstile CSP</td></tr>
+<tr><td>HSTS</td><td><code>max-age=31536000</code></td></tr>
+</table>
+
+<h3>Backend (kısmi — header sızıntısı sınırlı)</h3>
+
+<table>
+<tr><th>Bileşen</th><th>Kanıt</th><th>Sürüm</th></tr>
+<tr><td>API host</td><td><code>diplomacia.com.tr/api</code></td><td>—</td></tr>
+<tr><td>Railway</td><td><code>server: railway-hikari</code> (direkt subdomain 404)</td><td>UNVERIFIED Node sürümü</td></tr>
+<tr><td>Socket.IO server</td><td>EIO4 polling handshake</td><td><strong>v4.x</strong> (minor UNVERIFIED)</td></tr>
+<tr><td>JWT</td><td>HS256, <code>tv</code> claim</td><td>—</td></tr>
+<tr><td>DB</td><td>—</td><td>UNVERIFIED (muhtemelen PostgreSQL — Railway tipik)</td></tr>
+</table>
+
+<hr>
+
+<h2>CVE değerlendirmesi</h2>
+
+<h3>Socket.IO — CVE-2024-38355 (DoS)</h3>
+
+<ul><li><strong>Etki:</strong> Crafted paket → Node process crash</li>
+<li><strong>Patch:</strong> <code>socket.io &gt;= 4.6.2</code></li>
+<li><strong>Diplomacia:</strong> Sunucu <strong>EIO 4</strong> kullanıyor; <strong>tam npm sürümü bilinmiyor</strong> → <code>&lt; 4.6.2</code> ise risk UNVERIFIED yüksek</li>
+<li><strong>Kaynak:</strong> <a href="https://github.com/socketio/socket.io/security/advisories/GHSA-25hc-qcg6-38wj">GHSA-25hc-qcg6-38wj</a></li>
+</ul>
+<h3>Leaflet — CVE-2025-69993 (XSS bindPopup)</h3>
+
+<ul><li><strong>Bundle:</strong> Leaflet <strong>1.9.4</strong> (etkilenen aralık)</li>
+<li><strong>Not:</strong> Leaflet maintainers CVE&#x27;yi <strong>DISPUTED</strong> — uygulama sanitize etmeli</li>
+<li><strong>Diplomacia riski:</strong> Harita popup&#x27;ına kullanıcı/API metni HTML olarak gidiyorsa stored XSS mümkün; kanıt için popup içeriği trace gerekir</li>
+<li><strong>Kaynak:</strong> <a href="https://github.com/Leaflet/Leaflet/issues/10214">Leaflet #10214</a></li>
+</ul>
+<h3>Diğer</h3>
+
+<table>
+<tr><th>Alan</th><th>Durum</th></tr>
+<tr><td>JWT <code>alg:none</code></td><td>403 — kapalı (önceki audit)</td></tr>
+<tr><td>Express/Fastify sürümü</td><td>Header&#x27;da yok — CVE eşlemesi UNVERIFIED</td></tr>
+<tr><td>Expo 55 / React 19</td><td>CVE için hedefli <code>npm audit</code> backend repo olmadan yapılamaz</td></tr>
+</table>
+
+<hr>
+
+<h2>Exploit özeti (yüksek para)</h2>
+
+<pre><code>
+# Doğru claim (quest_key ile):
+POST /api/quests/work_1/claim   → +5.000
+POST /api/quests/work_3/claim   → +20.000
+POST /api/quests/work_5/claim   → +50.000 (5/5 work sonrası)
+
+# Yanlış (audit script hatası):
+POST /api/quests/{uuid}/claim   → Geçersiz görev
+</code></pre>
+
+<p><strong>Tek seferlik toplam günlük quest (work serisi):</strong> ~75.000 altın + elmas (replay yok).</p>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

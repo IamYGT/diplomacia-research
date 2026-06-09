@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "ms": 57,
+  "data": {
+    "traveling": false,
+    "arrived": false,
+    "province_name": "Bükreş",
+    "travel_until": null,
+    "travel_destination": null,
+    "travel_origin": null,
+    "travel_returning": false,
+    "remaining_ms": 0,
+    "travel_total_ms": 0
+  },
+  "error": null
+}

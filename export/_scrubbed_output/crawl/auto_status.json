@@ -1,0 +1,27 @@
+{
+  "status": 200,
+  "ms": 74,
+  "data": {
+    "auto_work_active": false,
+    "auto_work_until": null,
+    "next_work_in_ms": 0,
+    "auto_war_active": false,
+    "auto_war_until": null,
+    "auto_war_id": null,
+    "auto_war_side": null,
+    "auto_war_mode": null,
+    "next_war_in_ms": 0,
+    "health": 100,
+    "health_max": 100,
+    "health_regen_amount": 3,
+    "health_pills": 10000,
+    "pill_cooldown_ms": 0,
+    "free_attack_available": true,
+    "free_attack_ready_at": null,
+    "free_attack_cooldown_ms": 3600000,
+    "auto_active": false,
+    "auto_until": null,
+    "province_resource_limit": null
+  },
+  "error": null
+}

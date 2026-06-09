@@ -1,0 +1,51 @@
+# Diplomacia Research — PC'ye aktarma
+
+## 1. Tarayıcıdan (arkadaşlar + sen)
+
+Site (DNS aktif olduktan sonra):
+
+**https://diplomacia.ygtlabs.ai/**
+
+Tek tık arşiv:
+
+**https://diplomacia.ygtlabs.ai/download/diplomacia-research.tar.gz**
+
+## 2. SCP ile (Mac / Linux / WSL)
+
+```bash
+scp root@49.12.188.137:/var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/public/download/diplomacia-research.tar.gz ~/Downloads/
+cd ~/Downloads && tar -xzf diplomacia-research.tar.gz
+```
+
+## 3. rsync — tüm klasör (canlı kopya)
+
+```bash
+rsync -avz --exclude='.git' \
+  root@49.12.188.137:/var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/ \
+  ~/diplomacia-research/
+```
+
+## 4. Windows (WinSCP / FileZilla)
+
+| Alan | Değer |
+|------|--------|
+| Host | `49.12.188.137` |
+| Protokol | SFTP |
+| Uzak dosya | `/var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/public/download/diplomacia-research.tar.gz` |
+
+## DNS (henüz yoksa)
+
+Cloudflare → `ygtlabs.ai` zone:
+
+- **Tip:** A  
+- **Ad:** `diplomacia`  
+- **Hedef:** `49.12.188.137`  
+- **Proxy:** isteğe bağlı (turuncu bulut OK)
+
+Wildcard SSL `*.ygtlabs.ai` zaten sunucuda — ek sertifika gerekmez.
+
+## Site yenileme (sunucuda)
+
+```bash
+python3 /var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/scripts/build_public_site.py
+```

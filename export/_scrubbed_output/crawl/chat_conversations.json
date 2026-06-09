@@ -1,0 +1,17 @@
+{
+  "status": 200,
+  "ms": 67,
+  "data": {
+    "conversations": [
+      {
+        "other_id": "cd9064b5-b57b-4031-9645-0df49f53363a",
+        "other_name": "Targan Han",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJT-yFZGtsfvwjBRPgJL-jfkfnR7iGuSj2Xqal7asBr5nCgjOs=s96-c",
+        "last_message": "Selamlar dostum, oyunuma hoş geldin.\n\nDetaylı ve uzun ömürlü bir siyaset-strateji simülasyonunun ilk günündesin. Kısaca ne yapman gerektiğini sana anlatmak istedim. Öncelikle sakin ol, butonlar ve yazılar gözünü korkutmasın. Sana söz veriyorum en fazla birkaç saatini oyuna ayırdıktan sonra alışacaksın.\n\nOyunu daha iyi anlaman için sana başlangıç görevleri hazırladık, ana sayfandan bu görevleri görebileceksin. Oyuna yeni başladıysan düzenli olarak askeri operasyonlara katılmanı, elmas fabrikasında çalışarak para kazanmanı ve her şeyden öte sosyal ortama dahil olmanı tavsiye edelim. Kendi siyasi partini kurabilir veya kurulmuş yüzlerce parti arasından istediğine girebilirsin. Şunu unutma: oyunda becerilerini yükseltmen en önemli şey.\n\nEğer oyunla ilgili bir sorun olursa \"Basın\" sekmesini kullanmaktan ya da moderatörlerle iletişime geçmekten asla çekinme, sana oyunu öğretmek için buradayız.\n\nŞimdiden oyunu indirdiğin için çok teşekkür ediyorum, maceranda başarılar dilerim.\n\n-Oyun Kurucusu",
+        "last_at": "2026-06-09T14:40:09.290Z",
+        "unread": 0
+      }
+    ]
+  },
+  "error": null
+}

@@ -1,0 +1,491 @@
+{
+  "/init/data": {
+    "status": 200,
+    "ms": 150,
+    "error": null,
+    "keys": [
+      "factories",
+      "work_status",
+      "active_wars",
+      "ended_wars",
+      "world_summary",
+      "travel_status"
+    ]
+  },
+  "/players/profile": {
+    "status": 200,
+    "ms": 96,
+    "error": null,
+    "keys": [
+      "player",
+      "new_badges",
+      "is_whitelisted"
+    ]
+  },
+  "/players/residence": {
+    "status": 200,
+    "ms": 71,
+    "error": null,
+    "keys": [
+      "residence_province",
+      "residence_changed_at",
+      "can_vote_now",
+      "voting_eligible_at",
+      "province"
+    ]
+  },
+  "/players/country-rank": {
+    "status": 200,
+    "ms": 116,
+    "error": null,
+    "keys": [
+      "rank",
+      "total"
+    ]
+  },
+  "/players/notification-settings": {
+    "status": 200,
+    "ms": 78,
+    "error": null,
+    "keys": [
+      "settings"
+    ]
+  },
+  "/players/diamonds/packages": {
+    "status": 200,
+    "ms": 63,
+    "error": null,
+    "keys": [
+      "packages"
+    ]
+  },
+  "/players/diamonds/campaign-status": {
+    "status": 200,
+    "ms": 74,
+    "error": null,
+    "keys": [
+      "purchased"
+    ]
+  },
+  "/players/blocked": {
+    "status": 400,
+    "ms": 64,
+    "error": null
+  },
+  "/players/economy-history": {
+    "status": 200,
+    "ms": 71,
+    "error": null,
+    "keys": [
+      "logs",
+      "summary"
+    ]
+  },
+  "/players/passive-skills": {
+    "status": 200,
+    "ms": 66,
+    "error": null,
+    "keys": [
+      "passive_skills",
+      "available_points",
+      "total_earned",
+      "total_spent"
+    ]
+  },
+  "/countries": {
+    "status": 200,
+    "ms": 75,
+    "error": null,
+    "keys": [
+      "countries"
+    ]
+  },
+  "/online": {
+    "status": 200,
+    "ms": 134,
+    "error": null,
+    "keys": [
+      "count"
+    ]
+  },
+  "/online/players": {
+    "status": 200,
+    "ms": 101,
+    "error": null,
+    "keys": [
+      "players",
+      "count"
+    ]
+  },
+  "/countries/leaderboard/world?page=1&limit=10": {
+    "status": 200,
+    "ms": 72,
+    "error": null,
+    "keys": [
+      "players",
+      "total",
+      "page",
+      "pages"
+    ]
+  },
+  "/countries/leaderboard/reputation?page=1&limit=10": {
+    "status": 200,
+    "ms": 6334,
+    "error": null,
+    "keys": [
+      "players",
+      "total",
+      "page",
+      "pages"
+    ]
+  },
+  "/countries/map/colors": {
+    "status": 200,
+    "ms": 73,
+    "error": null,
+    "keys": [
+      "countryColors",
+      "provinceOwners"
+    ]
+  },
+  "/countries/map/scores": {
+    "status": 200,
+    "ms": 82,
+    "error": null,
+    "keys": [
+      "provinceScores"
+    ]
+  },
+  "/world/summary?limit=20": {
+    "status": 200,
+    "ms": 86,
+    "error": null,
+    "keys": [
+      "active_wars",
+      "active_alliances",
+      "total_parties",
+      "total_countries",
+      "total_provinces",
+      "independent_regions",
+      "total_players",
+      "total_factories",
+      "events",
+      "revolutions"
+    ]
+  },
+  "/world/dissolved-countries": {
+    "status": 200,
+    "ms": 79,
+    "error": null,
+    "keys": [
+      "dissolved"
+    ]
+  },
+  "/world/banned-players?offset=0": {
+    "status": 200,
+    "ms": 85,
+    "error": null,
+    "keys": [
+      "banned",
+      "hasMore",
+      "offset"
+    ]
+  },
+  "/wars": {
+    "status": 200,
+    "ms": 64,
+    "error": null,
+    "keys": [
+      "wars"
+    ]
+  },
+  "/wars/ended?limit=5": {
+    "status": 200,
+    "ms": 66,
+    "error": null,
+    "keys": [
+      "wars",
+      "total",
+      "page",
+      "limit",
+      "hasMore"
+    ]
+  },
+  "/wars/my-country": {
+    "status": 200,
+    "ms": 62,
+    "error": null,
+    "keys": [
+      "war",
+      "wars"
+    ]
+  },
+  "/wars/war-targets": {
+    "status": 400,
+    "ms": 73,
+    "error": null
+  },
+  "/factories/my": {
+    "status": 200,
+    "ms": 61,
+    "error": null,
+    "keys": [
+      "factories"
+    ]
+  },
+  "/factories/work-status": {
+    "status": 200,
+    "ms": 69,
+    "error": null,
+    "keys": [
+      "working"
+    ]
+  },
+  "/factories/world?page=1&limit=5": {
+    "status": 200,
+    "ms": 77,
+    "error": null,
+    "keys": [
+      "factories",
+      "total",
+      "page",
+      "pages"
+    ]
+  },
+  "/factories/region?page=1&limit=5": {
+    "status": 200,
+    "ms": 85,
+    "error": null,
+    "keys": [
+      "factories",
+      "total",
+      "page",
+      "pages",
+      "province_name"
+    ]
+  },
+  "/market?page=1": {
+    "status": 200,
+    "ms": 73,
+    "error": null,
+    "keys": [
+      "listings",
+      "total"
+    ]
+  },
+  "/market/my": {
+    "status": 200,
+    "ms": 75,
+    "error": null,
+    "keys": [
+      "listings"
+    ]
+  },
+  "/parties/all": {
+    "status": 200,
+    "ms": 85,
+    "error": null,
+    "keys": [
+      "parties"
+    ]
+  },
+  "/parties/my": {
+    "status": 200,
+    "ms": 65,
+    "error": null,
+    "keys": [
+      "party",
+      "pending_application_party_id"
+    ]
+  },
+  "/quests": {
+    "status": 200,
+    "ms": 68,
+    "error": null,
+    "keys": [
+      "quests"
+    ]
+  },
+  "/press?tab=latest&page=1": {
+    "status": 200,
+    "ms": 186,
+    "error": null,
+    "keys": [
+      "articles",
+      "total",
+      "page"
+    ]
+  },
+  "/press/cooldown": {
+    "status": 200,
+    "ms": 52,
+    "error": null,
+    "keys": [
+      "can_publish",
+      "remaining_ms"
+    ]
+  },
+  "/press/guides": {
+    "status": 200,
+    "ms": 72,
+    "error": null,
+    "keys": [
+      "articles"
+    ]
+  },
+  "/chat/global?lang=tr": {
+    "status": 200,
+    "ms": 79,
+    "error": null,
+    "keys": [
+      "messages"
+    ]
+  },
+  "/chat/unread": {
+    "status": 200,
+    "ms": 70,
+    "error": null,
+    "keys": [
+      "unread"
+    ]
+  },
+  "/chat/conversations": {
+    "status": 200,
+    "ms": 67,
+    "error": null,
+    "keys": [
+      "conversations"
+    ]
+  },
+  "/provinces/all": {
+    "status": 200,
+    "ms": 83,
+    "error": null,
+    "keys": [
+      "provinces",
+      "total"
+    ]
+  },
+  "/provinces/travel/status": {
+    "status": 200,
+    "ms": 57,
+    "error": null,
+    "keys": [
+      "traveling",
+      "arrived",
+      "province_name",
+      "travel_until",
+      "travel_destination",
+      "travel_origin",
+      "travel_returning",
+      "remaining_ms",
+      "travel_total_ms"
+    ]
+  },
+  "/military/me": {
+    "status": 200,
+    "ms": 71,
+    "error": null,
+    "keys": [
+      "barracks",
+      "units",
+      "military_power",
+      "unit_config"
+    ]
+  },
+  "/military-ops/my": {
+    "status": 200,
+    "ms": 84,
+    "error": null,
+    "keys": [
+      "operation",
+      "is_joined",
+      "joined_until"
+    ]
+  },
+  "/training-wars/my": {
+    "status": 404,
+    "ms": 93,
+    "error": null
+  },
+  "/auto/status": {
+    "status": 200,
+    "ms": 74,
+    "error": null,
+    "keys": [
+      "auto_work_active",
+      "auto_work_until",
+      "next_work_in_ms",
+      "auto_war_active",
+      "auto_war_until",
+      "auto_war_id",
+      "auto_war_side",
+      "auto_war_mode",
+      "next_war_in_ms",
+      "health",
+      "health_max",
+      "health_regen_amount",
+      "health_pills",
+      "pill_cooldown_ms",
+      "free_attack_available",
+      "free_attack_ready_at",
+      "free_attack_cooldown_ms",
+      "auto_active",
+      "auto_until",
+      "province_resource_limit"
+    ]
+  },
+  "/cabinet/my-role": {
+    "status": 200,
+    "ms": 72,
+    "error": null,
+    "keys": [
+      "role"
+    ]
+  },
+  "/citizenship/my": {
+    "status": 200,
+    "ms": 62,
+    "error": null,
+    "keys": [
+      "application"
+    ]
+  },
+  "/visas/my": {
+    "status": 200,
+    "ms": 69,
+    "error": null,
+    "keys": [
+      "visas"
+    ]
+  },
+  "/visas/pending-count": {
+    "status": 200,
+    "ms": 67,
+    "error": null,
+    "keys": [
+      "count"
+    ]
+  },
+  "/citizenship/pending-count": {
+    "status": 200,
+    "ms": 71,
+    "error": null,
+    "keys": [
+      "count"
+    ]
+  },
+  "/conferences": {
+    "status": 200,
+    "ms": 70,
+    "error": null,
+    "keys": [
+      "conferences"
+    ]
+  },
+  "/moderation/reports/count": {
+    "status": 403,
+    "ms": 110,
+    "error": null
+  }
+}

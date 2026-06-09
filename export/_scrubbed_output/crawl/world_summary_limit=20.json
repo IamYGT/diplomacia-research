@@ -1,0 +1,118 @@
+{
+  "status": 200,
+  "ms": 86,
+  "data": {
+    "active_wars": 3,
+    "active_alliances": 41,
+    "total_parties": 408,
+    "total_countries": 21,
+    "total_provinces": 59,
+    "independent_regions": 19,
+    "total_players": 4977,
+    "total_factories": 3029,
+    "events": [
+      {
+        "type": "war_ended",
+        "created_at": "2026-06-09T20:15:10.433Z",
+        "actor_name": null,
+        "actor_flag": null,
+        "target_name": "İstanbul Şehir Devleti",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/a4b170ed-bb09-4535-b43e-8fad53e045a0-1780790279720.png",
+        "status": "ended",
+        "extra": null
+      },
+      {
+        "type": "alliance_formed",
+        "created_at": "2026-06-09T15:10:30.013Z",
+        "actor_name": "Batı Roma Cumhuriyeti",
+        "actor_flag": "https://diplomacia.com.tr/uploads/country-flags/b75aa15b-68b2-4b12-84ed-04df9e5316b8-1780817117854.jpeg",
+        "target_name": "İstanbul Şehir Devleti",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/a4b170ed-bb09-4535-b43e-8fad53e045a0-1780790279720.png",
+        "status": "active",
+        "extra": null
+      },
+      {
+        "type": "war_ended",
+        "created_at": "2026-06-09T14:32:44.933Z",
+        "actor_name": null,
+        "actor_flag": null,
+        "target_name": "TÜRKELİ",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/c0cea031-7de5-4b1b-825f-866057956c9a-1780440318697.jpeg",
+        "status": "ended",
+        "extra": null
+      },
+      {
+        "type": "war_ended",
+        "created_at": "2026-06-09T09:11:22.912Z",
+        "actor_name": null,
+        "actor_flag": null,
+        "target_name": "Türkiye Cumhuriyeti",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780971908111.png",
+        "status": "ended",
+        "extra": null
+      },
+      {
+        "type": "war_ended",
+        "created_at": "2026-06-09T01:15:17.197Z",
+        "actor_name": null,
+        "actor_flag": null,
+        "target_name": "Türkiye Cumhuriyeti",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780971908111.png",
+        "status": "ended",
+        "extra": null
+      },
+      {
+        "type": "embargo_imposed",
+        "created_at": "2026-06-09T00:45:53.725Z",
+        "actor_name": "İSFAHAN HALK CUMHURİYETİ",
+        "actor_flag": "https://diplomacia.com.tr/uploads/country-flags/a2f0298b-0a9c-4cc0-8a45-29030cba9391-1780676604230.jpeg",
+        "target_name": "VIERTES REICH",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/12585535-a54c-482e-8bae-af53662bece5-1780658110308.png",
+        "status": "active",
+        "extra": "Kandaşlarımız Türkeline olan saldırıyı kınıyor, saldırılar durana kadar ambargo uyguluyoruz"
+      },
+      {
+        "type": "war_declared",
+        "created_at": "2026-06-08T22:52:42.614Z",
+        "actor_name": "AYKA-ELTURKO",
+        "actor_flag": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png",
+        "target_name": "Türkiye Cumhuriyeti",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780971908111.png",
+        "status": "active",
+        "extra": "standard"
+      },
+      {
+        "type": "embargo_imposed",
+        "created_at": "2026-06-08T22:40:55.844Z",
+        "actor_name": "Saha Türk Devleti",
+        "actor_flag": "https://diplomacia.com.tr/coats/yakutistan.png",
+        "target_name": "VIERTES REICH",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/12585535-a54c-482e-8bae-af53662bece5-1780658110308.png",
+        "status": "active",
+        "extra": "Kontrolsüz bölgesel yayılım ve agresif genişleme"
+      },
+      {
+        "type": "war_declared",
+        "created_at": "2026-06-08T22:19:02.524Z",
+        "actor_name": "VIERTES REICH",
+        "actor_flag": "https://diplomacia.com.tr/uploads/country-flags/12585535-a54c-482e-8bae-af53662bece5-1780658110308.png",
+        "target_name": "TÜRKELİ",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/c0cea031-7de5-4b1b-825f-866057956c9a-1780440318697.jpeg",
+        "status": "active",
+        "extra": "standard"
+      },
+      {
+        "type": "war_ended",
+        "created_at": "2026-06-08T22:13:11.556Z",
+        "actor_name": null,
+        "actor_flag": null,
+        "target_name": "AYKA-ELTURKO",
+        "target_flag": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png",
+        "status": "ended",
+        "extra": null
+      }
+    ],
+    "revolutions": []
+  },
+  "error": null
+}

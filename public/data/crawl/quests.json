@@ -1,0 +1,97 @@
+{
+  "status": 200,
+  "ms": 68,
+  "data": {
+    "quests": [
+      {
+        "id": "2a7f778f-e2a2-46bb-afe6-c9ae08e59328",
+        "player_id": "b36f5507-9d95-4c91-97f3-df3ea1a99758",
+        "quest_key": "work_1",
+        "target": 1,
+        "progress": 0,
+        "completed": false,
+        "rewarded": false,
+        "quest_date": "2026-06-09T00:00:00.000Z",
+        "completed_at": null,
+        "created_at": "2026-06-09T15:02:02.086Z",
+        "label": "Fabrikada Çalış",
+        "desc": "1 kez fabrikada çalış",
+        "reward": {
+          "money": 5000,
+          "xp": 50,
+          "diamonds": 20
+        },
+        "icon": "🔨",
+        "difficulty": "KOLAY",
+        "diffColor": "#2ecc71"
+      },
+      {
+        "id": "b888bedd-a971-4e17-b128-b73c010a399c",
+        "player_id": "b36f5507-9d95-4c91-97f3-df3ea1a99758",
+        "quest_key": "war_contrib_1",
+        "target": 1,
+        "progress": 0,
+        "completed": false,
+        "rewarded": false,
+        "quest_date": "2026-06-09T00:00:00.000Z",
+        "completed_at": null,
+        "created_at": "2026-06-09T15:02:02.086Z",
+        "label": "Savaşa Katıl",
+        "desc": "Bir savaşa 1 kez asker gönder",
+        "reward": {
+          "money": 15000,
+          "xp": 120,
+          "diamonds": 20
+        },
+        "icon": "⚔️",
+        "difficulty": "ORTA",
+        "diffColor": "#f39c12"
+      },
+      {
+        "id": "bca7bed7-d260-493e-ae21-f7a5bc6e30b1",
+        "player_id": "b36f5507-9d95-4c91-97f3-df3ea1a99758",
+        "quest_key": "work_3",
+        "target": 3,
+        "progress": 0,
+        "completed": false,
+        "rewarded": false,
+        "quest_date": "2026-06-09T00:00:00.000Z",
+        "completed_at": null,
+        "created_at": "2026-06-09T15:02:02.086Z",
+        "label": "Çalışkan İşçi",
+        "desc": "3 kez fabrikada çalış",
+        "reward": {
+          "money": 20000,
+          "xp": 150,
+          "diamonds": 20
+        },
+        "icon": "⚙️",
+        "difficulty": "ORTA",
+        "diffColor": "#f39c12"
+      },
+      {
+        "id": "57d39235-827b-4227-85db-2298dcd6d8d0",
+        "player_id": "b36f5507-9d95-4c91-97f3-df3ea1a99758",
+        "quest_key": "work_5",
+        "target": 5,
+        "progress": 0,
+        "completed": false,
+        "rewarded": false,
+        "quest_date": "2026-06-09T00:00:00.000Z",
+        "completed_at": null,
+        "created_at": "2026-06-09T15:02:02.086Z",
+        "label": "Üretim Makinesi",
+        "desc": "5 kez fabrikada çalış",
+        "reward": {
+          "money": 50000,
+          "xp": 400,
+          "diamonds": 20
+        },
+        "icon": "🏭",
+        "difficulty": "ZOR",
+        "diffColor": "#e74c3c"
+      }
+    ]
+  },
+  "error": null
+}

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diplomacia — İnteraktif Ustalık Rehberi</title>
+  <meta name="description" content="Diplomacia / Strategos oyun sisteminin tam rehberi: ekonomi, savaş, siyaset ve maksimum hesap verimi playbook.">
+  <link rel="stylesheet" href="guide.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="guide.js" defer></script>
+</head>
+<body>
+  <button class="menu-toggle sans" id="menuToggle" aria-label="Menü">☰</button>
+
+  <div class="shell">
+    <aside class="sidebar sans">
+      <div class="sidebar-header">
+        <h1>⚔ Diplomacia Rehberi</h1>
+        <p>v1.5.0 · Strategos API · RE Hub</p>
+      </div>
+      <nav>
+        <div class="nav-group">
+          <div class="nav-group-title">Başlangıç</div>
+          <a href="#hero">Giriş</a>
+          <a href="#architecture">Mimari</a>
+          <a href="#core-loop">Oyun Döngüsü</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Kaynaklar</div>
+          <a href="#resources">Ekonomi & Kaynaklar</a>
+          <a href="#classes">Sınıflar</a>
+          <a href="#factories">Fabrikalar</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Maksimum Verim</div>
+          <a href="#day1">Gün 1 Playbook</a>
+          <a href="#farm-loop">Farm Döngüsü</a>
+          <a href="#calculator">Verim Hesaplayıcı</a>
+          <a href="#checklist">Kontrol Listesi</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">İleri Seviye</div>
+          <a href="#war">Savaş</a>
+          <a href="#politics">Siyaset</a>
+          <a href="#social">Sosyal & Socket</a>
+          <a href="#api">API Modülleri</a>
+          <a href="#endgame">Endgame</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Hub</div>
+          <a href="/">← Research Hub</a>
+          <a href="/reports/04-game-mechanics.html">Mekanik Raporu</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <!-- HERO -->
+      <section id="hero" class="hero visible">
+        <span class="hero-badge sans">İnteraktif · Animasyonlu · Kanıt Tabanlı</span>
+        <h1>Diplomacia'nın Tüm Çalışma Sistemi</h1>
+        <p class="hero-lead">
+          Bu rehber, <strong>diplomacia.com.tr</strong> (Strategos backend) için API tersine mühendislik,
+          canlı crawl ve oyun testlerinden sentezlenmiştir. Bir hesabın <em>maksimum verim</em> alması için
+          yapması gerekenleri adım adım, interaktif araçlarla öğren.
+        </p>
+        <p class="sans" id="metaUpdated" style="font-size:.8rem;color:var(--dim);margin:0 0 1rem"></p>
+        <div class="stat-row sans">
+          <div class="stat-card"><div class="n" data-stat="players" data-count="4977">0</div><div class="l">Aktif Oyuncu</div></div>
+          <div class="stat-card"><div class="n" data-stat="endpoints" data-count="210">0</div><div class="l">API Endpoint</div></div>
+          <div class="stat-card"><div class="n" data-stat="countries" data-count="21">0</div><div class="l">Ülke</div></div>
+          <div class="stat-card"><div class="n" data-stat="factories" data-count="3029">0</div><div class="l">Fabrika</div></div>
+        </div>
+        <div class="alert alert-gold">
+          <strong>Özet formül:</strong> Yeni hesap → tutorial API (~250k) + quest claim (~75k) → elmas fabrikası →
+          <code>use-pills</code> → <code>factories/work</code> döngüsü (~2.404 altın / ~10 dk) → günlük ödül → siyaset/savaş (uzun vade).
+        </div>
+      </section>
+
+      <!-- ARCHITECTURE -->
+      <section id="architecture">
+        <h2><span class="icon">🏗</span> Teknik Mimari</h2>
+        <p class="section-sub">Oyuncunun gördüğü katmanlar ve arkadaki Strategos API.</p>
+
+        <div class="arch-diagram sans">
+          <div class="arch-layer">
+            <strong>Expo Web / Mobil</strong><br>
+            <small>React 19 · React Navigation · i18next · Leaflet 1.9.4</small>
+          </div>
+          <div class="arch-connector">↕ HTTPS + JWT Bearer</div>
+          <div class="arch-layer">
+            <strong>diplomacia.com.tr/api</strong><br>
+            <small>~210 REST endpoint · 38 client modülü · Cloudflare edge</small>
+          </div>
+          <div class="arch-connector">↕ Socket.IO EIO4</div>
+          <div class="arch-layer">
+            <strong>Gerçek Zamanlı Olaylar</strong><br>
+            <small>global_message · dm_message · revolution · country_announcement</small>
+          </div>
+          <div class="arch-connector">↕</div>
+          <div class="arch-layer">
+            <strong>Strategos Backend</strong><br>
+            <small>Railway (railway-hikari) · JWT HS256 · PostgreSQL (tahmini)</small>
+          </div>
+        </div>
+
+        <div class="panel highlight">
+          <h3 class="sans">Kimlik Doğrulama</h3>
+          <p>Her istekte <code>Authorization: Bearer &lt;JWT&gt;</code>. Socket.IO handshake: <code>auth: { token, lang }</code>.
+          Token süresi dolduğunda 401 — yeniden giriş gerekir.</p>
+        </div>
+      </section>
+
+      <!-- CORE LOOP -->
+      <section id="core-loop">
+        <h2><span class="icon">🔄</span> Ana Oyun Döngüsü</h2>
+        <p class="section-sub">Tıkla — her adımın detayını gör.</p>
+
+        <div class="flow sans">
+          <div class="flow-node" data-flow="register">1. Kayıt</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node" data-flow="class">2. Sınıf</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node" data-flow="tutorial">3. Tutorial</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node" data-flow="quests">4. Görevler</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node" data-flow="factory">5. Fabrika</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node" data-flow="pills">6. Hap</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node" data-flow="daily">7. Günlük</div>
+        </div>
+        <div class="flow-detail sans" id="flowDetail">Bir adıma tıkla…</div>
+
+        <h3>Genişletilmiş döngü (uzun vade)</h3>
+        <div class="flow sans">
+          <div class="flow-node" data-flow="market">Pazar</div>
+          <span class="flow-arrow">·</span>
+          <div class="flow-node" data-flow="politics">Siyaset</div>
+          <span class="flow-arrow">·</span>
+          <div class="flow-node" data-flow="war">Savaş</div>
+          <span class="flow-arrow">·</span>
+          <div class="flow-node" data-flow="social">Sosyal</div>
+          <span class="flow-arrow">·</span>
+          <div class="flow-node" data-flow="auto">Otomasyon</div>
+        </div>
+
+        <div class="loop-ring sans">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="90" fill="none" stroke="#c9a84c" stroke-width="2" stroke-dasharray="8 6" opacity=".5"/>
+            <circle cx="100" cy="20" r="6" fill="#00e5a0"/>
+            <circle cx="180" cy="100" r="6" fill="#7eb8ff"/>
+            <circle cx="100" cy="180" r="6" fill="#e8c97a"/>
+            <circle cx="20" cy="100" r="6" fill="#e05555"/>
+          </svg>
+          <div class="loop-center">Çalış → Kazan → Harca → Güçlen</div>
+        </div>
+      </section>
+
+      <!-- RESOURCES -->
+      <section id="resources">
+        <h2><span class="icon">💰</span> Kaynaklar & Ekonomi</h2>
+        <p class="section-sub">Her kaynağın rolü ve harcama önceliği.</p>
+
+        <table class="sans">
+          <thead>
+            <tr><th>Kaynak</th><th>API alanı</th><th>Kullanım</th><th>Verim önceliği</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Altın</td><td><code>balance</code></td><td>Transfer, market, bağış, fabrika</td><td>★★★★★</td></tr>
+            <tr><td>Elmas</td><td><code>diamonds</code></td><td>Premium, hap craft, fabrika kurulumu</td><td>★★★★☆</td></tr>
+            <tr><td>XP</td><td><code>xp</code></td><td>Level, unvan, transfer gate</td><td>★★★☆☆</td></tr>
+            <tr><td>Sağlık</td><td><code>health</code></td><td>Çalışma limiti — 0 olunca work yok</td><td>★★★★★</td></tr>
+            <tr><td>NTE / Deri / Petrol</td><td>depo</td><td>Fabrika üretimi, savaş</td><td>★★★☆☆</td></tr>
+          </tbody>
+        </table>
+
+        <div class="tabs sans">
+          <button class="tab active" data-tab="spend">Harcama önceliği</button>
+          <button class="tab" data-tab="earn">Kazanç kaynakları</button>
+          <button class="tab" data-tab="avoid">Kaçınılacaklar</button>
+        </div>
+        <div class="tab-panel active" data-tab="spend">
+          <ol>
+            <li>İlk elmas → elmas fabrikası kurulumu (10.000 elmas)</li>
+            <li>Hap stoğu — çalışma kesintisiz kalsın</li>
+            <li>Transfer minimum tutar — erken level düşükken transfer kısıtlı</li>
+            <li>Market alım — fiyat manipülasyonuna dikkat</li>
+          </ol>
+        </div>
+        <div class="tab-panel" data-tab="earn">
+          <ul>
+            <li>Tutorial <code>complete-step</code> (tek sefer ~250k)</li>
+            <li>Quest <code>work_1/3/5</code> claim (~75k toplam)</li>
+            <li><code>factories/work</code> (~2.404 / döngü)</li>
+            <li><code>daily-claim</code> (günlük)</li>
+            <li>Pazar satışı, savaş ganimeti (ileri seviye)</li>
+          </ul>
+        </div>
+        <div class="tab-panel" data-tab="avoid">
+          <ul>
+            <li>Günlük ödül race — kapalı, CF 1010 riski</li>
+            <li>Quest UUID ile claim — <code>quest_key</code> kullan</li>
+            <li>Kendi market listingini alma — 400</li>
+            <li>Honor premium claim — 403</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- CLASSES -->
+      <section id="classes">
+        <h2><span class="icon">🎭</span> Sınıf Seçimi</h2>
+        <p class="section-sub">Kalıcı bonus — maksimum ekonomi için Kalemiye önerilir (RE doğrulandı).</p>
+
+        <div class="grid-3 sans">
+          <div class="class-card" data-class="kalemiye">
+            <div class="emoji">📜</div>
+            <h4>Kalemiye</h4>
+            <small>+%20 elmas fabrikası</small>
+          </div>
+          <div class="class-card" data-class="asker">
+            <div class="emoji">⚔️</div>
+            <h4>Asker</h4>
+            <small>Savaş odaklı</small>
+          </div>
+          <div class="class-card" data-class="diplomat">
+            <div class="emoji">🤝</div>
+            <h4>Diplomat</h4>
+            <small>Ticaret / ittifak</small>
+          </div>
+        </div>
+        <div class="panel" id="classDetail">Bir sınıfa tıkla…</div>
+      </section>
+
+      <!-- FACTORIES -->
+      <section id="factories">
+        <h2><span class="icon">🏭</span> Fabrika Sistemi</h2>
+        <p class="section-sub">Ekonominin kalbi — kur, katıl, çalış, çek.</p>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h3 class="sans">Kendi fabrikan</h3>
+            <ol>
+              <li><code>POST /factories/build</code> — type: <code>elmas</code> (−10.000 elmas)</li>
+              <li><code>POST /factories/work</code> — ~2.404 altın + 20 elmas + 17 XP</li>
+              <li><code>GET /factories/work-status</code> — cooldown / sağlık kontrol</li>
+              <li><code>POST /factories/withdraw</code> — birikmiş stok (validasyon var)</li>
+            </ol>
+          </div>
+          <div class="panel">
+            <h3 class="sans">Başkasının fabrikası</h3>
+            <p><strong>CONFIRMED:</strong> <code>POST /factories/join</code> rakip fabrikaya <em>200 OK</em> — işçi olarak katılabilirsin.</p>
+            <p>Withdraw / fire / close → 403/404 (sahiplik korumalı).</p>
+          </div>
+        </div>
+
+        <div class="alert alert-info sans">
+          <strong>Farm döngüsü:</strong> Sağlık bitince <code>use-pills</code> → tekrar <code>work</code>.
+          Hap cooldown ~10 dakika — günde teorik max ~144 döngü (pratikte 100–120).
+        </div>
+      </section>
+
+      <!-- DAY 1 -->
+      <section id="day1">
+        <h2><span class="icon">🚀</span> Gün 1 — Maksimum Verim Playbook</h2>
+        <p class="section-sub">Yeni hesap için sıralı adımlar (API kanıtlı).</p>
+
+        <div class="timeline">
+          <div class="tl-item">
+            <h4>Adım 1 — Kayıt & sınıf</h4>
+            <p>Ülke seç, <strong>Kalemiye</strong> al. Bağımsız bölge vs ülke — vergi ve savaş erişimini wiki'den kontrol et.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Adım 2 — Tutorial API (tek sefer ~250k)</h4>
+            <p>Sırayla: <code>complete-step</code> 0→1→2→3→4→5, sonra <code>tutorial-done</code>. Replay → success:false.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Adım 3 — Quest claim (~75k)</h4>
+            <p><code>POST /quests/work_1/claim</code> (+5k), <code>work_3</code> (+20k), <code>work_5</code> (+50k). URL'de UUID değil <strong>quest_key</strong>.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Adım 4 — Elmas fabrikası</h4>
+            <p>10.000 elmas harca, <code>factories/build</code> type elmas. Tutorial elması yeterli olmalı.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Adım 5 — İlk work + hap stoğu</h4>
+            <p><code>factories/work</code> → +2.404 altın. Hap craft veya satın al — kesintisiz döngü için.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Adım 6 — Günlük ödül</h4>
+            <p><code>POST /players/daily-claim</code> — her gün bir kez.</p>
+          </div>
+        </div>
+
+        <h3>Görev takipçisi (tıkla)</h3>
+        <p class="sans" id="questTotal">0 / 0 tamamlandı</p>
+        <ul class="quest-list sans" id="questList"></ul>
+      </section>
+
+      <!-- FARM LOOP -->
+      <section id="farm-loop">
+        <h2><span class="icon">♻️</span> Tekrarlayan Farm Döngüsü</h2>
+        <p class="section-sub">Mevcut hesap için sürekli altın — tutorial bittikten sonra ana gelir kaynağı.</p>
+
+        <div class="panel highlight sans">
+          <pre style="margin:0;overflow-x:auto;font-size:.85rem">while (oyun_açık):
+  if health == 0:
+    POST /players/use-pills
+    bekle ~10 dk (cooldown)
+  if factory_yok:
+    POST /factories/join  # veya build
+  POST /factories/work     # +2404 altın, +20 elmas, +17 XP
+  bekle work_cooldown</pre>
+        </div>
+
+        <h3>Hap cooldown simülatörü</h3>
+        <p class="sans">Gerçek cooldown ~10 dk — hızlandırılmış demo (60 sn = 10 dk simülasyon).</p>
+        <button class="tab sans" id="pillSimBtn" style="cursor:pointer">Hap Kullan (simülasyon)</button>
+        <span class="sans" id="pillTimer" style="margin-left:1rem;color:var(--accent)">Hazır</span>
+        <div class="progress-bar" style="margin-top:1rem;height:12px">
+          <div class="progress-fill" id="pillBar" style="width:0%"></div>
+        </div>
+      </section>
+
+      <!-- CALCULATOR -->
+      <section id="calculator">
+        <h2><span class="icon">📊</span> Verim Hesaplayıcı</h2>
+        <p class="section-sub">Günlük work döngüsüne göre altın projeksiyonu.</p>
+
+        <div class="panel calc-box sans">
+          <label>Günlük work döngüsü: <strong id="cyclesVal">100</strong></label>
+          <input type="range" id="cyclesPerDay" min="10" max="144" value="100" step="1">
+          <label style="margin-top:1rem">
+            <input type="checkbox" id="hasTutorial" checked> Yeni hesap (tutorial + quest tek seferlik bonus dahil)
+          </label>
+          <div class="calc-result" id="calcGold">—</div>
+          <div class="calc-breakdown" id="calcBreakdown"></div>
+        </div>
+
+        <div class="chart-wrap sans">
+          <canvas id="goldChart"></canvas>
+        </div>
+      </section>
+
+      <!-- CHECKLIST -->
+      <section id="checklist">
+        <h2><span class="icon">✅</span> Ustalık Kontrol Listesi</h2>
+        <p class="section-sub">İlerlemen tarayıcıda saklanır. <span class="sans" id="checkProgress">0%</span></p>
+        <div class="progress-bar sans" style="margin-bottom:1.5rem;height:10px">
+          <div class="progress-fill" id="checkBar" style="width:0%"></div>
+        </div>
+
+        <ul class="checklist sans">
+          <li><input type="checkbox" data-id="c1"> Kalemiye sınıfı seçildi</li>
+          <li><input type="checkbox" data-id="c2"> complete-step 0–5 tamamlandı</li>
+          <li><input type="checkbox" data-id="c3"> tutorial-done çağrıldı</li>
+          <li><input type="checkbox" data-id="c4"> work_1, work_3, work_5 quest claim</li>
+          <li><input type="checkbox" data-id="c5"> Elmas fabrikası kuruldu</li>
+          <li><input type="checkbox" data-id="c6"> Günlük daily-claim rutini</li>
+          <li><input type="checkbox" data-id="c7"> Hap stoğu 10+ adet</li>
+          <li><input type="checkbox" data-id="c8"> work-status endpoint takibi</li>
+          <li><input type="checkbox" data-id="c9"> Parti / seçim araştırıldı</li>
+          <li><input type="checkbox" data-id="c10"> Socket.IO global chat bağlandı</li>
+          <li><input type="checkbox" data-id="c11"> Transfer level gate öğrenildi</li>
+          <li><input type="checkbox" data-id="c12"> Market listing denendi</li>
+        </ul>
+      </section>
+
+      <!-- WAR -->
+      <section id="war">
+        <h2><span class="icon">⚔️</span> Savaş Sistemi</h2>
+        <p class="section-sub">Eyalet bazlı fetih — kısa vadede altın değil, toprak ve kaynak.</p>
+
+        <table class="sans">
+          <thead><tr><th>Kavram</th><th>Açıklama</th></tr></thead>
+          <tbody>
+            <tr><td>war_type</td><td><code>standard</code> — klasik savaş</td></tr>
+            <tr><td>war_goals</td><td><code>fetih</code> — eyalet ele geçirme</td></tr>
+            <tr><td>contribute</td><td><code>POST /wars/{id}/contribute</code> — birim gönder</td></tr>
+            <tr><td>auto/war</td><td>Otomatik katkı — premium (403 normal hesap)</td></tr>
+            <tr><td>Mutluluk → isyan</td><td>Düşük mutluluk rebellion tetikleyebilir</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- POLITICS -->
+      <section id="politics">
+        <h2><span class="icon">🏛</span> Siyaset & Yönetim</h2>
+        <p class="section-sub">Uzun vadeli güç — vergi, veto, kabine.</p>
+
+        <div class="grid-2 sans">
+          <div class="panel">
+            <h4>Partiler</h4>
+            <p><code>/parties/*</code> — kur, katıl, seçim adayı ol. 408 aktif parti (crawl).</p>
+          </div>
+          <div class="panel">
+            <h4>Parlamento</h4>
+            <p>Teklif, oylama, veto. Vergi oranları — ekonomiyi etkiler.</p>
+          </div>
+          <div class="panel">
+            <h4>Kabine</h4>
+            <p>president, foreign_affairs vb. — ülke düzeyi yetkiler.</p>
+          </div>
+          <div class="panel">
+            <h4>Vatandaşlık</h4>
+            <p>Başvuru, vize — ülke değiştirme mekaniği.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SOCIAL -->
+      <section id="social">
+        <h2><span class="icon">💬</span> Sosyal Katman & Socket.IO</h2>
+        <p class="section-sub">Gerçek zamanlı iletişim — itibar ve bilgi akışı.</p>
+
+        <div class="module-grid sans">
+          <span class="module-chip">global_message</span>
+          <span class="module-chip">global_history</span>
+          <span class="module-chip">dm_message</span>
+          <span class="module-chip">dm_send</span>
+          <span class="module-chip">country_announcement</span>
+          <span class="module-chip">revolution</span>
+        </div>
+
+        <ul>
+          <li><strong>Gazete</strong> — <code>/newspapers/*</code> yaz, abone ol, itibar kazan</li>
+          <li><strong>DM</strong> — REST + socket <code>dm_send</code></li>
+          <li><strong>Konferans</strong> — diplomasi görüşmeleri (ileri seviye)</li>
+        </ul>
+      </section>
+
+      <!-- API -->
+      <section id="api">
+        <h2><span class="icon">🔌</span> API Modül Haritası</h2>
+        <p class="section-sub">38 client modülünden öne çıkanlar — tıkla.</p>
+
+        <div class="module-grid sans">
+          <span class="module-chip" data-module="players">players</span>
+          <span class="module-chip" data-module="factories">factories</span>
+          <span class="module-chip" data-module="quests">quests</span>
+          <span class="module-chip" data-module="wars">wars</span>
+          <span class="module-chip" data-module="parties">parties</span>
+          <span class="module-chip" data-module="parliament">parliament</span>
+          <span class="module-chip" data-module="market">market</span>
+          <span class="module-chip" data-module="transfer">transfer</span>
+          <span class="module-chip" data-module="provinces">provinces</span>
+          <span class="module-chip" data-module="auto">auto</span>
+          <span class="module-chip" data-module="newspapers">newspapers</span>
+          <span class="module-chip" data-module="messages">messages</span>
+          <span class="module-chip" data-module="cabinet">cabinet</span>
+          <span class="module-chip" data-module="citizenship">citizenship</span>
+          <span class="module-chip" data-module="honor">honor</span>
+          <span class="module-chip" data-module="mod">mod</span>
+        </div>
+        <div class="module-detail sans" id="moduleDetail">Bir modüle tıkla…</div>
+
+        <div class="alert alert-green sans">
+          Tam endpoint listesi: <a href="/data/api-endpoints.json" style="color:var(--accent)">/data/api-endpoints.json</a>
+        </div>
+      </section>
+
+      <!-- ENDGAME -->
+      <section id="endgame">
+        <h2><span class="icon">👑</span> Endgame — Sürdürülebilir Güç</h2>
+        <p class="section-sub">Altın farmından sonra ne yapmalı?</p>
+
+        <div class="timeline">
+          <div class="tl-item">
+            <h4>Hafta 1 — Ekonomi temeli</h4>
+            <p>Farm döngüsü + günlük + questler. Level atla (transfer gate). Hap üretim zinciri.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Hafta 2–4 — Siyaset</h4>
+            <p>Parti, seçim, parlamento koltuğu. Vergi politikasını anla.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Ay 2+ — Savaş & toprak</h4>
+            <p>Birim eğit, savaşa contribute. Eyalet fetihleri → kaynak + vergi tabanı.</p>
+          </div>
+          <div class="tl-item">
+            <h4>Premium (opsiyonel)</h4>
+            <p>IAP elmas → auto/work, auto/war. Normal hesapta 403 — monetizasyon duvarı.</p>
+          </div>
+        </div>
+
+        <div class="panel highlight">
+          <h3>Özet: Maksimum verim formülü</h3>
+          <p><strong>Kısa vade (altın):</strong> Tutorial + quest → work döngüsü × gün içi döngü sayısı.</p>
+          <p><strong>Orta vade (güç):</strong> Level, parti, fabrika ağı, market.</p>
+          <p><strong>Uzun vade (hakimiyet):</strong> Savaş, parlamento, kabine, gazete itibarı.</p>
+        </div>
+      </section>
+
+      <footer class="page-foot">
+        <p>Diplomacia Research Hub · <a href="/">diplomacia.ygtlabs.ai</a></p>
+        <p>Kaynak: API crawl, bundle RE, canlı test · 2026-06-09</p>
+      </footer>
+    </main>
+  </div>
+  <button type="button" class="next-fab sans" id="nextFab" aria-label="Sonraki bölüm">↓</button>
+</body>
+</html>

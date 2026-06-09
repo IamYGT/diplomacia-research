@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>02-security-test-plan — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 02-security-test-plan.md</p>
+    <h1>Diplomacia — Güvenlik Test Planı (Auth / JWT / Yetki)</h1>
+
+<p>&gt; <strong>Kapsam:</strong> Yapısal JWT analizi + mobil bundle (<code>/tmp/diplomacia-index.js</code>) endpoint envanteri.  </p>
+<p>&gt; <strong>Hedef API:</strong> <code>https://diplomacia.com.tr/api</code> · <strong>Socket:</strong> <code>https://diplomacia.com.tr</code>  </p>
+<p>&gt; <strong>Secret okunmadı:</strong> <code>/root/diplomacia-auth.json</code> bu planda kullanılmaz.  </p>
+<p>&gt; <strong>Ön koşul:</strong> Geçerli normal kullanıcı JWT’si (test hesabı); mod/admin hesapları ayrı env’de.</p>
+
+<hr>
+
+<h2>1. JWT yapı analizi (secret gerekmez)</h2>
+
+<h3>1.1 Bilinen format</h3>
+
+<table>
+<tr><th>Alan</th><th>Tip (beklenen)</th><th>Rol</th></tr>
+<tr><td><code>alg</code></td><td><code>HS256</code></td><td>Simetrik imza — sunucu secret ile doğrular</td></tr>
+<tr><td><code>id</code></td><td>UUID/string</td><td>Oturum sahibi oyuncu kimliği — <strong>yetki ve IDOR testlerinin hedef alanı</strong></td></tr>
+<tr><td><code>username</code></td><td>string</td><td>Görüntüleme / log; tek başına yetki kaynağı olmamalı</td></tr>
+<tr><td><code>tv</code></td><td>integer</td><td><strong>Token version</strong> — oturum geçersiz kılma sayacı</td></tr>
+<tr><td><code>iat</code></td><td>unix ts</td><td>Token üretim zamanı</td></tr>
+<tr><td><code>exp</code></td><td>unix ts</td><td>Token sona erme (~<strong>7 gün</strong>, <code>exp - iat ≈ 604800</code>)</td></tr>
+</table>
+
+<p>Header + payload Base64URL ile decode edilebilir; imza doğrulaması secret olmadan yapılamaz — bu plan yalnızca <strong>yapısal çıkarım</strong> ve <strong>sunucu davranışı</strong> testlerini kapsar.</p>
+
+<h3>1.2 <code>tv</code> (token version) — çıkarım</h3>
+
+<p>Kısa claim adı <code>tv</code>; endüstride <code>token_version</code> / <code>session_version</code> ile aynı desen.</p>
+
+<p><strong>Beklenen sunucu davranışı:</strong></p>
+
+<p>1. Login/register sonrası DB’deki <code>token_version</code> (veya eşdeğeri) JWT <code>tv</code> alanına yazılır.</p>
+<p>2. Her istekte middleware: <code>jwt.tv === user.token_version</code> değilse <strong>401</strong> (veya token refresh reddi).</p>
+<p>3. Şifre değişimi, hesap ban, “tüm oturumları kapat”, moderasyon müdahalesi gibi olaylarda DB sayacı artırılır → eski token’lar geçersiz kalır.</p>
+
+<p><strong>Test edilecek (tv odaklı):</strong></p>
+
+<table>
+<tr><th>#</th><th>Senaryo</th><th>Beklenen</th></tr>
+<tr><td>T1</td><td>Geçerli token ile <code>/players/profile</code></td><td>200</td></tr>
+<tr><td>T2</td><td>Payload’da <code>tv</code> +1 (imza bozuk)</td><td>401</td></tr>
+<tr><td>T3</td><td>Payload’da <code>tv</code> -1 veya 0 (imza bozuk)</td><td>401</td></tr>
+<tr><td>T4</td><td>Eski token (logout/şifre değişimi sonrası)</td><td>401 tüm korumalı route’larda</td></tr>
+<tr><td>T5</td><td><code>tv</code> claim’i tamamen silinmiş token</td><td>401</td></tr>
+</table>
+
+<p>&gt; Not: İmza manipülasyonu testleri <strong>bilerek geçersiz imza</strong> ile yapılır; amaç sunucunun claim’i güvenmeden reddetmesidir.</p>
+
+<h3>1.3 ~7 günlük <code>exp</code> — çıkarım</h3>
+
+<ul><li><code>exp - iat ≈ 604800</code> saniye → uzun ömürlü mobil oturum.</li>
+<li><strong>Risk:</strong> Çalınan token 7 gün geçerli kalabilir (tv invalidation yoksa).</li>
+<li><strong>Test:</strong> Süresi dolmuş token (<code>exp</code> geçmiş) → 401; sınırda token (<code>exp</code> ± birkaç saniye) → tutarlı davranış.</li>
+</ul>
+<h3>1.4 HS256 yapısal riskler (secret olmadan planlanır)</h3>
+
+<table>
+<tr><th>Risk</th><th>Test</th></tr>
+<tr><td><code>alg:none</code> / algoritma confusion</td><td><code>{&quot;alg&quot;:&quot;none&quot;}</code> header + payload; imzasız veya boş imza ile istek</td></tr>
+<tr><td><code>alg</code> değiştirme (HS256→RS256 vb.)</td><td>Sunucu yalnızca HS256 kabul etmeli</td></tr>
+<tr><td>Claim injection</td><td><code>id</code> değiştirilmiş imzasız payload → reddedilmeli</td></tr>
+<tr><td><code>username</code> ile yetki</td><td>Aynı <code>id</code>, farklı <code>username</code> (imzalı değilse reddedilmeli)</td></tr>
+</table>
+
+<hr>
+
+<h2>2. Bundle’dan endpoint envanteri</h2>
+
+<p>Kaynak: mobil API modülü (<code>API_BASE_URL = https://diplomacia.com.tr/api</code>).</p>
+
+<h3>2.1 Auth (authAPI)</h3>
+
+<table>
+<tr><th>Method</th><th>Path</th><th>Not</th></tr>
+<tr><td>POST</td><td><code>/auth/register</code></td><td>device_fingerprint gönderilir</td></tr>
+<tr><td>POST</td><td><code>/auth/login</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/auth/google</code></td><td>id_token + device_fingerprint</td></tr>
+<tr><td>POST</td><td><code>/auth/verify-turnstile</code></td><td>cf_token</td></tr>
+</table>
+
+<h3>2.2 Mod (modAPI) — <strong>moderatör yetkisi beklenir</strong></h3>
+
+<table>
+<tr><th>Method</th><th>Path</th><th>Body / params</th></tr>
+<tr><td>GET</td><td><code>/mod/status/{playerId}</code></td><td>Hedef oyuncu moderasyon durumu</td></tr>
+<tr><td>POST</td><td><code>/mod/punish</code></td><td><code>target_id</code>, <code>type</code>, <code>duration_label</code>, <code>reason</code></td></tr>
+<tr><td>GET</td><td><code>/mod/punishment-history</code></td><td><code>page</code>, opsiyonel <code>type</code></td></tr>
+<tr><td>POST</td><td><code>/mod/hide-article/{articleId}</code></td><td></td></tr>
+</table>
+
+<p>UI: <code>player.is_moderator === true</code> iken mod menüleri açılır (client-side; <strong>sunucu zorunlu doğrulamalı</strong>).</p>
+
+<h3>2.3 Moderation (moderationAPI) — <strong>moderatör / raporlama</strong></h3>
+
+<table>
+<tr><th>Method</th><th>Path</th><th>Not</th></tr>
+<tr><td>POST</td><td><code>/moderation/report</code></td><td>Chat şikayeti</td></tr>
+<tr><td>POST</td><td><code>/moderation/report-article</code></td><td></td></tr>
+<tr><td>GET</td><td><code>/moderation/reports</code></td><td><code>status</code>, <code>type</code> query</td></tr>
+<tr><td>GET</td><td><code>/moderation/reports/count</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/reports/{id}/punish</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/reports/{id}/dismiss</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/article-reports/{id}/punish</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/article-reports/{id}/dismiss</code></td><td></td></tr>
+<tr><td>GET</td><td><code>/moderation/ban-status/player/{id}</code></td><td></td></tr>
+<tr><td>GET</td><td><code>/moderation/ban-status/party/{id}</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/ban-avatar</code></td><td><code>player_id</code>, <code>hours</code></td></tr>
+<tr><td>POST</td><td><code>/moderation/unban-avatar</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/ban-username</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/ban-party-logo</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/unban-party-logo</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/ban-party-name</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/ban-party-description</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/ban-party-abbreviation</code></td><td></td></tr>
+<tr><td>POST</td><td><code>/moderation/quick-ban/{playerId}</code></td><td></td></tr>
+</table>
+
+<h3>2.4 Admin — ayrı <code>adminAPI</code> yok</h3>
+
+<ul><li><strong><code>/players/report-admin</code></strong>: normal kullanıcı → admin’e mesaj (POST); admin paneli değil.</li>
+<li><strong><code>/world/banned-players</code></strong>: ban listesi (token gerekir).</li>
+<li>Kabine / devlet: <code>cabinet_role</code> (<code>president</code>, <code>foreign_affairs</code>, …) — oyun içi yetki, JWT claim değil; profil cevabından gelir.</li>
+</ul>
+<h3>2.5 IDOR adayları (UUID / player id ile)</h3>
+
+<table>
+<tr><th>Method</th><th>Path</th><th>Test</th></tr>
+<tr><td>GET</td><td><code>/players/{id}</code></td><td>Başka oyuncu profili — sadece public alanlar mı?</td></tr>
+<tr><td>GET</td><td><code>/players/{id}/xp-history</code></td><td>Başka oyuncunun XP geçmişi</td></tr>
+<tr><td>GET</td><td><code>/players/{id}/donation-history</code></td><td>Başka oyuncunun bağış geçmişi</td></tr>
+<tr><td>GET</td><td><code>/factories/player/{id}</code></td><td></td></tr>
+<tr><td>GET</td><td><code>/military/player/{id}</code></td><td></td></tr>
+<tr><td>GET</td><td><code>/parties/player/{id}</code></td><td></td></tr>
+<tr><td>GET</td><td><code>/press/player/{id}</code></td><td></td></tr>
+<tr><td>GET</td><td><code>/moderation/ban-status/player/{id}</code></td><td>Mod-only olmalı</td></tr>
+<tr><td>POST</td><td><code>/moderation/ban-avatar</code></td><td><code>player_id</code> başkası — 403</td></tr>
+<tr><td>POST</td><td><code>/cabinet/assign</code></td><td><code>player_id</code> — kabine rolü</td></tr>
+<tr><td>POST</td><td><code>/players/diamonds/gift-premium</code></td><td><code>recipient_player_id</code></td></tr>
+</table>
+
+<h3>2.6 Muhtemelen public (token’sız client çağrısı)</h3>
+
+<table>
+<tr><th>Method</th><th>Path</th></tr>
+<tr><td>GET</td><td><code>/countries</code></td></tr>
+<tr><td>GET</td><td><code>/provinces/all</code></td></tr>
+</table>
+
+<p>Diğer ~250 path bundle’da token ile çağrılıyor; yine de <strong>Authorization header’sız</strong> probe yapılacak.</p>
+
+<hr>
+
+<h2>3. Saldırı vektörleri — geçerli kullanıcı token’ı ile test</h2>
+
+<h3>3.1 JWT manipülasyonu</h3>
+
+<table>
+<tr><th>ID</th><th>Vektör</th><th>Adımlar</th><th>Pass kriteri</th></tr>
+<tr><td>J1</td><td><strong>alg:none</strong></td><td>Header <code>alg:none</code>, payload aynı <code>id</code>, imza boş/<code>null</code></td><td>401, asla 200</td></tr>
+<tr><td>J2</td><td><strong>id swap (unsigned)</strong></td><td>Payload <code>id</code> → başka UUID, imza orijinal veya yok</td><td>401 veya yalnızca kendi verisi</td></tr>
+<tr><td>J3</td><td><strong>id swap (re-sign)</strong></td><td>Secret bilinmiyorsa atla; bilinirse yalnızca kontrollü pentest</td><td>Başka kullanıcı verisi dönmemeli</td></tr>
+<tr><td>J4</td><td><strong>username spoof</strong></td><td>JWT <code>username</code> değiştir (imzasız)</td><td>Reddedilmeli</td></tr>
+<tr><td>J5</td><td><strong>tv bypass</strong></td><td><code>tv</code> kaldır / sabitle</td><td>401</td></tr>
+<tr><td>J6</td><td><strong>exp ignore</strong></td><td><code>exp</code> geleceğe al (imzasız)</td><td>Reddedilmeli</td></tr>
+<tr><td>J7</td><td><strong>Expired token</strong></td><td><code>exp</code> geçmiş orijinal token</td><td>401</td></tr>
+</table>
+
+<h3>3.2 IDOR — başka oyuncu UUID</h3>
+
+<p>Test kullanıcısı: <strong>A</strong> (token). Hedef: <strong>B</strong> (bilinen UUID, farklı hesap).</p>
+
+<table>
+<tr><th>ID</th><th>İstek</th><th>Beklenen</th></tr>
+<tr><td>I1</td><td><code>GET /players/{B}</code></td><td>Public profil OK; email/ iç veri yok</td></tr>
+<tr><td>I2</td><td><code>GET /players/{B}/xp-history</code></td><td>403 veya boş; B’nin geçmişi sızmamalı</td></tr>
+<tr><td>I3</td><td><code>GET /players/{B}/donation-history</code></td><td>403</td></tr>
+<tr><td>I4</td><td><code>PATCH</code>/<code>PUT</code> <code>/players/bio</code> + body’de başka id</td><td>Yalnızca A güncellenmeli</td></tr>
+<tr><td>I5</td><td><code>POST /players/diamonds/gift-premium</code> + <code>recipient_player_id=B</code></td><td>İş kuralına uygun; negatif bakiye / yetkisiz hediye yok</td></tr>
+<tr><td>I6</td><td><code>POST /cabinet/assign</code> + <code>player_id=B</code></td><td>Kabine rolü yalnızca yetkili devlet yetkilisi</td></tr>
+</table>
+
+<h3>3.3 Mod / moderation endpoint probing (normal user token)</h3>
+
+<p>Normal kullanıcı <strong>A</strong> ile tüm mod/moderation POST/GET:</p>
+
+<table>
+<tr><th>ID</th><th>Endpoint</th><th>Beklenen</th></tr>
+<tr><td>M1</td><td><code>POST /mod/punish</code></td><td><strong>403</strong></td></tr>
+<tr><td>M2</td><td><code>GET /mod/punishment-history</code></td><td><strong>403</strong> veya boş</td></tr>
+<tr><td>M3</td><td><code>POST /mod/hide-article/{id}</code></td><td><strong>403</strong></td></tr>
+<tr><td>M4</td><td><code>GET /mod/status/{random}</code></td><td><strong>403</strong> veya sınırlı public</td></tr>
+<tr><td>M5</td><td><code>POST /moderation/reports/{id}/punish</code></td><td><strong>403</strong></td></tr>
+<tr><td>M6</td><td><code>POST /moderation/ban-avatar</code></td><td><strong>403</strong></td></tr>
+<tr><td>M7</td><td><code>POST /moderation/quick-ban/{B}</code></td><td><strong>403</strong></td></tr>
+<tr><td>M8</td><td><code>GET /moderation/reports?status=pending</code></td><td><strong>403</strong></td></tr>
+</table>
+
+<p><strong>Fail:</strong> 200 + moderasyon yan etkisi (ban, punish kaydı, article hide).</p>
+
+<h3>3.4 Admin / yüksek yetki probing</h3>
+
+<table>
+<tr><th>ID</th><th>Hedef</th><th>Not</th></tr>
+<tr><td>A1</td><td><code>/players/report-admin</code></td><td>Normal kullanıcı POST — spam/rate limit</td></tr>
+<tr><td>A2</td><td><code>/world/banned-players</code></td><td>Sadece whitelist/mod?</td></tr>
+<tr><td>A3</td><td><code>/cabinet/{countryId}/broadcast</code></td><td><code>cabinet_role</code> sunucuda doğrulanmalı</td></tr>
+<tr><td>A4</td><td><code>/wars/declare</code>, <code>/diplomacy/embargo/impose</code></td><td>Devlet yetkisi</td></tr>
+<tr><td>A5</td><td><code>/upload/country-flag</code>, <code>/upload/avatar</code></td><td>Başka entity id ile upload</td></tr>
+<tr><td>A6</td><td>Bilinmeyen path’ler</td><td><code>/admin</code>, <code>/internal</code>, <code>/debug</code>, <code>/api/v1/admin</code> → 404/403</td></tr>
+</table>
+
+<p>Client <code>is_whitelisted</code> flag’i login/profile’da gelir — whitelist-only endpoint var mı ayrıca taranacak.</p>
+
+<h3>3.5 Eksik auth (Authorization yok)</h3>
+
+<table>
+<tr><th>ID</th><th>Yöntem</th><th>Örnek path’ler</th></tr>
+<tr><td>N1</td><td>Header yok</td><td><code>/players/profile</code>, <code>/players/ping</code>, <code>/wars</code>, <code>/factories/my</code></td></tr>
+<tr><td>N2</td><td>Header yok</td><td>Tüm POST mutation (transfer, buy, declare war)</td></tr>
+<tr><td>N3</td><td>Boş <code>Bearer </code></td><td>Aynı set</td></tr>
+<tr><td>N4</td><td>Geçersiz rastgele JWT</td><td>401 tutarlı JSON hata</td></tr>
+</table>
+
+<p><strong>Pass:</strong> Korumalı route’ların tamamı 401/403; yalnızca bilinen public GET’ler 200.</p>
+
+<h3>3.6 Socket auth</h3>
+
+<p>Bundle: <code>io(SOCKET_URL, { auth: { token, lang } })</code>.</p>
+
+<table>
+<tr><th>ID</th><th>Test</th><th>Beklenen</th></tr>
+<tr><td>S1</td><td>Geçersiz token ile connect</td><td>Red / disconnect</td></tr>
+<tr><td>S2</td><td>Başka kullanıcı <code>id</code>’li JWT (geçerliyse)</td><td>Yalnızca kendi odaları</td></tr>
+<tr><td>S3</td><td>Mod-only event’ler (chat delete/ban)</td><td>Sunucu <code>is_moderator</code> doğrulaması</td></tr>
+</table>
+
+<hr>
+
+<h2>4. Test yürütme</h2>
+
+<h3>4.1 Araçlar</h3>
+
+<ul><li><strong>curl / httpie</strong> — REST probe</li>
+<li><strong>jwt.io</strong> veya <code>base64 -d</code> — payload inceleme (secret paylaşılmaz)</li>
+<li><strong>Burp / OWASP ZAP</strong> — tekrarlanabilir kayıt</li>
+<li><strong>Mod hesabı</strong> (ayrı credential) — pozitif mod testleri için</li>
+</ul>
+<h3>4.2 Örnek curl şablonları</h3>
+
+<pre><code>
+# Profil (baseline)
+curl -sS -H &quot;Authorization: Bearer $TOKEN_A&quot; \
+  &quot;https://diplomacia.com.tr/api/players/profile&quot;
+
+# IDOR — başka oyuncu
+curl -sS -H &quot;Authorization: Bearer $TOKEN_A&quot; \
+  &quot;https://diplomacia.com.tr/api/players/${UUID_B}/xp-history&quot;
+
+# Mod probe (normal user)
+curl -sS -X POST -H &quot;Authorization: Bearer $TOKEN_A&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;target_id&quot;:&quot;&#x27;&quot;$UUID_B&quot;&#x27;&quot;,&quot;type&quot;:&quot;chat&quot;,&quot;duration_label&quot;:&quot;1 saat&quot;,&quot;reason&quot;:&quot;pentest&quot;}&#x27; \
+  &quot;https://diplomacia.com.tr/api/mod/punish&quot;
+
+# Auth yok
+curl -sS &quot;https://diplomacia.com.tr/api/players/profile&quot;
+</code></pre>
+
+<h3>4.3 Sonuç kaydı</h3>
+
+<p>Her test için:</p>
+
+<table>
+<tr><th>Alan</th><th>Değer</th></tr>
+<tr><td>Test ID</td><td>J1, I2, M5, …</td></tr>
+<tr><td>HTTP status</td><td></td></tr>
+<tr><td>Response özeti</td><td>Hata kodu / <code>error</code> alanı</td></tr>
+<tr><td>Yan etki</td><td>DB’de ban/punish oluştu mu?</td></tr>
+<tr><td>Sonuç</td><td>PASS / FAIL</td></tr>
+</table>
+
+<hr>
+
+<h2>5. Öncelik sırası</h2>
+
+<p>1. <strong>P0:</strong> J1–J2, M1–M8, N1–N2 (mod + auth bypass)</p>
+<p>2. <strong>P1:</strong> I1–I6 (IDOR veri sızıntısı)</p>
+<p>3. <strong>P2:</strong> T2–T5 (<code>tv</code> invalidation), S1–S3 (socket)</p>
+<p>4. <strong>P3:</strong> Kabine / ekonomi mutation IDOR, rate limit</p>
+
+<hr>
+
+<h2>6. Bilinen client-side ipuçları (sunucu doğrulamalı)</h2>
+
+<ul><li><code>player.is_moderator</code> — UI gate; <strong>tek başına güvenlik değil</strong></li>
+<li><code>is_whitelisted</code> — login/profile; backend eşlemesi test edilmeli</li>
+<li><code>cabinet_role</code> + <code>cabinet_country_id</code> — devlet aksiyonları</li>
+<li>Global token fallback: <code>setGlobalToken</code> / <code>b</code> ref — Authorization header her istekte <code>Bearer</code> (bundle <code>h()</code> helper)</li>
+</ul>
+<hr>
+
+<h2>7. Kapsam dışı</h2>
+
+<ul><li>JWT secret brute-force / HS256 key recovery</li>
+<li><code>/root/diplomacia-auth.json</code> içeriği</li>
+<li>Production’da destructive test (gerçek ban, gerçek savaş ilanı) — staging veya test hesapları</li>
+</ul>
+<hr>
+
+<p>*Oluşturulma: 2026-06-09 · Kaynak: yapısal JWT bilgisi + <code>/tmp/diplomacia-index.js</code> API modülü (satır ~248).*</p>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

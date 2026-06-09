@@ -1,0 +1,122 @@
+{
+  "status": 200,
+  "ms": 71,
+  "data": {
+    "barracks": {
+      "level": 51,
+      "capacity": 653,
+      "current_units": 500
+    },
+    "units": {
+      "infantry": 300,
+      "tank": 0,
+      "aircraft": 200,
+      "warship": 0,
+      "missile": 0
+    },
+    "military_power": 1100,
+    "unit_config": {
+      "infantry": {
+        "label": "Piyade",
+        "power": 1,
+        "cost_money": 5000,
+        "cost_resources": [
+          {
+            "type": "deri",
+            "amount": 300
+          },
+          {
+            "type": "altin",
+            "amount": 300
+          }
+        ],
+        "unlock_level": 1,
+        "terrain": [
+          "land"
+        ]
+      },
+      "tank": {
+        "label": "Tank",
+        "power": 2,
+        "cost_money": 50000,
+        "cost_resources": [
+          {
+            "type": "nte",
+            "amount": 500
+          },
+          {
+            "type": "petrol",
+            "amount": 300
+          }
+        ],
+        "unlock_level": 5,
+        "terrain": [
+          "land"
+        ]
+      },
+      "aircraft": {
+        "label": "Savaş Uçağı",
+        "power": 4,
+        "cost_money": 150000,
+        "cost_resources": [
+          {
+            "type": "petrol",
+            "amount": 700
+          },
+          {
+            "type": "deri",
+            "amount": 100
+          }
+        ],
+        "unlock_level": 30,
+        "terrain": [
+          "land",
+          "sea",
+          "air"
+        ]
+      },
+      "warship": {
+        "label": "Savaş Gemisi",
+        "power": 3,
+        "cost_money": 120000,
+        "cost_resources": [
+          {
+            "type": "nte",
+            "amount": 600
+          },
+          {
+            "type": "altin",
+            "amount": 300
+          }
+        ],
+        "unlock_level": 15,
+        "terrain": [
+          "sea",
+          "air"
+        ]
+      },
+      "missile": {
+        "label": "Balistik Füze",
+        "power": 5,
+        "cost_money": 500000,
+        "cost_resources": [
+          {
+            "type": "petrol",
+            "amount": 1000
+          },
+          {
+            "type": "deri",
+            "amount": 500
+          }
+        ],
+        "unlock_level": 50,
+        "terrain": [
+          "land",
+          "sea",
+          "air"
+        ]
+      }
+    }
+  },
+  "error": null
+}

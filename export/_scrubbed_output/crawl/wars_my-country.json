@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "ms": 62,
+  "data": {
+    "war": null,
+    "wars": []
+  },
+  "error": null
+}

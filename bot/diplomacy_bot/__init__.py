@@ -1,0 +1,1 @@
+"""Diplomacia Telegram farm bot."""

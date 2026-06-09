@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>11-audit-summary — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 11-audit-summary.md</p>
+    <h1>Diplomacia — Full Crawl + Security Audit Özeti</h1>
+
+<p><strong>Tarih:</strong> 2026-06-09  </p>
+<p><strong>Hedef:</strong> <a href="https://diplomacia.com.tr/">diplomacia.com.tr</a>  </p>
+<p><strong>Generator:</strong> <code>scripts/generate_audit_summary.py</code> → <code>output/audit_summary.json</code></p>
+
+<hr>
+
+<h2>Sonuç (tek cümle)</h2>
+
+<p>Normal kullanıcı token ile <strong>0 CRITICAL</strong> bulgu; mod/JWT/auth katmanları sağlam; ekonomi exploit&#x27;leri replay/race ile kapalı; Socket.IO&#x27;da foreign DM yok; transfer race <strong>Lv5+ hesap olmadan test edilemedi</strong>.</p>
+
+<hr>
+
+<h2>Kapsam matrisi</h2>
+
+<table>
+<tr><th>Alan</th><th>Script</th><th>Sonuç</th><th>Kanıt</th></tr>
+<tr><td>GET crawl (52)</td><td><code>full_audit.py</code></td><td>48/52 OK</td><td><code>output/crawl/</code></td></tr>
+<tr><td>JWT / mod / auth</td><td><code>full_audit.py</code></td><td>0 CRITICAL</td><td><code>output/security/findings.json</code></td></tr>
+<tr><td>Exploit mutation (52)</td><td><code>exploit_probe.py</code></td><td>P1 IDOR read</td><td><code>07-exploit-report.md</code></td></tr>
+<tr><td>Bakiye farm</td><td><code>balance_exploit_probe.py</code></td><td>Onboarding replay kapalı</td><td><code>08-balance-exploit-report.md</code></td></tr>
+<tr><td>Onboarding replay</td><td><code>onboarding_step_probe.py</code></td><td>delta 0</td><td><code>onboarding_replay_probe.json</code></td></tr>
+<tr><td>Factory IDOR</td><td><code>reverse_probe</code> / cp5</td><td>exploited 0</td><td><code>factory_idor_checkpoint5.json</code></td></tr>
+<tr><td>Endpoint envanter</td><td><code>extract_endpoints.py</code></td><td><strong>213</strong> route</td><td><code>api-endpoints.json</code></td></tr>
+<tr><td>Socket.IO</td><td><code>socket_transfer_probe.py</code></td><td>connect OK, foreign_dm false</td><td><code>socket_transfer_checkpoint6.json</code></td></tr>
+<tr><td>Transfer race</td><td><code>socket_transfer_probe.py</code></td><td><strong>BLOCKED</strong> lv4&amp;lt;lv5</td><td>aynı artefakt</td></tr>
+</table>
+
+<hr>
+
+<h2>Güvenlik — kapalı vektörler ✅</h2>
+
+<ul><li>Auth&#x27;suz hassas route → <strong>401</strong></li>
+<li>JWT <code>alg:none</code> → <strong>403</strong></li>
+<li>Mod/moderation → <strong>403</strong> (normal user)</li>
+<li>Onboarding step replay → <code>success: false</code>, bakiye delta <strong>0</strong></li>
+<li>Factory withdraw/close/rename (rakip) → <strong>403/404</strong></li>
+<li>Transfer (lv4) → <strong>403</strong> min seviye 5</li>
+<li>Socket foreign DM sniff → <strong>false</strong></li>
+</ul>
+<hr>
+
+<h2>Bilinen avantajlar (oyun tasarımı / P2)</h2>
+
+<table>
+<tr><th>Bulgu</th><th>Etki</th><th>Replay</th></tr>
+<tr><td>Onboarding step API (yeni hesap)</td><td>~250k tek sefer</td><td>Kapalı</td></tr>
+<tr><td><code>GET /factories/player/{uuid}</code></td><td>Rakip fabrika istihbaratı</td><td>N/A</td></tr>
+<tr><td><code>POST /factories/join</code> (açık fabrika)</td><td>İşçi katılımı</td><td>Tasarım</td></tr>
+<tr><td>Global chat history</td><td>Herkese açık mesajlar</td><td>Kasıtlı</td></tr>
+</table>
+
+<hr>
+
+<h2>Açık test kalemleri</h2>
+
+<p>1. <strong>Transfer paralel race</strong> — Lv5+ hesap gerekli (Ercan2 şu an lv4)</p>
+<p>2. <strong>Yeni hesap step-skip</strong> — Cloudflare Turnstile kayıt engeli</p>
+<p>3. <strong>conf_send</strong> yetkisi — aktif konferans üyeliği ile tekrar</p>
+
+<hr>
+
+<h2>Checkpoint zaman çizelgesi</h2>
+
+<table>
+<tr><th>CP</th><th>İçerik</th></tr>
+<tr><td>1–3</td><td>Crawl, exploit, RE, IDOR</td></tr>
+<tr><td>4</td><td>Onboarding replay + farm eyalet fix</td></tr>
+<tr><td>5</td><td>213 endpoint dump + factory IDOR</td></tr>
+<tr><td>6</td><td>Socket.IO + transfer lv5 gate</td></tr>
+<tr><td>7</td><td>Bu özet + <code>audit_summary.json</code></td></tr>
+<tr><td>8</td><td><code>verify-audit.sh</code> + public site sync — <strong>AUDIT COMPLETE</strong></td></tr>
+</table>
+
+<hr>
+
+<h2>Komutlar</h2>
+
+<pre><code>
+python3 scripts/generate_audit_summary.py
+python3 scripts/full_audit.py
+python3 scripts/socket_transfer_probe.py
+python3 scripts/extract_endpoints.py
+</code></pre>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

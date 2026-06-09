@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>09-reverse-engineering-report — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 09-reverse-engineering-report.md</p>
+    <h1>Diplomacia — Tersine Mühendislik + İleri Zafiyet Taraması</h1>
+
+<p><strong>Tarih:</strong> 2026-06-09  </p>
+<p><strong>Hesap:</strong> Ercan2 (test)  </p>
+<p><strong>Çıktı:</strong> <code>output/reverse/reverse_probe.json</code>, <code>output/reverse/phase2_probe.json</code></p>
+
+<hr>
+
+<h2>Özet</h2>
+
+<table>
+<tr><th>Vektör</th><th>Sonuç</th><th>Kanıt</th></tr>
+<tr><td>Rakip fabrika join/withdraw IDOR</td><td><strong>Kısmi</strong></td><td>join rakip fabrika <strong>200</strong>; withdraw/fire/close <strong>404/403</strong></td></tr>
+<tr><td>Socket.IO kanal sızıntısı</td><td><strong>Kısmi bilgi</strong> (tasarım)</td><td><code>global_history</code> + canlı <code>global_message</code>; yabancı DM yok</td></tr>
+<tr><td>Transfer race condition</td><td><strong>Test edilemedi / güvenli</strong></td><td>Lv1 → 403 seviye; paralel → CF 1010</td></tr>
+<tr><td>Top player email/balance</td><td><strong>Güvenli</strong></td><td><code>#1 UhtreD</code> profilde email/balance yok</td></tr>
+<tr><td>RE: gizli endpoint</td><td><code>/mod/grant-gold</code> → 403</td><td>Moderatör korumalı</td></tr>
+</table>
+
+<hr>
+
+<h2>1. Factory IDOR (mutation)</h2>
+
+<p><strong>Hedef fabrika (rakip):</strong> <code>ac44f956-…</code> — sahip <code>6dc0b507-…</code></p>
+
+<table>
+<tr><th>Endpoint</th><th>Body</th><th>HTTP</th><th>Yanıt</th></tr>
+<tr><td><code>POST /factories/join</code></td><td><code>{factory_id}</code> rakip</td><td><strong>200</strong></td><td>&quot;Fabrikaya katıldınız!&quot; (phase2, ayrıldıktan sonra)</td></tr>
+<tr><td><code>POST /factories/leave</code></td><td><code>{}</code></td><td>200</td><td>Ayrıldınız</td></tr>
+<tr><td><code>POST /factories/withdraw</code></td><td>rakip id + amount</td><td>404</td><td>Fabrika bulunamadı / yetki yok</td></tr>
+<tr><td><code>POST /factories/fire</code></td><td>rakip owner</td><td>403</td><td>Sahibi değilsiniz</td></tr>
+<tr><td><code>POST /factories/rename/close/salary</code></td><td>rakip id</td><td>404</td><td>Yetki yok</td></tr>
+<tr><td><code>POST /factories/work</code></td><td><code>{}</code></td><td>200</td><td><strong>Kendi</strong> fabrikasında (<code>is_owner: true</code>) — IDOR değil</td></tr>
+</table>
+
+<p><strong>Sonuç:</strong> Para çekme / sahibi işlemleri korumalı. Ancak <strong>herhangi bir <code>factory_id</code> ile işçi olarak katılmak mümkün</strong> — bu tasarım (açık fabrika) veya düşük öncelikli IDOR olabilir; rakip bütçesinden çekim yok, <code>work</code> can şartı (3/100) yüzünden test edilemedi.</p>
+
+<p><strong>Checkpoint 5 (2026-06-09):</strong> <code>reverse_probe.probe_factory_idor</code> yeniden koşuldu — <code>join</code> 200 (işçi katılımı), <code>withdraw</code>/<code>close</code>/<code>fire</code>/<code>rename</code> 403/404, <code>exploited_count: 0</code>. Kanıt: <code>output/reverse/factory_idor_checkpoint5.json</code></p>
+
+<p><strong>İstihbarat (read IDOR, önceki turlar):</strong> <code>GET /factories/player/{uuid}</code> → rakip fabrika seviye/bütçe/tip.</p>
+
+<hr>
+
+<h2>2. Socket.IO</h2>
+
+<p><strong>Bağlantı:</strong> <code>wss://diplomacia.com.tr</code> — <code>auth: { token, lang }</code>  </p>
+<p><strong>Bundle event&#x27;leri (RE):</strong> <code>global_message</code>, <code>global_history</code>, <code>dm_message</code>, <code>dm_send</code>, <code>dm_new</code>, <code>conf_message</code>, <code>conf_send</code>, <code>country_announcement</code>, <code>revolution</code>, <code>chat_ban</code>, <code>chat_delete</code>, …</p>
+
+<table>
+<tr><th>Test</th><th>Gözlem</th></tr>
+<tr><td>Connect + dinle</td><td><code>global_history</code> → son ~50 global mesaj (player_id, username, avatar)</td></tr>
+<tr><td><code>emit global_message</code></td><td>Kendi mesajın herkese yayınlanır (beklenen)</td></tr>
+<tr><td><code>emit dm_send</code> → top1</td><td>Yabancı <code>dm_message</code> dinlemede gelmedi</td></tr>
+<tr><td><code>emit conf_send</code></td><td><code>conf_message</code> alınmadı (muhtemelen oda üyeliği şart)</td></tr>
+</table>
+
+<p><strong>Değerlendirme:</strong> Global sohbet kasıtlı olarak herkese açık. <strong>Cross-user DM sniffing</strong> bu testte yok. <code>requests</code> paketi olmadan python-socketio bağlanamıyor — script&#x27;e <code>pip install requests</code> eklendi.</p>
+
+<p><strong>Checkpoint 6 (2026-06-09):</strong> <code>scripts/socket_transfer_probe.py</code> — connect OK, <code>global_history</code> + <code>global_message</code> alındı, <code>dm_send</code> fake UUID&#x27;ye emit → <strong>foreign_dm_received: false</strong>. Bundle&#x27;dan 33 event (<code>socket_events_enum.json</code>). Chat-relevant: <code>global_message</code>, <code>global_history</code>, <code>dm_message</code>, <code>dm_send</code>, <code>dm_new</code>, <code>conf_message</code>, <code>conf_send</code>, <code>country_announcement</code>, <code>revolution</code>, <code>chat_ban</code>, <code>chat_delete</code>, <code>chat_bulk_delete</code>, <code>chat_error</code>.</p>
+
+<hr>
+
+<h2>3. Transfer race</h2>
+
+<ul><li>Paralel 8× <code>POST /transfer/send</code> → <code>recipient_id</code> sahte UUID, <code>amount: 100</code></li>
+<li>Tüm thread&#x27;ler: <strong>403</strong> — &quot;Para göndermek için en az 5. seviye&quot; (hesap API&#x27;de lv1 görünüyor)</li>
+<li>Bakiye delta: <strong>0</strong></li>
+<li>Self-transfer race: <strong>CF 1010</strong> (paralel istek ban)</li>
+</ul>
+<p><strong>Sonuç:</strong> Race exploit kanıtlanmadı; seviye gate + Cloudflare paralel POST&#x27;u kesiyor.</p>
+
+<p><strong>Checkpoint 6:</strong> Ercan2 lv4 — <code>POST /transfer/send</code> tek istek <strong>403</strong> (min lv5), paralel race <strong>atlandı</strong>, bakiye delta <strong>0</strong>. Kanıt: <code>output/reverse/socket_transfer_checkpoint6.json</code></p>
+
+<hr>
+
+<h2>4. Top 10 oyuncu — email / balance</h2>
+
+<p>Leaderboard kaynağı: <code>GET /countries/leaderboard/world?page=1&amp;limit=10</code></p>
+
+<p><strong>#1 UhtreD</strong> (<code>6a3043a9-…</code>):</p>
+<ul><li><code>GET /players/{id}</code> → 200, alanlar: username, xp, reputation, cabinet, skills…</li>
+<li><strong><code>email</code> yok, <code>balance</code> yok</strong> (CONFIRMED <code>phase2_probe.json</code>)</li>
+<li><code>GET /players/profile</code> (kendi) → email + balance <strong>sadece oturum sahibi</strong></li>
+</ul>
+<p>Yanlış alarm: <code>donation-history</code> JSON&#x27;unda <code>&quot;resources&quot;</code> anahtarı var → otomatik tarayıcı &quot;leak&quot; saydı; <strong>gerçek bakiye sızıntısı değil</strong>.</p>
+
+<hr>
+
+<h2>5. API tersine mühendislik (bundle)</h2>
+
+<p><strong>Base:</strong> <code>https://diplomacia.com.tr/api</code>  </p>
+<p><strong>Factory modülü yolları:</strong> <code>/factories/build</code>, <code>join</code>, <code>leave</code>, <code>work</code>, <code>work-status</code>, <code>withdraw</code>, <code>withdraw-resources</code>, <code>fire</code>, <code>salary</code>, <code>rename</code>, <code>close</code>, <code>level-up</code>, <code>move</code>, <code>my</code>, <code>player/{id}</code>, <code>region</code>, <code>country</code>, <code>world</code>, <code>tax</code></p>
+
+<p><strong>Fuzz (gizli):</strong></p>
+<ul><li><code>/players/me</code> → 400 Geçersiz oyuncu ID</li>
+<li><code>/mod/grant-gold</code> GET/POST → 403 Moderatör yetkisi gerekli</li>
+</ul>
+<hr>
+
+<h2>6. Hâlâ geçerli exploit (önceki tur)</h2>
+
+<p><code>POST /players/complete-step</code> adımları 3–5 → tutorial ödülleri API ile alınabiliyor (+200k altın bandı). Replay sonrası <code>success: false</code>.</p>
+
+<hr>
+
+<h2>Scriptler</h2>
+
+<pre><code>
+/var/www/research/scrapling-venv/bin/pip install requests  # socket.io için
+python scripts/reverse_probe.py   # ~5 dk, DELAY=3s
+python scripts/phase2_probe.py  # leave→join, socket, self-race
+</code></pre>
+
+<hr>
+
+<h2>Sonraki turlar (öneri)</h2>
+
+<p>1. Ayrıldıktan sonra <code>join</code> rakip fabrika — phase2 fix ile yeniden koş</p>
+<p>2. Lv5+ hesap veya mod test hesabı ile transfer race (CF bypass: sıralı değil kademeli paralel)</p>
+<p>3. İki token ile A→B DM: B soketinde A&#x27;nın mesajı görünüyor mu (hedefli DM testi)</p>
+<p>4. <code>conf_send</code> için aktif konferans/parlamento oturumu ID&#x27;si RE ile bulunup tekrar dene</p>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

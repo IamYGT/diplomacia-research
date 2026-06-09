@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "ms": 66,
+  "data": {
+    "passive_skills": {},
+    "available_points": 0,
+    "total_earned": 0,
+    "total_spent": 0
+  },
+  "error": null
+}

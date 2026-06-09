@@ -1,0 +1,896 @@
+{
+  "run_at": "2026-06-09T15:58:13.501037Z",
+  "sections": {
+    "factory_idor": [
+      {
+        "test": "factory_join",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 400,
+        "exploited": false,
+        "response": "{'error': 'Zaten bir fabrikada çalışıyorsunuz. Önce ayrılın.'}"
+      },
+      {
+        "test": "factory_work",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 200,
+        "exploited": true,
+        "response": "{'message': 'Çalışma tamamlandı!', 'earned': {'money': 2404, 'resource': 0, 'diamonds': 20, 'type': 'elmas', 'xp': 17, 'pills': 0}, 'tax': {'money': 0, 'resource': 0, 'rate': 0}, 'province_tax': {'money': 0, 'resource': 0, 'rate': 0}, 'salary': {'rate': 100, 'factory_share': 0, 'is_owner': True}, 'w"
+      },
+      {
+        "test": "factory_withdraw",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 404,
+        "exploited": false,
+        "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+      },
+      {
+        "test": "factory_withdraw_res",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 404,
+        "exploited": false,
+        "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+      },
+      {
+        "test": "factory_fire_self",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 403,
+        "exploited": false,
+        "response": "{'error': 'Bu fabrikanın sahibi değilsiniz.'}"
+      },
+      {
+        "test": "factory_fire_me",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 400,
+        "exploited": false,
+        "response": "{'error': 'Kendinizi işten çıkaramazsınız.'}"
+      },
+      {
+        "test": "factory_salary",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 404,
+        "exploited": false,
+        "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+      },
+      {
+        "test": "factory_close",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 404,
+        "exploited": false,
+        "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+      },
+      {
+        "test": "factory_reset_labor",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 403,
+        "exploited": false,
+        "response": "{'error': 'Bu fabrikanın sahibi değilsiniz.'}"
+      },
+      {
+        "test": "factory_level_up",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 404,
+        "exploited": false,
+        "response": "{'error': 'Fabrika bulunamadi.'}"
+      },
+      {
+        "test": "factory_rename",
+        "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9",
+        "owner_player": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+        "status": 404,
+        "exploited": false,
+        "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+      }
+    ],
+    "top_player_leak": [
+      {
+        "username": "UhtreD",
+        "rank": 1,
+        "leaks": {
+          "/players/6a3043a9-4408-4a65-b2e4-b474bd5f94a0/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/6a3043a9-4408-4a65-b2e4-b474bd5f94a0": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/6a3043a9-4408-4a65-b2e4-b474bd5f94a0/donation-history": {
+          "status": 200
+        },
+        "/players/6a3043a9-4408-4a65-b2e4-b474bd5f94a0/xp-history": {
+          "status": 200
+        },
+        "/military/player/6a3043a9-4408-4a65-b2e4-b474bd5f94a0": {
+          "status": 200
+        },
+        "/factories/player/6a3043a9-4408-4a65-b2e4-b474bd5f94a0": {
+          "status": 200
+        },
+        "/press/player/6a3043a9-4408-4a65-b2e4-b474bd5f94a0": {
+          "status": 200
+        }
+      },
+      {
+        "username": "THE GAWEX",
+        "rank": 2,
+        "leaks": {
+          "/players/ffaba2ad-7a54-46e9-baaf-3334aaf653b7/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/ffaba2ad-7a54-46e9-baaf-3334aaf653b7": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/ffaba2ad-7a54-46e9-baaf-3334aaf653b7/donation-history": {
+          "status": 200
+        },
+        "/players/ffaba2ad-7a54-46e9-baaf-3334aaf653b7/xp-history": {
+          "status": 200
+        },
+        "/military/player/ffaba2ad-7a54-46e9-baaf-3334aaf653b7": {
+          "status": 200
+        },
+        "/factories/player/ffaba2ad-7a54-46e9-baaf-3334aaf653b7": {
+          "status": 200
+        },
+        "/press/player/ffaba2ad-7a54-46e9-baaf-3334aaf653b7": {
+          "status": 200
+        }
+      },
+      {
+        "username": "BURAK AYDIN",
+        "rank": 3,
+        "leaks": {
+          "/players/9180a655-fb56-45be-a458-0ad84694e0da/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/9180a655-fb56-45be-a458-0ad84694e0da": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/9180a655-fb56-45be-a458-0ad84694e0da/donation-history": {
+          "status": 200
+        },
+        "/players/9180a655-fb56-45be-a458-0ad84694e0da/xp-history": {
+          "status": 200
+        },
+        "/military/player/9180a655-fb56-45be-a458-0ad84694e0da": {
+          "status": 200
+        },
+        "/factories/player/9180a655-fb56-45be-a458-0ad84694e0da": {
+          "status": 200
+        },
+        "/press/player/9180a655-fb56-45be-a458-0ad84694e0da": {
+          "status": 200
+        }
+      },
+      {
+        "username": "Emirhan Ekşioğlu",
+        "rank": 4,
+        "leaks": {},
+        "/players/a0386e11-85e0-411d-9385-2fdd89bdb492": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/a0386e11-85e0-411d-9385-2fdd89bdb492/donation-history": {
+          "status": 200
+        },
+        "/players/a0386e11-85e0-411d-9385-2fdd89bdb492/xp-history": {
+          "status": 200
+        },
+        "/military/player/a0386e11-85e0-411d-9385-2fdd89bdb492": {
+          "status": 200
+        },
+        "/factories/player/a0386e11-85e0-411d-9385-2fdd89bdb492": {
+          "status": 200
+        },
+        "/press/player/a0386e11-85e0-411d-9385-2fdd89bdb492": {
+          "status": 200
+        }
+      },
+      {
+        "username": "Adolf Pesimist",
+        "rank": 5,
+        "leaks": {
+          "/players/e843032e-8453-442d-accc-7a254cea9d34/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/e843032e-8453-442d-accc-7a254cea9d34": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/e843032e-8453-442d-accc-7a254cea9d34/donation-history": {
+          "status": 200
+        },
+        "/players/e843032e-8453-442d-accc-7a254cea9d34/xp-history": {
+          "status": 200
+        },
+        "/military/player/e843032e-8453-442d-accc-7a254cea9d34": {
+          "status": 200
+        },
+        "/factories/player/e843032e-8453-442d-accc-7a254cea9d34": {
+          "status": 200
+        },
+        "/press/player/e843032e-8453-442d-accc-7a254cea9d34": {
+          "status": 200
+        }
+      },
+      {
+        "username": "Mikey",
+        "rank": 6,
+        "leaks": {
+          "/players/6dc0b507-5c89-4190-9ab3-e6a60d31358a/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/6dc0b507-5c89-4190-9ab3-e6a60d31358a": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/6dc0b507-5c89-4190-9ab3-e6a60d31358a/donation-history": {
+          "status": 200
+        },
+        "/players/6dc0b507-5c89-4190-9ab3-e6a60d31358a/xp-history": {
+          "status": 200
+        },
+        "/military/player/6dc0b507-5c89-4190-9ab3-e6a60d31358a": {
+          "status": 200
+        },
+        "/factories/player/6dc0b507-5c89-4190-9ab3-e6a60d31358a": {
+          "status": 200
+        },
+        "/press/player/6dc0b507-5c89-4190-9ab3-e6a60d31358a": {
+          "status": 200
+        }
+      },
+      {
+        "username": "MUSTAFA KEMAL ATATÜRK",
+        "rank": 7,
+        "leaks": {
+          "/players/b69c8981-b78e-475f-8fc1-4d72f7dbcb26/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/b69c8981-b78e-475f-8fc1-4d72f7dbcb26": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/b69c8981-b78e-475f-8fc1-4d72f7dbcb26/donation-history": {
+          "status": 200
+        },
+        "/players/b69c8981-b78e-475f-8fc1-4d72f7dbcb26/xp-history": {
+          "status": 200
+        },
+        "/military/player/b69c8981-b78e-475f-8fc1-4d72f7dbcb26": {
+          "status": 200
+        },
+        "/factories/player/b69c8981-b78e-475f-8fc1-4d72f7dbcb26": {
+          "status": 200
+        },
+        "/press/player/b69c8981-b78e-475f-8fc1-4d72f7dbcb26": {
+          "status": 200
+        }
+      },
+      {
+        "username": "Rudolf Höss",
+        "rank": 8,
+        "leaks": {
+          "/players/f942b2b0-0235-49e4-9e58-881468999b59/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/f942b2b0-0235-49e4-9e58-881468999b59": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/f942b2b0-0235-49e4-9e58-881468999b59/donation-history": {
+          "status": 200
+        },
+        "/players/f942b2b0-0235-49e4-9e58-881468999b59/xp-history": {
+          "status": 200
+        },
+        "/military/player/f942b2b0-0235-49e4-9e58-881468999b59": {
+          "status": 200
+        },
+        "/factories/player/f942b2b0-0235-49e4-9e58-881468999b59": {
+          "status": 200
+        },
+        "/press/player/f942b2b0-0235-49e4-9e58-881468999b59": {
+          "status": 200
+        }
+      },
+      {
+        "username": "M E R T",
+        "rank": 9,
+        "leaks": {},
+        "/players/afab62fb-717c-4942-a53b-891de5e4bd3e": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/afab62fb-717c-4942-a53b-891de5e4bd3e/donation-history": {
+          "status": 200
+        },
+        "/players/afab62fb-717c-4942-a53b-891de5e4bd3e/xp-history": {
+          "status": 200
+        },
+        "/military/player/afab62fb-717c-4942-a53b-891de5e4bd3e": {
+          "status": 200
+        },
+        "/factories/player/afab62fb-717c-4942-a53b-891de5e4bd3e": {
+          "status": 200
+        },
+        "/press/player/afab62fb-717c-4942-a53b-891de5e4bd3e": {
+          "status": 200
+        }
+      },
+      {
+        "username": "Ernst STRASSER",
+        "rank": 10,
+        "leaks": {
+          "/players/845a67bb-2907-447e-a6e2-ec504e704a93/donation-history": [
+            "resources"
+          ]
+        },
+        "/players/845a67bb-2907-447e-a6e2-ec504e704a93": {
+          "status": 200
+        },
+        "profile_fields": [
+          "id",
+          "username",
+          "display_name",
+          "country_id",
+          "country_name",
+          "country_flag",
+          "reputation",
+          "battles_won",
+          "battles_lost",
+          "cabinet_role",
+          "cabinet_country_id",
+          "cabinet_country_name",
+          "cabinet_country_flag",
+          "mp_country_id",
+          "mp_country_name",
+          "mp_country_flag",
+          "avatar_url",
+          "badges",
+          "article_count",
+          "factory_count",
+          "created_at",
+          "last_active",
+          "province_name",
+          "citizenship_province",
+          "citizenship_is_independent",
+          "citizenship_country_id",
+          "citizenship_country_name",
+          "citizenship_country_flag",
+          "bio",
+          "religion",
+          "political_view",
+          "player_class",
+          "level",
+          "levelTitle",
+          "levelIcon",
+          "skills",
+          "passive_skills",
+          "governor_province",
+          "governor_country_name",
+          "governor_country_flag"
+        ],
+        "/players/845a67bb-2907-447e-a6e2-ec504e704a93/donation-history": {
+          "status": 200
+        },
+        "/players/845a67bb-2907-447e-a6e2-ec504e704a93/xp-history": {
+          "status": 200
+        },
+        "/military/player/845a67bb-2907-447e-a6e2-ec504e704a93": {
+          "status": 200
+        },
+        "/factories/player/845a67bb-2907-447e-a6e2-ec504e704a93": {
+          "status": 200
+        },
+        "/press/player/845a67bb-2907-447e-a6e2-ec504e704a93": {
+          "status": 200
+        }
+      }
+    ],
+    "transfer_race": {
+      "balance_before": 496695,
+      "balance_after": 496695,
+      "delta": 0,
+      "outcomes": [
+        {
+          "thread": 3,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        },
+        {
+          "thread": 0,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        },
+        {
+          "thread": 6,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        },
+        {
+          "thread": 2,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        },
+        {
+          "thread": 7,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        },
+        {
+          "thread": 4,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        },
+        {
+          "thread": 1,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        },
+        {
+          "thread": 5,
+          "status": 403,
+          "body": "{\"error\":\"Para göndermek için en az 5. seviye olmanız gerekiyor. Mevcut seviyeniz: 1.\"}"
+        }
+      ],
+      "race_exploit": false
+    },
+    "socket_io": {
+      "connected": false,
+      "events": [],
+      "errors": [
+        "One or more namespaces failed to connect: "
+      ],
+      "bundle_events": [
+        "added",
+        "change",
+        "chat_ban",
+        "chat_bulk_delete",
+        "chat_delete",
+        "chat_error",
+        "click",
+        "close",
+        "conf_message",
+        "conf_send",
+        "connect",
+        "connect_error",
+        "country_announcement",
+        "data",
+        "dm_message",
+        "dm_new",
+        "dm_send",
+        "drain",
+        "error",
+        "failedLoading",
+        "global_history",
+        "global_message",
+        "initialized",
+        "languageChanged",
+        "languageChanging",
+        "layeradd",
+        "loaded",
+        "missingKey",
+        "onDevicePushToken",
+        "packet",
+        "removed",
+        "revolution",
+        "success",
+        "uncaughtException",
+        "zoomend",
+        "zoomstart"
+      ]
+    },
+    "hidden_endpoints": [
+      {
+        "path": "/players/me",
+        "status": 400,
+        "data": "{'error': 'Geçersiz oyuncu ID.'}"
+      },
+      {
+        "path": "/mod/grant-gold",
+        "status": 403,
+        "data": "{'error': 'Moderatör yetkisi gerekli.'}"
+      },
+      {
+        "path": "/mod/grant-gold",
+        "method": "POST",
+        "status": 403,
+        "data": "{'error': 'Moderatör yetkisi gerekli.'}"
+      }
+    ]
+  },
+  "summary": {
+    "factory_exploits": 1,
+    "top_player_leaks": 8,
+    "transfer_race_delta": 0,
+    "socket_connected": false
+  }
+}

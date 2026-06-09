@@ -1,0 +1,1160 @@
+{
+  "meta": {
+    "source": "/tmp/diplomacia-index.js",
+    "catalog": "bot/data/api_catalog.json",
+    "base_url": "https://diplomacia.com.tr/api",
+    "socket_url": "https://diplomacia.com.tr",
+    "total_endpoints": 213,
+    "by_method": {
+      "POST": 161,
+      "GET": 27,
+      "DELETE": 15,
+      "PATCH": 5,
+      "PUT": 5
+    },
+    "extracted_at": "2026-06-09",
+    "generator": "scripts/extract_endpoints.py"
+  },
+  "modules": [
+    "authAPI",
+    "autoAPI",
+    "blockAPI",
+    "cabinetAPI",
+    "chatAPI",
+    "citizenshipAPI",
+    "conferenceAPI",
+    "countriesAPI",
+    "diplomacyAPI",
+    "economyAPI",
+    "electionAPI",
+    "factoryAPI",
+    "marketAPI",
+    "militaryAPI",
+    "militaryOpsAPI",
+    "modAPI",
+    "moderationAPI",
+    "parliamentAPI",
+    "partyAPI",
+    "passiveSkillsAPI",
+    "playersAPI",
+    "pressAPI",
+    "provinceAPI",
+    "questAPI",
+    "skillsAPI",
+    "trainingWarAPI",
+    "transferAPI",
+    "uploadAPI",
+    "visaAPI",
+    "warAPI",
+    "worldAPI",
+    "xpAPI"
+  ],
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/auth/google",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/verify-turnstile",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/auto/craft-pills",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/auto/status",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/auto/toggle",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/auto/use-pills",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/cabinet/${t}/announcement",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/cabinet/${t}/broadcast",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/cabinet/assign",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/cabinet/my-role",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/chat/bulk-country",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/chat/bulk-party",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/conversations",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/chat/global/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/unread",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/citizenship/apply",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/citizenship/my",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/citizenship/pending-count",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/citizenship/requests",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/citizenship/respond",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "DELETE",
+      "path": "/citizenship/withdraw",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/citizenship/withdraw",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/conferences",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "PATCH",
+      "path": "/conferences/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/conferences/${t}/members",
+      "source": "bundle_template"
+    },
+    {
+      "method": "DELETE",
+      "path": "/conferences/${t}/members/${o}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "GET",
+      "path": "/countries",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/countries",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/countries/${t}/announcements",
+      "source": "bundle_template"
+    },
+    {
+      "method": "PATCH",
+      "path": "/countries/${t}/color",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/countries/auto-assign",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/countries/leaderboard/countries",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/countries/leaderboard/countries",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "GET",
+      "path": "/countries/map/colors",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/countries/map/colors",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "GET",
+      "path": "/countries/map/scores",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/countries/map/scores",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/countries/select",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/alliance/${t}/cancel",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/alliance/${t}/respond",
+      "source": "bundle_template"
+    },
+    {
+      "method": "GET",
+      "path": "/diplomacy/alliance/propose",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/alliance/propose",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "DELETE",
+      "path": "/diplomacy/ceasefire/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/ceasefire/${t}/respond",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/ceasefire/propose",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/embargo/${t}/lift",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/embargo/impose",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/diplomacy/message/send",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/elections/nominate",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/elections/parliament/${t}/vote",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/elections/vote",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/build",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/close",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/fire",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/join",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/leave",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/level-up",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/move",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/factories/my",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/factories/rename",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/reset-labor",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/salary",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/tax",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/withdraw",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/withdraw-resources",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/factories/work",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/factories/work-status",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/market",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "DELETE",
+      "path": "/market/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/market/${t}/buy",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/market/list",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/market/my",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/military-ops/${t}/join",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/military-ops/${t}/leave",
+      "source": "bundle_template"
+    },
+    {
+      "method": "GET",
+      "path": "/military-ops/my",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/military/disband",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/military/me",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/military/train",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/military/upgrade",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/mod/hide-article/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/mod/punish",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/article-reports/${t}/dismiss",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/article-reports/${t}/punish",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/ban-avatar",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/ban-party-abbreviation",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/ban-party-description",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/ban-party-logo",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/ban-party-name",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/ban-username",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/quick-ban/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/report",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/report-article",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/reports/${t}/dismiss",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/reports/${t}/punish",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/reports/count",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/unban-avatar",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/moderation/unban-party-logo",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/online",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/online/players",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/parliament/${t}/proposal/${o}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parliament/${t}/proposal/${o}/comment",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parliament/${t}/proposal/${o}/veto",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parliament/${t}/proposal/${o}/vote",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parliament/${t}/propose",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parliament/${t}/set-tax",
+      "source": "bundle_template"
+    },
+    {
+      "method": "DELETE",
+      "path": "/parliament/comments/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/applications/${o}/respond",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/apply",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/disband",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/join",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/kick/${o}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/leave",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/transfer",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/parties/${t}/update",
+      "source": "bundle_template"
+    },
+    {
+      "method": "GET",
+      "path": "/parties/all",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/parties/create",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/parties/my",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/players/bio",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "PUT",
+      "path": "/players/bio",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "DELETE",
+      "path": "/players/block/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/players/block/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/players/blocked",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/players/change-username",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/claim-honor-premium",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/class",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/complete-step",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/country-rank",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/players/daily-claim",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/diamonds/buy",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/players/diamonds/campaign-status",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/players/diamonds/gift-premium",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/diamonds/iap-verify",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/players/diamonds/packages",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/players/diamonds/packages",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "GET",
+      "path": "/players/economy-history",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/players/independent-citizenship",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "PATCH",
+      "path": "/players/notification-settings",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/notification-settings",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "PATCH",
+      "path": "/players/party-prefix",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/party-prefix",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/players/passive-skills",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/players/passive-skills/spend",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/ping",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/political-view",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "PUT",
+      "path": "/players/political-view",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/players/profile",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/players/profile",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/players/religion",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "PUT",
+      "path": "/players/religion",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/report-admin",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/residence",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "PUT",
+      "path": "/players/residence",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/skills/cancel",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/skills/upgrade",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/players/tutorial-done",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/press",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "DELETE",
+      "path": "/press/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "PUT",
+      "path": "/press/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/press/${t}/comments",
+      "source": "bundle_template"
+    },
+    {
+      "method": "DELETE",
+      "path": "/press/${t}/guide",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/press/${t}/guide",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/press/${t}/vote",
+      "source": "bundle_template"
+    },
+    {
+      "method": "DELETE",
+      "path": "/press/comments/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/press/cooldown",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/press/guides",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "GET",
+      "path": "/provinces/all",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/build",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/country/deposit",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/election/vote",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/governor/appoint",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/governor/dismiss",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/tax/set",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/travel/cancel",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/travel/skip-first",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/travel/start",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/provinces/travel/status",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/treasury/deposit",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/provinces/treasury/to-state",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/quests",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/quests",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/quests/${t}/claim",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/training-wars/${t}/attack",
+      "source": "bundle_template"
+    },
+    {
+      "method": "GET",
+      "path": "/training-wars/my",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/transfer/send",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "DELETE",
+      "path": "/upload/avatar",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/upload/avatar",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/upload/country-flag",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/upload/factory-image/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/upload/party-logo/${t}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/visas/apply",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/visas/my",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/visas/pending-count",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/visas/requests",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/visas/respond",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/visas/revoke",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "DELETE",
+      "path": "/visas/withdraw",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/visas/withdraw",
+      "source": "bundle_path_heuristic"
+    },
+    {
+      "method": "POST",
+      "path": "/wars",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/wars/${t}/ceasefire",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/wars/${t}/ceasefire",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/wars/${t}/ceasefire/respond",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/wars/${t}/chat",
+      "source": "bundle_template"
+    },
+    {
+      "method": "DELETE",
+      "path": "/wars/${t}/chat/${o}",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/wars/${t}/contribute",
+      "source": "bundle_template"
+    },
+    {
+      "method": "PATCH",
+      "path": "/wars/${t}/name",
+      "source": "bundle_template"
+    },
+    {
+      "method": "POST",
+      "path": "/wars/declare",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "POST",
+      "path": "/wars/ended",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "GET",
+      "path": "/wars/my-country",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/wars/rebellion",
+      "source": "bundle_literal"
+    },
+    {
+      "method": "GET",
+      "path": "/world/dissolved-countries",
+      "source": "api_catalog",
+      "inferred": true
+    },
+    {
+      "method": "POST",
+      "path": "/world/dissolved-countries",
+      "source": "bundle_path_heuristic"
+    }
+  ]
+}

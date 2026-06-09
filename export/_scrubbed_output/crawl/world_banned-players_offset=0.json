@@ -1,0 +1,211 @@
+{
+  "status": 200,
+  "ms": 85,
+  "data": {
+    "banned": [
+      {
+        "id": "10bba612-4296-4f98-98b7-986043a9bc19",
+        "username": "Turgut Yalçın Selvi",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKumU_bSA59vwWWL-I4_blSHqIaSYkt1NzCjGWy8byJT6UnHQwY=s96-c",
+        "xp": 1346,
+        "ban_reason": "Oyunu Kötülemek, Kural İhlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T23:06:34.455Z",
+        "level": 5
+      },
+      {
+        "id": "3cefc175-e742-4cc7-a127-f8d7de41141e",
+        "username": "Conqurer",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLqnxOdchnwvzkf4v2M5XBHiLILalEieEQjrdr33aDVRa6LMw=s96-c",
+        "xp": 5098,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:51:29.604Z",
+        "level": 13
+      },
+      {
+        "id": "bcb94893-5889-425c-b6b2-57fa8e91c79e",
+        "username": "Furkan13",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLFs-_4dgGjmw6kUmqGEfc1uZqbHo1nC7BwfH69b-XAzV_tZQ=s96-c",
+        "xp": 0,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:51:23.910Z",
+        "level": 1
+      },
+      {
+        "id": "3481a5b6-213f-45d4-827d-2252e53c77c6",
+        "username": "Güvenli Sokaklar",
+        "avatar_url": "https://diplomacia.com.tr/uploads/avatars/3481a5b6-213f-45d4-827d-2252e53c77c6.jpeg?v=1780210901327",
+        "xp": 46400,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:51:15.957Z",
+        "level": 35
+      },
+      {
+        "id": "e918dc64-6561-46ab-bc4a-0cc8f9441fb6",
+        "username": "Kazhan",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJsy97WWo8AFSARItdFtojggqLKnuAi-xkInhKbTUn6yE5CTw=s96-c",
+        "xp": 4456,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:50:55.043Z",
+        "level": 12
+      },
+      {
+        "id": "47470230-dee0-4b0f-a413-156929b6f5d6",
+        "username": "Uğur Dündar",
+        "avatar_url": "https://diplomacia.com.tr/uploads/avatars/47470230-dee0-4b0f-a413-156929b6f5d6.jpeg?v=1780903867591",
+        "xp": 4323,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:50:48.934Z",
+        "level": 12
+      },
+      {
+        "id": "3aa86231-7883-41e8-b51a-0929164d3153",
+        "username": "İskender bey",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLusnCf-qx0FvxgZ8HUyECo_rgiI-sgHW-eug4X4W1ojXEw6Q=s96-c",
+        "xp": 4362,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:50:45.309Z",
+        "level": 12
+      },
+      {
+        "id": "2be87fcf-dbd2-4b55-8737-a67f0e5bb2d0",
+        "username": "Pisagor",
+        "avatar_url": "https://diplomacia.com.tr/uploads/avatars/2be87fcf-dbd2-4b55-8737-a67f0e5bb2d0.jpeg?v=1780948028959",
+        "xp": 10282,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:50:27.206Z",
+        "level": 19
+      },
+      {
+        "id": "47cd0a00-02dd-41d2-a1b2-5ef62ce55809",
+        "username": "Ali Yavuz",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKc9eAZeusC8CQBKdC75M6Y3Nw4uN3mdWpfgWLV5ZYLQ7rOr00c=s96-c",
+        "xp": 0,
+        "ban_reason": "Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:41:38.142Z",
+        "level": 1
+      },
+      {
+        "id": "4e41ad11-56dc-40c1-a944-7b01c483d290",
+        "username": "Ali Yavuz1",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJtPtbxkNTR9yQ35Ii9HT3mWJ4wm1GpXnOfM8NZTGPIc61UtlwU=s96-c",
+        "xp": 48,
+        "ban_reason": "Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T21:41:31.058Z",
+        "level": 1
+      },
+      {
+        "id": "af595a22-88b0-4bf3-9a28-c4e2ae350767",
+        "username": "Fur",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKOvkQLvcU5WGf5hA8S4TrjT5oJo_po_GWtyfrDwqCA3yEhwQ=s96-c",
+        "xp": 1134,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T00:18:01.822Z",
+        "level": 5
+      },
+      {
+        "id": "ad370071-c904-41a6-bb6e-a154fef57522",
+        "username": "a k a m e",
+        "avatar_url": "https://diplomacia.com.tr/uploads/avatars/ad370071-c904-41a6-bb6e-a154fef57522.webp?v=1780685452591",
+        "xp": 5070,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T00:13:25.605Z",
+        "level": 13
+      },
+      {
+        "id": "e4b4331a-13f5-4a78-96f1-2c372de1d5eb",
+        "username": "Haxie",
+        "avatar_url": "https://diplomacia.com.tr/uploads/avatars/e4b4331a-13f5-4a78-96f1-2c372de1d5eb.jpeg?v=1780859434267",
+        "xp": 1134,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T00:13:20.181Z",
+        "level": 5
+      },
+      {
+        "id": "24f75452-e768-492c-ad46-b7527280796c",
+        "username": "WexQarT",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJ-q7NOrSScFJ-MuRw6DsibYJDnci1e-U7mc1J6FZmakRq1gw=s96-c",
+        "xp": 1178,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T00:12:40.204Z",
+        "level": 5
+      },
+      {
+        "id": "01f95f2b-e57e-4113-bb6d-16f8e521cbda",
+        "username": "Vatansever",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKDhTJNoHPsi41GzYzHJqVlnQ4hpTAekY4fqApE7Nbq89lMvA=s96-c",
+        "xp": 2273,
+        "ban_reason": "Multi Hesap Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-08T00:12:36.224Z",
+        "level": 8
+      },
+      {
+        "id": "efcd82b7-d8ab-4998-8d6c-2757ffcabe1a",
+        "username": "JEM BEY²",
+        "avatar_url": "https://diplomacia.com.tr/uploads/avatars/efcd82b7-d8ab-4998-8d6c-2757ffcabe1a.jpeg?v=1780423676046",
+        "xp": 72038,
+        "ban_reason": "Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-07T11:17:44.643Z",
+        "level": 40
+      },
+      {
+        "id": "a088450c-6a8b-4462-97d8-5d8e39fb8f25",
+        "username": "JEM BEY",
+        "avatar_url": "https://diplomacia.com.tr/uploads/avatars/a088450c-6a8b-4462-97d8-5d8e39fb8f25.jpeg?v=1780343897943",
+        "xp": 146729,
+        "ban_reason": "Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-07T11:17:43.124Z",
+        "level": 49
+      },
+      {
+        "id": "31c42c0e-c210-441e-8243-ffdd96dd4c32",
+        "username": "Hüseyin11",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocL6jknWBVI8qcmU8lnY0FJnUg5IvgqhuRPb-rJK_HkI9E-2Jbk=s96-c",
+        "xp": 1134,
+        "ban_reason": "Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-07T09:46:31.608Z",
+        "level": 5
+      },
+      {
+        "id": "8ef9563c-0af3-4cc5-879c-0ea7e6bd7d96",
+        "username": "Yilnaz",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocI3KfPRccOmdPkxMuCZpmXnDRHY4Q14XvDlmYqFzytkpOD9FfU=s96-c",
+        "xp": 0,
+        "ban_reason": "Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-07T09:46:27.323Z",
+        "level": 1
+      },
+      {
+        "id": "94f86b93-1099-4b32-829f-0e6d61cfba70",
+        "username": "X..",
+        "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLJhYfh_c11UppK2iUgP8KYeJxJjdD0iiv-MmuMtaCVJjG2Gg=s96-c",
+        "xp": 0,
+        "ban_reason": "Oyunu Karalamak ve Kural ihlali — Admin kararı",
+        "ban_until": null,
+        "banned_at": "2026-06-07T03:05:23.328Z",
+        "level": 1
+      }
+    ],
+    "hasMore": true,
+    "offset": 0
+  },
+  "error": null
+}

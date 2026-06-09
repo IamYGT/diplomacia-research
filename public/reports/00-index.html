@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>00-index — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 00-index.md</p>
+    <h1>Diplomacia Research Hub</h1>
+
+<p>&gt; Son güncelleme: 2026-06-09  </p>
+<p>&gt; Hedef: <a href="https://diplomacia.com.tr/">diplomacia.com.tr</a>  </p>
+<p>&gt; Backend codename: <strong>Strategos</strong> (Railway)</p>
+
+<h2>Doküman haritası</h2>
+
+<table>
+<tr><th>Dosya</th><th>İçerik</th></tr>
+<tr><td><a href="01-architecture.md">01-architecture.md</a></td><td>Teknik mimari, stack, auth</td></tr>
+<tr><td><a href="02-security-test-plan.md">02-security-test-plan.md</a></td><td>Pentest planı, JWT, mod/IDOR vektörleri</td></tr>
+<tr><td><a href="03-crawl-results.md">03-crawl-results.md</a></td><td>Authenticated API crawl özeti (52 GET)</td></tr>
+<tr><td><a href="04-game-mechanics.md">04-game-mechanics.md</a></td><td>Oyun modülleri ve ekonomi/savaş/siyaset</td></tr>
+<tr><td><a href="api-endpoints.json">api-endpoints.json</a></td><td><strong>213</strong> REST endpoint envanteri (<code>extract_endpoints.py</code>)</td></tr>
+<tr><td><a href="07-exploit-report.md">07-exploit-report.md</a></td><td><strong>52 exploit testi</strong> — avantaj/sömürü analizi</td></tr>
+<tr><td><a href="08-balance-exploit-report.md">08-balance-exploit-report.md</a></td><td><strong>Bakiye artırma</strong> — onboarding API farm + kapalı vektörler</td></tr>
+<tr><td><a href="09-reverse-engineering-report.md">09-reverse-engineering-report.md</a></td><td><strong>RE + ileri tarama</strong> — factory join, socket, race, top10 leak</td></tr>
+<tr><td><a href="10-quest-claim-stack-cve.md">10-quest-claim-stack-cve.md</a></td><td>Quest claim (<code>quest_key</code>), stack sürümleri, CVE</td></tr>
+<tr><td><a href="11-audit-summary.md">11-audit-summary.md</a></td><td><strong>Full audit özeti</strong> — checkpoint 1–7 konsolidasyon</td></tr>
+<tr><td><strong>Public site</strong></td><td>https://diplomacia.ygtlabs.ai/ (nginx static)</td></tr>
+<tr><td><strong>İnteraktif rehber</strong></td><td>https://diplomacia.ygtlabs.ai/guide/ — animasyonlu max-verim playbook</td></tr>
+<tr><td><strong>İndir</strong></td><td>https://diplomacia.ygtlabs.ai/download/diplomacia-research.tar.gz</td></tr>
+<tr><td><a href="../output/exploits/exploit_results.json">../output/exploits/exploit_results.json</a></td><td>Ham exploit sonuçları</td></tr>
+<tr><td><a href="../output/security/findings.json">../output/security/findings.json</a></td><td>Otomatik güvenlik bulguları</td></tr>
+<tr><td><a href="../output/crawl/">../output/crawl/</a></td><td>Ham API yanıtları (JSON)</td></tr>
+</table>
+
+<h2>Hızlı özet</h2>
+
+<ul><li><strong>Oyuncu sayısı:</strong> ~4974 · <strong>Ülke:</strong> 21 · <strong>Eyalet:</strong> 59 · <strong>Parti:</strong> 409</li>
+<li><strong>Stack:</strong> Expo/React Native Web + Cloudflare + JWT API + Socket.IO</li>
+<li><strong>İlk audit:</strong> 48/52 GET OK · <strong>0 CRITICAL</strong> güvenlik bulgusu (normal user token)</li>
+<li><strong>Mod endpoint&#x27;leri:</strong> 403 — &quot;Moderatör yetkisi gerekli&quot; ✅</li>
+<li><strong>JWT alg:none:</strong> 403 ✅</li>
+<li><strong>Auth&#x27;suz hassas route:</strong> 401 ✅</li>
+</ul>
+<h2>Scriptler</h2>
+
+<pre><code>
+# Tam crawl + güvenlik
+python3 /var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/scripts/full_audit.py
+
+# Socket.IO + transfer gate (checkpoint 6)
+python3 /var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/scripts/socket_transfer_probe.py
+
+# Scrapling wiki (ayrı)
+source /var/www/research/scrapling-venv/bin/activate
+python /var/www/research/diplomacia-research/scrape_diplomacia.py
+</code></pre>
+
+<h2>Verify</h2>
+
+<pre><code>
+bash /var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/scripts/verify-audit.sh
+bash /var/www/vhosts/ygtlabs.ai/diplomacia.ygtlabs.ai/scripts/verify-guide.sh
+</code></pre>
+
+<h2>Tamamlanan (2026-06-09)</h2>
+
+<ul><li>İnteraktif ustalık rehberi (<code>public/guide/</code>) + <code>public/data/guide-meta.json</code></li>
+<li>Public hub + CF DNS + tar.gz arşiv</li>
+</ul>
+<h2>Checkpoint 4 (2026-06-09)</h2>
+
+<ul><li><code>scripts/onboarding_step_probe.py</code> — complete-step replay güvenli (delta 0)</li>
+<li><code>scripts/farm_work_loop.py</code> — eyalet uyumsuzluğunda leave + yerel fabrika</li>
+<li>Artefaktlar: <code>output/exploits/onboarding_replay_probe.json</code>, <code>farm_work_loop_probe.json</code></li>
+</ul>
+<h2>Checkpoint 5 (2026-06-09)</h2>
+
+<ul><li><code>scripts/extract_endpoints.py</code> — bundle + <code>api_catalog</code> → <strong>213 endpoint</strong> (<code>docs/api-endpoints.json</code>)</li>
+<li>Factory IDOR re-probe: <code>output/reverse/factory_idor_checkpoint5.json</code> (join açık, withdraw/close korumalı)</li>
+</ul>
+<h2>Checkpoint 6 (2026-06-09)</h2>
+
+<ul><li><code>scripts/socket_transfer_probe.py</code> — Socket.IO bağlandı, <strong>33 bundle event</strong>, foreign DM yok</li>
+<li>Transfer: lv4 → lv5 gate aktif, race atlandı, bakiye delta 0</li>
+<li>Artefaktlar: <code>output/reverse/socket_transfer_checkpoint6.json</code>, <code>socket_events_enum.json</code></li>
+</ul>
+<h2>Checkpoint 7 (2026-06-09)</h2>
+
+<ul><li><code>scripts/generate_audit_summary.py</code> → <code>output/audit_summary.json</code></li>
+<li><a href="11-audit-summary.md">11-audit-summary.md</a> — full crawl + security konsolidasyon</li>
+<li>Transfer race: <strong>BLOCKED</strong> (test hesabı lv4, min lv5)</li>
+</ul>
+<h2>Checkpoint 8 — DONE (2026-06-09)</h2>
+
+<ul><li><code>scripts/verify-audit.sh</code> — audit completion verify (critical=0, artefacts OK)</li>
+<li><code>build_public_site.py</code> — 11-audit-summary public hub&#x27;a sync</li>
+<li><strong>Goal complete:</strong> crawl + security audit dokümante; 3 açık kalem opsiyonel (lv5+ race, Turnstile, conf_send)</li>
+</ul>
+<h2>Opsiyonel sonraki araştırma</h2>
+
+<p>1. Transfer race — <strong>Lv5+</strong> hesap ile paralel race</p>
+<p>2. Yeni hesap onboarding — Turnstile bypass veya manuel kayıt</p>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

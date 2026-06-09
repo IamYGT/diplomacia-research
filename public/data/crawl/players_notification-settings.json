@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "ms": 78,
+  "data": {
+    "settings": {
+      "war": true,
+      "party": true,
+      "skill": true,
+      "election": true
+    }
+  },
+  "error": null
+}

@@ -1,0 +1,218 @@
+{
+  "status": 200,
+  "ms": 79,
+  "data": {
+    "dissolved": [
+      {
+        "id": "38345788-ad49-4c99-8bbb-17bf552ce5c0",
+        "name": "Burgonya",
+        "flag_url": "https://diplomacia.com.tr/coats/burgonya.png",
+        "founded_at": "2026-05-31T21:49:23.897Z",
+        "dissolved_at": "2026-06-08T21:09:35.921Z",
+        "days_alive": 7,
+        "conquered_by_id": "b75aa15b-68b2-4b12-84ed-04df9e5316b8",
+        "conquered_by_name": "Batı Roma Cumhuriyeti",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/b75aa15b-68b2-4b12-84ed-04df9e5316b8-1780817117854.jpeg"
+      },
+      {
+        "id": "3831dea6-b895-4a93-ba62-933fc7f1f72e",
+        "name": "Amerika Birleşik Devletleri",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/54034d81-ba3f-459d-a323-3dcce8bdb16b-1780735835609.jpeg",
+        "founded_at": "2026-06-03T21:51:47.794Z",
+        "dissolved_at": "2026-06-07T10:27:42.849Z",
+        "days_alive": 3,
+        "conquered_by_id": "3bd79998-2f2c-4ffd-bd26-33b55df29e28",
+        "conquered_by_name": "Kingdom Of Ashkelon",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/3bd79998-2f2c-4ffd-bd26-33b55df29e28-1780647126415.png"
+      },
+      {
+        "id": "d98a75eb-39bd-4c4c-a972-3aab25745732",
+        "name": "Huzistan Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/huzistan.png",
+        "founded_at": "2026-05-31T21:49:23.571Z",
+        "dissolved_at": "2026-06-05T22:05:24.634Z",
+        "days_alive": 5,
+        "conquered_by_id": "a2f0298b-0a9c-4cc0-8a45-29030cba9391",
+        "conquered_by_name": "İSFAHAN HALK CUMHURİYETİ",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/a2f0298b-0a9c-4cc0-8a45-29030cba9391-1780676604230.jpeg"
+      },
+      {
+        "id": "0031c747-4391-404a-8151-a7b45bfd3613",
+        "name": "Normandiya Çıkartması",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/a4b170ed-bb09-4535-b43e-8fad53e045a0-1780323167426.jpeg",
+        "founded_at": "2026-05-31T21:49:23.457Z",
+        "dissolved_at": "2026-06-05T21:17:55.428Z",
+        "days_alive": 4,
+        "conquered_by_id": "b75aa15b-68b2-4b12-84ed-04df9e5316b8",
+        "conquered_by_name": "Paris Geçici Hükümeti",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/b75aa15b-68b2-4b12-84ed-04df9e5316b8-1780499830692.png"
+      },
+      {
+        "id": "7792f64d-1b1f-4658-a901-fa14407b6ef1",
+        "name": "New York Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/new york.png",
+        "founded_at": "2026-05-31T21:49:23.439Z",
+        "dissolved_at": "2026-06-05T18:54:55.404Z",
+        "days_alive": 4,
+        "conquered_by_id": "3bd79998-2f2c-4ffd-bd26-33b55df29e28",
+        "conquered_by_name": "Kingdom Of Ashkelon",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/3bd79998-2f2c-4ffd-bd26-33b55df29e28-1780647126415.png"
+      },
+      {
+        "id": "cd001d85-745d-4075-ba48-c1944fb35c80",
+        "name": "Kara Lig",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/90d71005-c504-4394-bf1c-839b025f91fb-1780351689193.jpeg",
+        "founded_at": "2026-05-31T21:49:23.178Z",
+        "dissolved_at": "2026-06-04T22:07:20.630Z",
+        "days_alive": 4,
+        "conquered_by_id": "04b82923-b342-4282-a95f-ad73f70906e5",
+        "conquered_by_name": "ÖTÜKEN",
+        "conquered_by_flag": "https://diplomacia.com.tr/coats/sibirya.png"
+      },
+      {
+        "id": "833c782a-0348-4541-b29e-e399a4b09adc",
+        "name": "Adana Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/adana.png",
+        "founded_at": "2026-05-31T21:49:23.543Z",
+        "dissolved_at": "2026-06-04T14:09:21.605Z",
+        "days_alive": 3,
+        "conquered_by_id": "6018c0c2-7c4d-4acd-a086-1b6a2c178361",
+        "conquered_by_name": "Türkiye Cumhuriyeti",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780264957762.jpeg"
+      },
+      {
+        "id": "11f4f8bb-dade-40ea-b22e-f17bce4b72a6",
+        "name": "Rusya Sosyalist Cumhuriyetler Birliği",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/f62c9c92-14d3-4ab1-8f69-fbbfe9e75e45-1780316341025.jpeg",
+        "founded_at": "2026-05-31T21:49:23.847Z",
+        "dissolved_at": "2026-06-04T05:21:13.042Z",
+        "days_alive": 3,
+        "conquered_by_id": "dbb3246e-7ad5-4161-869b-39ce840d7605",
+        "conquered_by_name": "Batı Rus Cumhuriyeti",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/dbb3246e-7ad5-4161-869b-39ce840d7605-1780350686149.jpeg"
+      },
+      {
+        "id": "054649be-ee1b-497d-b388-22da2d8f7714",
+        "name": "Washington DC Liberal Hukumeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/381249e0-4b93-4951-941d-0e58e6214183-1780353013461.webp",
+        "founded_at": "2026-05-31T21:49:23.273Z",
+        "dissolved_at": "2026-06-04T00:06:11.225Z",
+        "days_alive": 3,
+        "conquered_by_id": "97404ff6-cb29-4a19-87ef-3d84dd9ae45e",
+        "conquered_by_name": "Kurtlar Konseyi",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/97404ff6-cb29-4a19-87ef-3d84dd9ae45e-1780264950436.jpeg"
+      },
+      {
+        "id": "b6b6cc3c-d56c-4a15-a81f-d9569d0c96a7",
+        "name": "Hürmüz Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/hürmüz.png",
+        "founded_at": "2026-05-31T21:49:23.722Z",
+        "dissolved_at": "2026-06-03T18:34:25.729Z",
+        "days_alive": 2,
+        "conquered_by_id": "29762da9-e294-4d3e-8dea-ada4bbb1f9f1",
+        "conquered_by_name": "İRAN İSLAM DEVLETİ",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/29762da9-e294-4d3e-8dea-ada4bbb1f9f1-1780506378858.jpeg"
+      },
+      {
+        "id": "31ffad76-4afe-41e2-bb75-d17e826832f1",
+        "name": "Ural Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/ural.png",
+        "founded_at": "2026-05-31T21:49:23.314Z",
+        "dissolved_at": "2026-06-03T14:34:57.520Z",
+        "days_alive": 2,
+        "conquered_by_id": "c0cea031-7de5-4b1b-825f-866057956c9a",
+        "conquered_by_name": "Altay Türk Cumhuriyeti",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/c0cea031-7de5-4b1b-825f-866057956c9a-1780440318697.jpeg"
+      },
+      {
+        "id": "e8869500-7eaf-403d-bb4c-2fff3941e5a7",
+        "name": "Diyarbakır Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/diyarbakır.png",
+        "founded_at": "2026-05-31T21:49:23.590Z",
+        "dissolved_at": "2026-06-03T13:22:36.438Z",
+        "days_alive": 2,
+        "conquered_by_id": "6018c0c2-7c4d-4acd-a086-1b6a2c178361",
+        "conquered_by_name": "Türkiye Cumhuriyeti",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/6018c0c2-7c4d-4acd-a086-1b6a2c178361-1780264957762.jpeg"
+      },
+      {
+        "id": "86ecf254-6d42-44b9-9716-e4f433a5678d",
+        "name": "Teksas Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/teksas.png",
+        "founded_at": "2026-05-31T21:49:23.253Z",
+        "dissolved_at": "2026-06-02T19:41:29.254Z",
+        "days_alive": 1,
+        "conquered_by_id": "97404ff6-cb29-4a19-87ef-3d84dd9ae45e",
+        "conquered_by_name": "Kurtlar Konseyi",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/97404ff6-cb29-4a19-87ef-3d84dd9ae45e-1780264950436.jpeg"
+      },
+      {
+        "id": "781c97cf-ed5e-4396-ae3b-d938a2d48be4",
+        "name": "Azerbaycan islam emirligi",
+        "flag_url": "https://diplomacia.com.tr/coats/güney azerbaycan.png",
+        "founded_at": "2026-05-31T21:49:23.474Z",
+        "dissolved_at": "2026-06-02T13:11:13.533Z",
+        "days_alive": 1,
+        "conquered_by_id": "fd3be682-a2f9-4086-9121-1dfd198cddfc",
+        "conquered_by_name": "AYKA-ELTURKO",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png"
+      },
+      {
+        "id": "68e1e212-d447-48e5-b40d-7bb33fa899e9",
+        "name": "Horasan Türk Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/bccd4049-3a92-4327-89a6-71ef2bb9fe91-1780276826680.png",
+        "founded_at": "2026-05-31T21:49:23.614Z",
+        "dissolved_at": "2026-06-02T00:28:11.130Z",
+        "days_alive": 1,
+        "conquered_by_id": "29762da9-e294-4d3e-8dea-ada4bbb1f9f1",
+        "conquered_by_name": "İRAN İSLAM DEVLETİ",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/29762da9-e294-4d3e-8dea-ada4bbb1f9f1-1780265393435.jpeg"
+      },
+      {
+        "id": "6b3b5a8a-eadc-4c06-a788-3d95fe2bd0ad",
+        "name": "Colorado Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/colorado.png",
+        "founded_at": "2026-05-31T21:49:23.422Z",
+        "dissolved_at": "2026-06-02T00:12:11.129Z",
+        "days_alive": 1,
+        "conquered_by_id": "97404ff6-cb29-4a19-87ef-3d84dd9ae45e",
+        "conquered_by_name": "Kurtlar Konseyi",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/97404ff6-cb29-4a19-87ef-3d84dd9ae45e-1780264950436.jpeg"
+      },
+      {
+        "id": "ae6064da-c0b9-4504-95b8-97702db3e177",
+        "name": "Hessen Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/hessen.png",
+        "founded_at": "2026-05-31T21:49:23.965Z",
+        "dissolved_at": "2026-06-01T22:34:11.111Z",
+        "days_alive": 1,
+        "conquered_by_id": "fe8e4710-49a2-492e-a79e-e9778729c70d",
+        "conquered_by_name": "AYKA2",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/fe8e4710-49a2-492e-a79e-e9778729c70d-1780265125262.jpeg"
+      },
+      {
+        "id": "e9282f02-2bc9-4592-9ce7-5f198b6638c5",
+        "name": "Kafkasya Cumhuriyeti",
+        "flag_url": "https://diplomacia.com.tr/uploads/country-flags/c7f18318-e15e-43fd-b83b-1d681546c6d2-1780308612878.png",
+        "founded_at": "2026-05-31T21:49:23.762Z",
+        "dissolved_at": "2026-06-01T22:22:05.597Z",
+        "days_alive": 1,
+        "conquered_by_id": "fd3be682-a2f9-4086-9121-1dfd198cddfc",
+        "conquered_by_name": "AYKA-ELTURKO",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png"
+      },
+      {
+        "id": "4bb9670c-4e0c-4d9b-b3a9-40d1077644cf",
+        "name": "Erzurum Geçici Hükümeti",
+        "flag_url": "https://diplomacia.com.tr/coats/erzurum.png",
+        "founded_at": "2026-05-31T21:49:23.939Z",
+        "dissolved_at": "2026-06-01T22:20:49.029Z",
+        "days_alive": 1,
+        "conquered_by_id": "fd3be682-a2f9-4086-9121-1dfd198cddfc",
+        "conquered_by_name": "AYKA-ELTURKO",
+        "conquered_by_flag": "https://diplomacia.com.tr/uploads/country-flags/fd3be682-a2f9-4086-9121-1dfd198cddfc-1780335335325.png"
+      }
+    ]
+  },
+  "error": null
+}

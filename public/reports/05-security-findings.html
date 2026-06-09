@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>05-security-findings — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 05-security-findings.md</p>
+    <h1>Güvenlik Bulguları — İlk Audit</h1>
+
+<p><strong>Tarih:</strong> 2026-06-09  </p>
+<p><strong>Token:</strong> Normal kullanıcı (is_moderator: false)  </p>
+<p><strong>Script:</strong> <code>scripts/full_audit.py</code></p>
+
+<h2>Özet tablo</h2>
+
+<table>
+<tr><th>ID</th><th>Test</th><th>Sonuç</th><th>Severity</th></tr>
+<tr><td>S1</td><td>Auth&#x27;suz <code>/init/data</code>, <code>/players/profile</code>, <code>/mod/*</code></td><td>401</td><td>OK</td></tr>
+<tr><td>S2</td><td>JWT <code>alg:none</code></td><td>403</td><td>OK</td></tr>
+<tr><td>S3</td><td>Fake UUID <code>/players/{id}</code></td><td>404</td><td>OK</td></tr>
+<tr><td>S4</td><td>Kendi profil UUID ile</td><td>200</td><td>OK</td></tr>
+<tr><td>S5</td><td>Normal user → <code>POST /mod/punish</code></td><td>403</td><td>OK</td></tr>
+<tr><td>S5</td><td>Normal user → <code>GET /moderation/reports</code></td><td>403</td><td>OK</td></tr>
+<tr><td>S5</td><td>Normal user → <code>POST /moderation/ban-avatar</code></td><td>403</td><td>OK</td></tr>
+<tr><td>S9</td><td>Transfer min amount</td><td>400 ($100 min)</td><td>OK</td></tr>
+<tr><td>S10</td><td><code>/countries</code> auth&#x27;suz</td><td>200</td><td>INFO (public)</td></tr>
+<tr><td>S11</td><td>JWT tv=1, exp 7 gün</td><td>INFO</td><td></td></tr>
+</table>
+
+<p><strong>CRITICAL: 0</strong></p>
+
+<h2>Pozitif gözlemler</h2>
+
+<p>1. Mod/moderation endpoint&#x27;leri sunucu tarafında rol kontrolü yapıyor — client bundle&#x27;da endpoint görünse bile 403.</p>
+<p>2. JWT alg:none reddediliyor (403).</p>
+<p>3. Hassas route&#x27;lar auth&#x27;suz 401.</p>
+
+<h2>Cloudflare Error 1010</h2>
+
+<p>Hızlı ardışık IDOR isteklerinde (sunucu IP) Cloudflare <strong>1010</strong> döndü — bot/rate koruması. Crawl script&#x27;ine <code>sleep(0.15)</code> eklendi; agresif fuzz için residential proxy veya yavaş tempo gerekir.</p>
+
+<h2>İzlenmesi gereken alanlar (P1-P2)</h2>
+
+<table>
+<tr><th>Alan</th><th>Risk</th><th>Önerilen test</th></tr>
+<tr><td>IDOR <code>/players/{uuid}</code></td><td>Başka oyuncu profili 200 dönebilir (oyun tasarımı)</td><td>Gerçek UUID ile balance/email sızıyor mu?</td></tr>
+<tr><td><code>/online/players</code></td><td>403 (whitelist?)</td><td>Sadece mod/whitelist erişimi</td></tr>
+<tr><td><code>/countries/leaderboard/*</code></td><td>Bazı route&#x27;lar 403</td><td>Token/ülke bağımlı erişim</td></tr>
+<tr><td>JWT 7 gün ömür</td><td>Çalıntı token</td><td>tv invalidation logout&#x27;ta test</td></tr>
+<tr><td>IAP verify</td><td>Sahte purchase token</td><td>Invalid token → reject</td></tr>
+<tr><td>Socket.IO</td><td>Token ile bağlantı</td><td>Başka kullanıcı kanalına subscribe?</td></tr>
+<tr><td>Transfer <code>/transfer/send</code></td><td>Ekonomi</td><td>IDOR + race (staging)</td></tr>
+<tr><td>Upload endpoints</td><td>Dosya upload</td><td>MIME/size/path traversal</td></tr>
+</table>
+
+<h2>Mod endpoint mesajları (kanıt)</h2>
+
+<ul><li><code>Moderatör yetkisi gerekli.</code></li>
+<li><code>Bu işlem için moderatör yetkisi gerekli.</code></li>
+</ul>
+<p>Ham: <code>output/security/findings.json</code></p>
+
+<hr>
+
+<h2>Checkpoint 4–7 ek bulgular (2026-06-09)</h2>
+
+<table>
+<tr><th>ID</th><th>Test</th><th>Sonuç</th><th>Severity</th></tr>
+<tr><td>CP4</td><td>Onboarding step 0–5 replay (lv6 hesap)</td><td>delta 0, success false</td><td>OK</td></tr>
+<tr><td>CP5</td><td>Factory mutation IDOR re-probe</td><td>exploited 0</td><td>OK</td></tr>
+<tr><td>CP6</td><td>Socket.IO connect + foreign DM</td><td>foreign_dm false</td><td>OK</td></tr>
+<tr><td>CP6</td><td>Transfer send (lv4)</td><td>403 min lv5</td><td>OK (gate)</td></tr>
+<tr><td>CP7</td><td>Transfer paralel race</td><td><strong>BLOCKED</strong> — lv5+ hesap yok</td><td>INFO</td></tr>
+</table>
+
+<p>Özet: <code>docs/11-audit-summary.md</code> · <code>output/audit_summary.json</code></p>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

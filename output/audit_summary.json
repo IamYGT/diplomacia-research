@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-06-09T20:34:49.515340+00:00",
+  "checkpoint": 8,
+  "audit_status": "complete",
+  "crawl": {
+    "get_endpoints_tested": 52,
+    "http_200": 48
+  },
+  "security": {
+    "critical_count": 0,
+    "findings_count": 15,
+    "jwt_alg_none": "403",
+    "mod_endpoints": "403 for normal user"
+  },
+  "exploits": {
+    "onboarding_replay_safe": true,
+    "onboarding_balance_delta": 0,
+    "factory_idor_exploited": 0
+  },
+  "socket_io": {
+    "connected": true,
+    "bundle_event_count": 33,
+    "foreign_dm_received": false
+  },
+  "transfer": {
+    "level": 4,
+    "level_gate_active": true,
+    "race_skipped": true,
+    "balance_delta": 0,
+    "race_blocked_reason": "Lv5+ hesap gerekli"
+  },
+  "endpoints": {
+    "total": 213,
+    "generator": "scripts/extract_endpoints.py"
+  },
+  "open_items": [
+    "Transfer paralel race — Lv5+ test hesabı gerekli (mevcut: lv4)",
+    "Yeni hesap onboarding step-skip — Turnstile kayıt engeli",
+    "Socket conf_send — konferans üyeliği ile yetki testi"
+  ],
+  "artifacts": [
+    "output/security/findings.json",
+    "output/crawl/crawl_summary.json",
+    "output/exploits/onboarding_replay_probe.json",
+    "output/reverse/factory_idor_checkpoint5.json",
+    "output/reverse/socket_transfer_checkpoint6.json",
+    "docs/api-endpoints.json"
+  ]
+}

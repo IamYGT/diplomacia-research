@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>03-crawl-results — Diplomacia Research</title>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <header class="top">
+    <a href="/" class="logo">Diplomacia Research</a>
+    <nav>
+      <a href="/">Özet</a>
+      <a href="/guide/">İnteraktif Rehber</a>
+      <a href="/reports/">Raporlar</a>
+      <a href="/data/">Ham veri</a>
+      <a href="/download/diplomacia-research.tar.gz">İndir (.tar.gz)</a>
+    </nav>
+  </header>
+  <main class="content">
+    <p class="crumb"><a href="/">Ana sayfa</a> / 03-crawl-results.md</p>
+    <h1>Authenticated Crawl Sonuçları</h1>
+
+<p><strong>Tarih:</strong> 2026-06-09  </p>
+<p><strong>Hesap:</strong> Ercan2 (kalemiye, Bükreş bağımsız)  </p>
+<p><strong>Script:</strong> <code>scripts/full_audit.py</code></p>
+
+<h2>Özet</h2>
+
+<table>
+<tr><th>Metrik</th><th>Değer</th></tr>
+<tr><td>GET endpoint test</td><td>52</td></tr>
+<tr><td>HTTP 200</td><td>48</td></tr>
+<tr><td>HTTP 400 (beklenen)</td><td>3</td></tr>
+<tr><td>HTTP 403/404</td><td>1</td></tr>
+</table>
+
+<h2>Başarısız / beklenen hatalar</h2>
+
+<table>
+<tr><th>Endpoint</th><th>Status</th><th>Not</th></tr>
+<tr><td><code>/players/blocked</code></td><td>400</td><td>Muhtemelen query/body gerekli</td></tr>
+<tr><td><code>/wars/war-targets</code></td><td>400</td><td><code>?from_province=</code> zorunlu</td></tr>
+<tr><td><code>/training-wars/my</code></td><td>404</td><td>Aktif training war yok</td></tr>
+<tr><td><code>/moderation/reports/count</code></td><td>403</td><td>Normal user — doğru</td></tr>
+</table>
+
+<h2>Dünya snapshot (world/summary)</h2>
+
+<ul><li>4974 oyuncu, 21 ülke, 59 eyalet, 19 bağımsız bölge</li>
+<li>3 aktif savaş, 41 ittifak, 409 parti, 3025 fabrika</li>
+<li>Events: war_declared, war_ended, alliance_formed, embargo_imposed</li>
+</ul>
+<h2>Önemli endpoint yanıt yapıları</h2>
+
+<h3>init/data</h3>
+<p><code>factories</code>, <code>work_status</code>, <code>active_wars</code>, <code>ended_wars</code>, <code>world_summary</code>, <code>travel_status</code></p>
+
+<h3>military/me</h3>
+<p><code>barracks</code>, <code>units</code>, <code>military_power</code>, <code>unit_config</code></p>
+
+<h3>auto/status</h3>
+<p><code>auto_work_active</code>, <code>auto_war_active</code>, <code>health</code>, <code>health_pills</code>, <code>province_resource_limit</code></p>
+
+<h3>market</h3>
+<p><code>listings</code>, <code>total</code> — açık pazar emirleri</p>
+
+<h3>press</h3>
+<p><code>articles</code>, gazete sistemi + <code>guides</code> rehber makaleleri</p>
+
+<p>Ham JSON: <code>output/crawl/*.json</code></p>
+
+  </main>
+  <footer class="foot">Strategos RE · 2026-06-09 UTC · İç araştırma</footer>
+</body>
+</html>

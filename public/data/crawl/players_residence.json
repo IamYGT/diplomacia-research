@@ -1,0 +1,12 @@
+{
+  "status": 200,
+  "ms": 71,
+  "data": {
+    "residence_province": null,
+    "residence_changed_at": null,
+    "can_vote_now": true,
+    "voting_eligible_at": null,
+    "province": null
+  },
+  "error": null
+}

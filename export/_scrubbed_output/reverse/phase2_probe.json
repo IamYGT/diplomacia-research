@@ -1,0 +1,252 @@
+{
+  "factory_idor_v2": [
+    {
+      "step": "work_status_before",
+      "status": 200,
+      "data": {
+        "working": false
+      }
+    },
+    {
+      "step": "rival_factory",
+      "rival": "6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+      "factory_id": "ac44f956-6d01-440b-a29b-32fe78bb16e9"
+    },
+    {
+      "step": "join_rival",
+      "status": 200,
+      "data": {
+        "message": "Fabrikaya katıldınız!"
+      },
+      "exploit": true
+    },
+    {
+      "step": "work_after_join",
+      "status": 400,
+      "data": "{'error': 'Çalışmak için 100 can puanı gerekiyor. Mevcut: 3/100', 'health': 3, 'required': 100}"
+    },
+    {
+      "step": "withdraw_rival",
+      "status": 404,
+      "data": {
+        "error": "Fabrika bulunamadı veya yetkiniz yok."
+      },
+      "exploit": false
+    },
+    {
+      "step": "leave_rival",
+      "status": 200,
+      "data": {
+        "message": "Fabrikadan ayrıldınız."
+      }
+    }
+  ],
+  "transfer_race_self": {
+    "balance_before": 496695,
+    "balance_after": 496695,
+    "delta": 0,
+    "outcomes": [
+      {
+        "t": 2,
+        "status": 403,
+        "body": "error code: 1010"
+      },
+      {
+        "t": 0,
+        "status": 403,
+        "body": "error code: 1010"
+      },
+      {
+        "t": 4,
+        "status": 403,
+        "body": "error code: 1010"
+      },
+      {
+        "t": 5,
+        "status": 403,
+        "body": "error code: 1010"
+      },
+      {
+        "t": 3,
+        "status": 403,
+        "body": "error code: 1010"
+      },
+      {
+        "t": 1,
+        "status": 403,
+        "body": "error code: 1010"
+      }
+    ]
+  },
+  "socket_leak": {
+    "captured_count": 5,
+    "foreign_dm_leak": false,
+    "events": [
+      "connected",
+      {
+        "emit": "dm_send",
+        "payload": {
+          "recipient_id": "6a3043a9-4408-4a65-b2e4-b474bd5f94a0",
+          "message": "audit-dm-probe"
+        }
+      },
+      {
+        "emit": "conf_send",
+        "payload": {
+          "message": "audit-conf-probe"
+        }
+      },
+      {
+        "emit": "global_message",
+        "payload": {
+          "message": "audit-global-2"
+        }
+      },
+      {
+        "event": "global_message",
+        "preview": "{'id': 47246, 'player_id': 'b36f5507-9d95-4c91-97f3-df3ea1a99758', 'username': 'Ercan2', 'display_name': 'Ercan2', 'message': 'audit-global-2', 'created_at': '2026-06-09T16:07:20.737Z', 'lang': 'tr', 'avatar_url': 'https://diplomacia.com.tr/uploads/avatars/b36f5507-9d95-4c91-97f3-df3ea1a99758.png?v=1781019687336', 'country_flag': None, 'country_name': None}"
+      }
+    ]
+  },
+  "top1_sensitive": {
+    "/players/6a3043a9-4408-4a65-b2e4-b474bd5f94a0": {
+      "status": 200,
+      "has_email": false,
+      "has_balance": false,
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "country_id",
+        "country_name",
+        "country_flag",
+        "reputation",
+        "battles_won",
+        "battles_lost",
+        "cabinet_role",
+        "cabinet_country_id",
+        "cabinet_country_name",
+        "cabinet_country_flag",
+        "mp_country_id",
+        "mp_country_name",
+        "mp_country_flag",
+        "avatar_url",
+        "badges",
+        "article_count",
+        "factory_count",
+        "created_at",
+        "last_active",
+        "province_name",
+        "citizenship_province",
+        "citizenship_is_independent",
+        "citizenship_country_id",
+        "citizenship_country_name",
+        "citizenship_country_flag",
+        "bio",
+        "religion",
+        "political_view",
+        "player_class",
+        "level",
+        "levelTitle",
+        "levelIcon",
+        "skills",
+        "passive_skills",
+        "governor_province",
+        "governor_country_name",
+        "governor_country_flag",
+        "governor_country_id",
+        "is_premium",
+        "premium_until",
+        "premium_days_left",
+        "is_banned",
+        "ban_until",
+        "world_rank",
+        "total_wars",
+        "levelProgress",
+        "xp"
+      ]
+    },
+    "/players/6a3043a9-4408-4a65-b2e4-b474bd5f94a0/donation-history": {
+      "status": 200
+    },
+    "/players/profile": {
+      "status": 200,
+      "has_email": true,
+      "has_balance": true,
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "show_party_prefix",
+        "country_id",
+        "country_name",
+        "country_flag",
+        "reputation",
+        "research_points",
+        "battles_won",
+        "battles_lost",
+        "cabinet_role",
+        "cabinet_country_id",
+        "mp_country_id",
+        "mp_country_name",
+        "mp_country_flag",
+        "avatar_url",
+        "badges",
+        "is_moderator",
+        "xp",
+        "level",
+        "levelProgress",
+        "levelTitle",
+        "levelIcon",
+        "article_count",
+        "factory_count",
+        "total_wars",
+        "total_damage",
+        "created_at",
+        "last_active",
+        "province_name",
+        "residence_province",
+        "residence_changed_at",
+        "citizenship_province",
+        "citizenship_changed_at",
+        "citizenship_is_independent",
+        "citizenship_country_id",
+        "citizenship_country_name",
+        "citizenship_country_flag",
+        "bio",
+        "religion",
+        "political_view",
+        "player_class",
+        "class_bonus_applied",
+        "class_changed_at",
+        "governor_province",
+        "governor_country_name",
+        "governor_country_flag",
+        "governor_country_id",
+        "login_streak",
+        "resources",
+        "onboarding_step",
+        "tutorial_done",
+        "is_new",
+        "world_rank",
+        "player_number",
+        "skills",
+        "education_skill_reduction",
+        "passive_skills",
+        "passive_skill_points",
+        "warehouse_capacity",
+        "is_premium",
+        "premium_until",
+        "premium_days_left",
+        "email",
+        "balance",
+        "diamonds",
+        "health",
+        "health_pills",
+        "last_health_regen",
+        "honor_pledge_claimed",
+        "first_flight_skip_used"
+      ]
+    }
+  }
+}

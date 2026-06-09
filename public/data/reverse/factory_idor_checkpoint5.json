@@ -1,0 +1,95 @@
+{
+  "ts": "2026-06-09T20:16:22.009160+00:00",
+  "account_id_prefix": "b36f5507",
+  "results": [
+    {
+      "test": "factory_join",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 400,
+      "exploited": false,
+      "response": "{'error': 'Zaten bir fabrikada çalışıyorsunuz. Önce ayrılın.'}"
+    },
+    {
+      "test": "factory_work",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 400,
+      "exploited": false,
+      "response": "{'error': 'Çalışmak için 100 can puanı gerekiyor. Mevcut: 3/100', 'health': 3, 'required': 100}"
+    },
+    {
+      "test": "factory_withdraw",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 404,
+      "exploited": false,
+      "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+    },
+    {
+      "test": "factory_withdraw_res",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 404,
+      "exploited": false,
+      "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+    },
+    {
+      "test": "factory_fire_self",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 403,
+      "exploited": false,
+      "response": "{'error': 'Bu fabrikanın sahibi değilsiniz.'}"
+    },
+    {
+      "test": "factory_fire_me",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 400,
+      "exploited": false,
+      "response": "{'error': 'Kendinizi işten çıkaramazsınız.'}"
+    },
+    {
+      "test": "factory_salary",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 404,
+      "exploited": false,
+      "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+    },
+    {
+      "test": "factory_close",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 404,
+      "exploited": false,
+      "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+    },
+    {
+      "test": "factory_reset_labor",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 403,
+      "exploited": false,
+      "response": "{'error': 'Bu fabrikanın sahibi değilsiniz.'}"
+    },
+    {
+      "test": "factory_level_up",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 404,
+      "exploited": false,
+      "response": "{'error': 'Fabrika bulunamadi.'}"
+    },
+    {
+      "test": "factory_rename",
+      "factory_id": "39ac0ac8-34b0-4566-bf61-4c69f5216b27",
+      "owner_player": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159",
+      "status": 404,
+      "exploited": false,
+      "response": "{'error': 'Fabrika bulunamadı veya yetkiniz yok.'}"
+    }
+  ],
+  "exploited_count": 0
+}

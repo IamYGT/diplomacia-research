@@ -1,0 +1,32 @@
+[
+  {
+    "endpoint": "/players/94c40de8-d0fd-4f4b-b83f-f1119afe5b2a",
+    "status": 403,
+    "body": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\""
+  },
+  {
+    "endpoint": "/military/player/94c40de8-d0fd-4f4b-b83f-f1119afe5b2a",
+    "status": 403,
+    "body": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\""
+  },
+  {
+    "endpoint": "/factories/player/94c40de8-d0fd-4f4b-b83f-f1119afe5b2a",
+    "status": 403,
+    "body": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\""
+  },
+  {
+    "endpoint": "/players/6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+    "status": 403,
+    "body": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\""
+  },
+  {
+    "endpoint": "/military/player/6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+    "status": 403,
+    "body": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\""
+  },
+  {
+    "endpoint": "/factories/player/6dc0b507-5c89-4190-9ab3-e6a60d31358a",
+    "status": 403,
+    "body": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\""
+  }
+]
