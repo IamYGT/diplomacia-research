@@ -2,6 +2,24 @@
 
 Semantik versiyonlama: `MAJOR.MINOR.PATCH` (`bot/VERSION`).
 
+## [3.2.0] — 2026-06-14
+
+### Added
+- Sadeleştirilmiş klavye: Ana Sayfa, Farm, Can, Stat, Günlük, Ayarlar, Yardım
+- «Şimdi ne yapmalı?» akıllı yönlendirme panelde
+- Ayarlar ekranı: otomatik farm, fabrika modu (Kendi/Yabancı/Otomatik)
+- Hesap seçici inline butonlar
+- Aksiyon sonrası «🏠 Ana Sayfa» dönüş butonu
+- `/menu` ve `/settings` komutları
+
+### Changed
+- Türkçe etiketler (foreign → Yabancı fabrika)
+- Klavye butonları AI yerine doğrudan handler'a gider
+- `/accounts` görsel hesap listesi + seçim
+
+### Fixed
+- Ölü `ercan2` varsayılan hesap otomatik `ygt`'ye düşer
+
 ## [3.1.0] — 2026-06-14
 
 ### Added

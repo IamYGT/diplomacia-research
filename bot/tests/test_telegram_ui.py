@@ -4,7 +4,6 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -29,27 +28,34 @@ def _acc() -> Account:
 
 
 class TelegramUiTests(unittest.TestCase):
-    def test_menu_normalize(self):
-        self.assertEqual(telegram_ui.normalize_menu_text("📊 Durum"), "ne durumdayım")
+    def test_menu_normalize_home(self):
+        self.assertEqual(telegram_ui.normalize_menu_text("🏠 Ana Sayfa"), "dashboard")
 
-    def test_dashboard_html_escapes(self):
+    def test_menu_legacy_compat(self):
+        self.assertEqual(telegram_ui.normalize_menu_text("📊 Durum"), "dashboard")
+
+    def test_dashboard_has_next_steps(self):
         snap = {
-            "username": "Test<script>",
-            "level": 5,
+            "username": "YGT",
+            "level": 23,
             "class": "kalemiye",
             "province": "Hürmüz",
+            "country": "Test",
             "balance": 1000,
             "diamonds": 50,
-            "health": 80,
-            "pills": 10,
-            "work_ready": True,
+            "health": 0,
+            "pills": 100,
+            "work_ready": False,
             "premium": True,
-            "passive_available": 3,
+            "passive_available": 4,
             "autofarm": True,
         }
         html = telegram_ui.format_dashboard_html(_acc(), snap)
-        self.assertIn("&lt;script&gt;", html)
-        self.assertIn("3.1.0", html)
+        self.assertIn("Şimdi ne yapmalı", html)
+        self.assertIn("Can Doldur", html)
+
+    def test_help_html(self):
+        self.assertIn("Ana Sayfa", telegram_ui.format_help_html())
 
     def test_reply_keyboard_rows(self):
         kb = telegram_ui.main_reply_keyboard()

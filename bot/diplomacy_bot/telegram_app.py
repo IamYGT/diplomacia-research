@@ -13,10 +13,17 @@ from telegram.ext import Application, CallbackQueryHandler, CommandHandler, Cont
 
 from . import ai_agent, farmer, game_api
 from .telegram_ui import (
+    accounts_inline_markup,
     dashboard_inline_markup,
+    format_accounts_html,
     format_dashboard_html,
+    format_help_html,
+    format_settings_html,
+    format_welcome_html,
     main_reply_keyboard,
     normalize_menu_text,
+    result_with_home_markup,
+    settings_inline_markup,
     setup_bot_ui,
 )
 from .account_pool import format_pool_status, get_proxy_by_id, load_intel_summary, load_rules, suggest_proxy
@@ -97,10 +104,18 @@ def _resolve_accounts(arg: str | None) -> list[Account]:
 
 
 def _default_account(context: ContextTypes.DEFAULT_TYPE) -> str:
-    if context.user_data.get("default_account"):
-        return context.user_data["default_account"]
+    """Varsayılan hesap — user_data'daki eski/ölü isimleri otomatik düzeltir."""
+    stored = (context.user_data.get("default_account") or "").strip().lower()
+    if stored:
+        if get_account(stored):
+            return stored
+        context.user_data.pop("default_account", None)
     accs = list_accounts()
-    return accs[0].name if accs else "ygt"
+    if accs:
+        name = accs[0].name
+        context.user_data["default_account"] = name
+        return name
+    return "ygt"
 
 
 def _chunk(text: str, limit: int = 4000) -> list[str]:
@@ -135,11 +150,106 @@ async def _reply_long(
             await update.message.reply_text(part, reply_markup=kw.get("reply_markup"))
 
 
+def _active_account(context: ContextTypes.DEFAULT_TYPE) -> Account | None:
+    return get_account(_default_account(context))
+
+
+async def _send_settings(update: Update, acc: Account, *, edit: bool = False):
+    def _snap():
+        with account_context(acc):
+            from .dynamic_context import snapshot_account as snap_fn
+            return snap_fn(acc)
+
+    snap = await asyncio.to_thread(_snap)
+    text = format_settings_html(acc, snap)
+    markup = settings_inline_markup(acc)
+    q = update.callback_query
+    if edit and q and q.message:
+        try:
+            await q.edit_message_text(text, parse_mode="HTML", reply_markup=markup)
+            return
+        except Exception:
+            pass
+    msg = update.effective_message
+    if msg:
+        await msg.reply_text(text, parse_mode="HTML", reply_markup=markup)
+
+
+async def _send_accounts_picker(update: Update, context: ContextTypes.DEFAULT_TYPE, *, edit: bool = False):
+    default = _default_account(context)
+    text = format_accounts_html(default)
+    markup = accounts_inline_markup(default)
+    q = update.callback_query
+    if edit and q and q.message:
+        try:
+            await q.edit_message_text(text, parse_mode="HTML", reply_markup=markup)
+            return
+        except Exception:
+            pass
+    msg = update.effective_message
+    if msg:
+        await msg.reply_text(text, parse_mode="HTML", reply_markup=markup)
+
+
+async def _reply_action_result(update: Update, text: str, *, parse_mode: str = "Markdown"):
+    """Aksiyon sonrası ana sayfaya dön butonu."""
+    msg = update.effective_message
+    q = update.callback_query
+    markup = result_with_home_markup()
+    if q and q.message:
+        try:
+            await q.edit_message_text(text, parse_mode=parse_mode, reply_markup=markup)
+            return
+        except Exception:
+            pass
+    if msg:
+        await msg.reply_text(text, parse_mode=parse_mode, reply_markup=markup)
+
+
+async def _dispatch_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, action: str):
+    """Klavye butonları — AI'ya gitmeden doğrudan işlem."""
+    action = action.strip().lower()
+    acc = _active_account(context)
+
+    if action == "dashboard":
+        if not acc:
+            await update.message.reply_text("Henüz hesap yok.")
+            return
+        await update.message.chat.send_action(ChatAction.TYPING)
+        await _send_dashboard(update, acc)
+        return
+
+    if action == "ayarlar":
+        if not acc:
+            await update.message.reply_text("Henüz hesap yok.")
+            return
+        await _send_settings(update, acc)
+        return
+
+    if action == "yardım":
+        await update.message.reply_text(
+            format_help_html(),
+            parse_mode="HTML",
+            reply_markup=main_reply_keyboard(),
+        )
+        return
+
+    if action == "tüm hesaplar":
+        await _send_accounts_picker(update, context)
+        return
+
+    if not acc:
+        await update.message.reply_text("Aktif hesap yok. /accounts")
+        return
+
+    await update.message.chat.send_action(ChatAction.TYPING)
+    await _run_ai(update, context, action)
+
+
 async def _send_dashboard(update: Update, acc: Account, *, edit: bool = False):
     def _snap():
         with account_context(acc):
             from .dynamic_context import snapshot_account
-
             return snapshot_account(acc)
 
     snap = await asyncio.to_thread(_snap)
@@ -167,14 +277,10 @@ async def _send_dashboard(update: Update, acc: Account, *, edit: bool = False):
 @admin_only
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id if update.effective_user else 0
-    ai = "🧠 Gemini bağlı" if GEMINI_API_KEY else "⚠️ GEMINI_API_KEY yok"
     default = _default_account(context)
     acc = get_account(default)
     await update.message.reply_text(
-        f"<b>Diplomacia Bot {get_version_label()}</b>\n"
-        f"Telegram ID: <code>{uid}</code> · {ai}\n"
-        f"Varsayılan hesap: <code>{default}</code>\n\n"
-        f"Alt menüden hızlı aksiyon al veya <code>/dashboard</code> ile canlı paneli aç.",
+        format_welcome_html(uid, default, gemini_ok=bool(GEMINI_API_KEY)),
         parse_mode="HTML",
         reply_markup=main_reply_keyboard(),
     )
@@ -183,11 +289,30 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @admin_only
+async def cmd_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await cmd_dashboard(update, context)
+
+
+@admin_only
+async def cmd_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    acc = _active_account(context)
+    if not acc:
+        await update.message.reply_text("Hesap yok.")
+        return
+    await _send_settings(update, acc)
+
+
+@admin_only
 async def cmd_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
     name = context.args[0].lower() if context.args else _default_account(context)
     acc = get_account(name)
     if not acc:
-        await update.message.reply_text("Hesap bulunamadı.")
+        accs = list_accounts()
+        hint = f"\nMevcut: {', '.join(a.name for a in accs)}" if accs else ""
+        await update.message.reply_text(
+            f"Hesap bulunamadı: `{name}`{hint}\n/setaccount ygt veya /dashboard ygt",
+            parse_mode="Markdown",
+        )
         return
     await update.message.chat.send_action(ChatAction.TYPING)
     await _send_dashboard(update, acc)
@@ -205,7 +330,11 @@ async def cmd_version(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @admin_only
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _reply_long(update, HELP_TEXT)
+    await update.message.reply_text(
+        format_help_html(),
+        parse_mode="HTML",
+        reply_markup=main_reply_keyboard(),
+    )
 
 
 @admin_only
@@ -245,18 +374,10 @@ async def _api_for_account(a: Account, fn):
 
 @admin_only
 async def cmd_accounts(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    accs = list_accounts()
-    if not accs:
-        await update.message.reply_text("Henüz hesap yok. /add ercan2")
+    if not list_accounts():
+        await update.message.reply_text("Henüz hesap yok.")
         return
-    default = _default_account(context)
-    lines = []
-    for a in accs:
-        mark = "⭐" if a.name == default else "•"
-        af = "🟢" if a.autofarm else "⚪"
-        px = a.proxy_id or "direct"
-        lines.append(f"{mark} *{a.name}* — {a.username} | {a.last_balance:,}₺ | {af} | `{px}`")
-    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+    await _send_accounts_picker(update, context)
 
 
 @admin_only
@@ -525,12 +646,6 @@ async def cmd_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def _run_ai(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
     default = _default_account(context)
-    mapped = normalize_menu_text(text)
-    if mapped:
-        text = mapped
-    if text.strip().lower() in ("yardım", "help"):
-        await _reply_long(update, HELP_TEXT)
-        return
 
     await update.message.chat.send_action(ChatAction.TYPING)
     from . import intent_router
@@ -604,11 +719,20 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     default = _default_account(context)
 
     if data.startswith("nav:account:"):
-        await query.answer()
         name = data.split(":", 2)[2]
         if get_account(name):
             context.user_data["default_account"] = name
+            await query.answer(f"✅ Aktif hesap: {name}")
+        else:
+            await query.answer()
         acc = get_account(name) or get_account(default)
+        if acc:
+            await _send_dashboard(update, acc, edit=True)
+        return
+
+    if data == "dash:home":
+        await query.answer()
+        acc = get_account(default)
         if acc:
             await _send_dashboard(update, acc, edit=True)
         return
@@ -620,21 +744,36 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await _send_dashboard(update, acc, edit=True)
         return
 
+    if data == "menu:settings":
+        await query.answer()
+        acc = get_account(default)
+        if acc:
+            await _send_settings(update, acc, edit=True)
+        return
+
+    if data == "menu:accounts":
+        await query.answer()
+        await _send_accounts_picker(update, context, edit=True)
+        return
+
     if data == "toggle:autofarm":
         acc = get_account(default)
         if acc:
             set_autofarm(acc.name, not acc.autofarm)
             acc = get_account(acc.name)
-            await query.answer(f"Autofarm {'ON' if acc.autofarm else 'OFF'}")
-            await _send_dashboard(update, acc, edit=True)
+            state = "açıldı" if acc.autofarm else "kapatıldı"
+            await query.answer(f"Otomatik farm {state}")
+            await _send_settings(update, acc, edit=True)
         return
 
-    if data == "cfg:foreign":
+    if data in ("cfg:foreign", "cfg:own", "cfg:auto"):
         acc = get_account(default)
+        mode = data.split(":")[1]
         if acc:
-            update_config_field(acc.name, work_mode="foreign", preferred_factory_id=None)
-            await query.answer("Foreign mod")
-            await _send_dashboard(update, acc, edit=True)
+            update_config_field(acc.name, work_mode=mode, preferred_factory_id=None)
+            labels = {"foreign": "Yabancı fabrika", "own": "Kendi fabrika", "auto": "Otomatik"}
+            await query.answer(labels.get(mode, mode))
+            await _send_settings(update, acc, edit=True)
         return
 
     await query.answer()
@@ -660,9 +799,9 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             from .response_format import format_pills
 
             result = await asyncio.to_thread(run_for_account, acc, game_api.use_pills, acc.token)
-            await query.edit_message_text(format_pills(result), parse_mode="Markdown")
+            await _reply_action_result(update, format_pills(result))
         except Exception as e:
-            await query.edit_message_text(f"❌ {e}")
+            await _reply_action_result(update, f"❌ {e}")
         return
 
     if data in ("action:farm", "action:smartfarm"):
@@ -670,11 +809,17 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             farmer.run_farm, acc.token, acc.name, 1, acc.proxy_url or None, acc.proxy_id or ""
         )
         update_after_farm(acc.name, r.balance_after)
-        await query.edit_message_text(farmer.format_farm_result(r), parse_mode="Markdown")
+        await _reply_action_result(update, farmer.format_farm_result(r))
         return
 
     if data == "action:status":
         await _send_dashboard(update, acc, edit=True)
+        return
+
+    if data == "action:plan":
+        from .dynamic_context import format_plan_summary
+
+        await _reply_action_result(update, format_plan_summary(acc.name))
         return
 
     if data == "action:quests":
@@ -686,7 +831,11 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data == "action:daily":
         st, d = await asyncio.to_thread(run_for_account, acc, game_api.daily_claim, acc.token)
-        await query.edit_message_text(f"🎁 Günlük: HTTP {st}\n{str(d)[:500]}", parse_mode="HTML")
+        await _reply_action_result(
+            update,
+            f"🎁 Günlük ödül alındı (HTTP {st})\n{str(d)[:400]}",
+            parse_mode="HTML",
+        )
         return
 
     if data == "action:stat":
@@ -700,8 +849,8 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         spent = await asyncio.to_thread(_spend)
         ok = [s for s in spent if s.get("ok")]
-        msg = f"✅ {ok[0]['points']} → {ok[0]['skill']}" if ok else "Pasif puan yok"
-        await query.edit_message_text(msg, parse_mode="Markdown")
+        msg = f"✅ {ok[0]['points']} puan → {ok[0]['skill']}" if ok else "Bekleyen pasif puan yok"
+        await _reply_action_result(update, msg)
         return
 
 
@@ -717,6 +866,11 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if pending and text.startswith("eyJ"):
         context.user_data.pop("pending_add", None)
         await _save_account(update, pending, text)
+        return
+
+    mapped = normalize_menu_text(text)
+    if mapped:
+        await _dispatch_menu(update, context, mapped)
         return
 
     if len(text) < 3 or text.startswith("/"):
@@ -799,7 +953,9 @@ def run() -> None:
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(_post_init).build()
     for name, handler in [
         ("start", cmd_start),
+        ("menu", cmd_menu),
         ("dashboard", cmd_dashboard),
+        ("settings", cmd_settings),
         ("help", cmd_help),
         ("whoami", cmd_whoami),
         ("version", cmd_version),
