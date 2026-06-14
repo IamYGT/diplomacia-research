@@ -2,6 +2,18 @@
 
 Semantik versiyonlama: `MAJOR.MINOR.PATCH` (`bot/VERSION`).
 
+## [3.1.0] — 2026-06-14
+
+### Added
+- Telegram UI modülü: HTML dashboard, persistent reply keyboard, inline aksiyonlar
+- `/dashboard` — canlı kontrol paneli (can, ekonomi, bot modu, uyarılar)
+- Bot komut menüsü (`set_my_commands`) + MenuButtonCommands
+- Copy-to-clipboard fabrika ID, hesap switcher, autofarm toggle inline
+- Alt menü kısayolları (📊 Durum, 🌾 Akıllı Farm, …)
+
+### Fixed
+- `NameError: log` — bot PM2 crash
+
 ## [3.0.0] — 2026-06-14
 
 ### Added

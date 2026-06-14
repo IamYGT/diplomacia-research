@@ -7,9 +7,18 @@ from functools import wraps
 from typing import Callable
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.constants import ChatAction
+from telegram.error import Conflict
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
 from . import ai_agent, farmer, game_api
+from .telegram_ui import (
+    dashboard_inline_markup,
+    format_dashboard_html,
+    main_reply_keyboard,
+    normalize_menu_text,
+    setup_bot_ui,
+)
 from .account_pool import format_pool_status, get_proxy_by_id, load_intel_summary, load_rules, suggest_proxy
 from .account_runtime import account_context, run_for_account
 from .catalog import search_endpoints
@@ -32,6 +41,8 @@ from .store import (
 )
 
 from .version import get_version_label
+
+log = logging.getLogger(__name__)
 
 HELP_TEXT = f"""
 🎮 *Diplomacy YGT Bot {get_version_label()}* — modüler AI + tam API
@@ -86,7 +97,10 @@ def _resolve_accounts(arg: str | None) -> list[Account]:
 
 
 def _default_account(context: ContextTypes.DEFAULT_TYPE) -> str:
-    return context.user_data.get("default_account") or "ercan2"
+    if context.user_data.get("default_account"):
+        return context.user_data["default_account"]
+    accs = list_accounts()
+    return accs[0].name if accs else "ygt"
 
 
 def _chunk(text: str, limit: int = 4000) -> list[str]:
@@ -121,14 +135,62 @@ async def _reply_long(
             await update.message.reply_text(part, reply_markup=kw.get("reply_markup"))
 
 
+async def _send_dashboard(update: Update, acc: Account, *, edit: bool = False):
+    def _snap():
+        with account_context(acc):
+            from .dynamic_context import snapshot_account
+
+            return snapshot_account(acc)
+
+    snap = await asyncio.to_thread(_snap)
+    text = format_dashboard_html(acc, snap)
+    markup = dashboard_inline_markup(acc, snap)
+    q = update.callback_query
+    if edit and q and q.message:
+        try:
+            await q.edit_message_text(
+                text, parse_mode="HTML", reply_markup=markup, disable_web_page_preview=True
+            )
+            return
+        except Exception:
+            pass
+    msg = update.effective_message
+    if msg:
+        await msg.reply_text(
+            text,
+            parse_mode="HTML",
+            reply_markup=markup,
+            disable_web_page_preview=True,
+        )
+
+
 @admin_only
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id if update.effective_user else 0
     ai = "🧠 Gemini bağlı" if GEMINI_API_KEY else "⚠️ GEMINI_API_KEY yok"
+    default = _default_account(context)
+    acc = get_account(default)
     await update.message.reply_text(
-        f"Diplomacia AI bot {get_version_label()} aktif.\nID: `{uid}` | {ai}\n\n/help",
-        parse_mode="Markdown",
+        f"<b>Diplomacia Bot {get_version_label()}</b>\n"
+        f"Telegram ID: <code>{uid}</code> · {ai}\n"
+        f"Varsayılan hesap: <code>{default}</code>\n\n"
+        f"Alt menüden hızlı aksiyon al veya <code>/dashboard</code> ile canlı paneli aç.",
+        parse_mode="HTML",
+        reply_markup=main_reply_keyboard(),
     )
+    if acc:
+        await _send_dashboard(update, acc)
+
+
+@admin_only
+async def cmd_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    name = context.args[0].lower() if context.args else _default_account(context)
+    acc = get_account(name)
+    if not acc:
+        await update.message.reply_text("Hesap bulunamadı.")
+        return
+    await update.message.chat.send_action(ChatAction.TYPING)
+    await _send_dashboard(update, acc)
 
 
 @admin_only
@@ -242,20 +304,13 @@ async def cmd_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @admin_only
 async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    accs = _resolve_accounts(context.args[0] if context.args else None) or list_accounts()
-    if not accs:
+    name = context.args[0].lower() if context.args and len(context.args) == 1 else _default_account(context)
+    acc = get_account(name)
+    if not acc:
         await update.message.reply_text("Hesap yok.")
         return
-    lines = []
-    for a in accs:
-        try:
-            p = await _profile_for_account(a)
-            lines.append(
-                f"*{a.name}* ({p.username}) `{a.proxy_id}`\n💰 {p.balance:,} | 💎 {p.diamonds} | lv{p.level} | ❤️ {p.health}"
-            )
-        except Exception as e:
-            lines.append(f"*{a.name}*: {e}")
-    await update.message.reply_text("\n\n".join(lines), parse_mode="Markdown")
+    await update.message.chat.send_action(ChatAction.TYPING)
+    await _send_dashboard(update, acc)
 
 
 @admin_only
@@ -470,6 +525,14 @@ async def cmd_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def _run_ai(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
     default = _default_account(context)
+    mapped = normalize_menu_text(text)
+    if mapped:
+        text = mapped
+    if text.strip().lower() in ("yardım", "help"):
+        await _reply_long(update, HELP_TEXT)
+        return
+
+    await update.message.chat.send_action(ChatAction.TYPING)
     from . import intent_router
 
     fast = await asyncio.to_thread(intent_router.try_fast_path, text, default)
@@ -481,21 +544,33 @@ async def _run_ai(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str)
 
     from .game_coach import is_teach_question
 
+    status_msg = None
     if is_teach_question(text):
-        await update.message.reply_text("📚 Koç hazırlanıyor...")
+        status_msg = await update.message.reply_text("📚 Koç hazırlanıyor…")
     elif not GEMINI_API_KEY:
-        await update.message.reply_text("GEMINI_API_KEY yok. `farm yap` / `ne durumdayım` kullan.")
+        status_msg = None
+        await update.message.reply_text("GEMINI_API_KEY yok. Alt menü veya `farm yap` kullan.")
         return
     else:
-        await update.message.reply_text("🧠 Gemini planlıyor...")
+        status_msg = await update.message.reply_text("🧠 Gemini planlıyor…")
     try:
         result = await asyncio.to_thread(ai_agent.run_agent, text, default)
         if result.needs_confirmation and result.pending_actions:
             context.user_data["pending_actions"] = result.pending_actions
+        if status_msg:
+            try:
+                await status_msg.delete()
+            except Exception:
+                pass
         await _reply_long(update, result.reply, inline_buttons=result.inline_buttons)
     except Exception as e:
         log.exception("ai error")
-        await update.message.reply_text(f"❌ {e}\n\nDene: `farm yap` veya `/status`")
+        if status_msg:
+            try:
+                await status_msg.delete()
+            except Exception:
+                pass
+        await update.message.reply_text(f"❌ {e}\n\nDene: `farm yap` veya `/dashboard`")
 
 
 @admin_only
@@ -525,9 +600,44 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if TELEGRAM_ADMIN_IDS and uid not in TELEGRAM_ADMIN_IDS:
         await query.answer("Yetkisiz", show_alert=True)
         return
-    await query.answer()
     data = query.data
     default = _default_account(context)
+
+    if data.startswith("nav:account:"):
+        await query.answer()
+        name = data.split(":", 2)[2]
+        if get_account(name):
+            context.user_data["default_account"] = name
+        acc = get_account(name) or get_account(default)
+        if acc:
+            await _send_dashboard(update, acc, edit=True)
+        return
+
+    if data == "dash:refresh":
+        await query.answer("🔄")
+        acc = get_account(default)
+        if acc:
+            await _send_dashboard(update, acc, edit=True)
+        return
+
+    if data == "toggle:autofarm":
+        acc = get_account(default)
+        if acc:
+            set_autofarm(acc.name, not acc.autofarm)
+            acc = get_account(acc.name)
+            await query.answer(f"Autofarm {'ON' if acc.autofarm else 'OFF'}")
+            await _send_dashboard(update, acc, edit=True)
+        return
+
+    if data == "cfg:foreign":
+        acc = get_account(default)
+        if acc:
+            update_config_field(acc.name, work_mode="foreign", preferred_factory_id=None)
+            await query.answer("Foreign mod")
+            await _send_dashboard(update, acc, edit=True)
+        return
+
+    await query.answer()
 
     acc = get_account(default)
     if not acc:
@@ -564,13 +674,7 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if data == "action:status":
-        from .dynamic_context import format_plan_summary
-
-        p = await _profile_for_account(acc)
-        await query.edit_message_text(
-            format_plan_summary(acc.name) + f"\n\n💰 {p.balance:,} | 💎 {p.diamonds} | lv{p.level}",
-            parse_mode="Markdown",
-        )
+        await _send_dashboard(update, acc, edit=True)
         return
 
     if data == "action:quests":
@@ -578,6 +682,26 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         results = await asyncio.to_thread(run_for_account, acc, game_api.claim_ready_quests, acc.token)
         await query.edit_message_text(format_quest_claims(results), parse_mode="Markdown")
+        return
+
+    if data == "action:daily":
+        st, d = await asyncio.to_thread(run_for_account, acc, game_api.daily_claim, acc.token)
+        await query.edit_message_text(f"🎁 Günlük: HTTP {st}\n{str(d)[:500]}", parse_mode="HTML")
+        return
+
+    if data == "action:stat":
+        from .modules import stats
+
+        cfg = get_config(acc.name)
+
+        def _spend():
+            with account_context(acc):
+                return stats.spend_available(acc.token, cfg)
+
+        spent = await asyncio.to_thread(_spend)
+        ok = [s for s in spent if s.get("ok")]
+        msg = f"✅ {ok[0]['points']} → {ok[0]['skill']}" if ok else "Pasif puan yok"
+        await query.edit_message_text(msg, parse_mode="Markdown")
         return
 
 
@@ -599,6 +723,43 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     await _run_ai(update, context, text)
+
+
+async def _notify_admins_on_start(application: Application) -> None:
+    """Bot ayağa kalkınca adminlere tek seferlik ping (önceden /start yapmış olmalılar)."""
+    if not TELEGRAM_ADMIN_IDS:
+        return
+    text = (
+        f"✅ <b>Diplomacia Bot {get_version_label()}</b> Hetzner'da çalışıyor.\n"
+        "Komutlar: /dashboard · /start\n"
+        "<i>Windows'taki eski botu kapat — aynı token 409 Conflict üretir.</i>"
+    )
+    for uid in TELEGRAM_ADMIN_IDS:
+        try:
+            await application.bot.send_message(
+                chat_id=uid,
+                text=text,
+                parse_mode="HTML",
+                reply_markup=main_reply_keyboard(),
+            )
+        except Exception as e:
+            log.warning("Admin ping %s başarısız: %s", uid, e)
+
+
+async def _post_init(application: Application) -> None:
+    await setup_bot_ui(application)
+    await _notify_admins_on_start(application)
+
+
+async def _on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    err = context.error
+    if isinstance(err, Conflict):
+        log.error(
+            "409 Conflict: başka bir makinede aynı bot token ile polling var. "
+            "Windows/local botu durdurun."
+        )
+        return
+    log.exception("Handler hatası", exc_info=err)
 
 
 async def autofarm_job(context: ContextTypes.DEFAULT_TYPE):
@@ -635,9 +796,10 @@ def run() -> None:
     else:
         log.warning("GEMINI_API_KEY yok — AI devre dışı")
 
-    app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    app = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(_post_init).build()
     for name, handler in [
         ("start", cmd_start),
+        ("dashboard", cmd_dashboard),
         ("help", cmd_help),
         ("whoami", cmd_whoami),
         ("version", cmd_version),
@@ -668,9 +830,10 @@ def run() -> None:
 
     app.add_handler(CallbackQueryHandler(on_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
+    app.add_error_handler(_on_error)
 
     if app.job_queue:
         app.job_queue.run_repeating(autofarm_job, interval=60, first=30)
 
-    log.info("Bot v2 başlıyor...")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    log.info("Bot %s başlıyor…", get_version_label())
+    app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
