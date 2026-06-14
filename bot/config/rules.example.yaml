@@ -1,0 +1,23 @@
+version: 1
+limits:
+  max_accounts_per_egress: 2
+  min_request_delay_sec: 6
+  farm_interval_sec: 620
+  max_concurrent_workers: 1
+  cooldown_on_429_sec: 180
+
+signals_avoid:
+  push_token: true
+  cross_transfer: true
+  similar_username_prefix: true
+
+proxy_pool:
+  - id: tor-01
+    url: "socks5h://127.0.0.1:9050"
+    max_slots: 2
+    rotate_tor: true
+    labels: [tor, egress]
+
+schedule:
+  stagger_farm_sec: 45
+  active_window_utc: "00:00-23:59"

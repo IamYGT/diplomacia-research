@@ -5,6 +5,8 @@ from dataclasses import asdict
 from typing import TYPE_CHECKING
 
 from . import farmer, game_api
+from .account_config import get_config, update_config_field
+from .dynamic_context import format_plan_summary
 from .game_client import call
 from .response_format import (
     format_api_result,
@@ -39,15 +41,91 @@ def try_fast_path(user_message: str, default_account: str) -> "AgentResult | Non
     if _match(text, [r"^naber", r"^selam", r"^merhaba", r"^hey", r"^sa\b"]):
         try:
             p = game_api.get_profile(acc.token)
+            cfg = get_config(acc.name)
+            if p.passive_skill_points > 0:
+                hint = f"\n⚡ {p.passive_skill_points} pasif stat — `stat harca`"
+            elif p.health < 100 and p.health_pills > 0:
+                hint = "\n💊 Can düşük — `hap kullan` veya `akıllı farm`"
+            else:
+                hint = "\n🌾 `akıllı farm` | `planım` | `ne durumdayım`"
             return AgentResult(
                 reply=(
                     f"İyidir patron 😎 *{p.username}* hazır.\n"
-                    f"💰 {p.balance:,} | lv{p.level} | ❤️ {p.health}/100\n\n"
-                    f"Farm: `farm yap` | Durum: `ne durumdayım`"
+                    f"💰 {p.balance:,} | 💎 {p.diamonds} | lv{p.level} | ❤️ {p.health}/100\n"
+                    f"📍 {p.province_name or '?'} | mod: `{cfg.work_mode}`"
+                    f"{hint}"
                 )
             )
         except Exception as e:
             return AgentResult(reply=f"Selam! (profil: {e})")
+
+    if _match(text, [r"akıllı\s*farm", r"oto\s*döngü", r"\btick\b", r"orchestrator", r"tam\s*döngü"]):
+        from .modules.orchestrator import tick_account
+
+        r = tick_account(acc.token, acc.name)
+        update_after_farm(acc.name, r.balance_after)
+        fr = farmer.FarmResult(
+            account_name=r.account_name,
+            username=r.username,
+            ok=r.ok,
+            balance_before=r.balance_before,
+            balance_after=r.balance_after,
+            earned_money=r.earned_money,
+            earned_xp=r.earned_xp,
+            earned_diamonds=r.earned_diamonds,
+            error=r.error,
+            factory_id=r.factory_id,
+        )
+        out = farmer.format_farm_result(fr)
+        if r.actions:
+            out += f"\n📎 `{str(r.actions)[:350]}`"
+        return AgentResult(reply=out)
+
+    if _match(text, [r"planım", r"plan\s*ne", r"bot\s*plan", r"strateji\s*plan"]):
+        return AgentResult(
+            reply=format_plan_summary(acc.name),
+            inline_buttons=[[("🌾 Akıllı farm", "action:smartfarm"), ("📋 Durum", "action:status")]],
+        )
+
+    if _match(text, [r"stat\s*harca", r"pasif\s*stat", r"skill\s*harca", r"puan\s*harca"]):
+        from .modules import stats
+
+        cfg = get_config(acc.name)
+        spent = stats.spend_available(acc.token, cfg)
+        if not spent:
+            return AgentResult(reply="Pasif stat puanı yok.")
+        ok = [s for s in spent if s.get("ok")]
+        if ok:
+            s0 = ok[0]
+            return AgentResult(reply=f"✅ {s0.get('points')} puan → `{s0.get('skill')}`")
+        return AgentResult(reply=f"❌ Stat harcanamadı: {spent[-1].get('data', spent[-1])}")
+
+    if _match(text, [r"fabrika\s*(ayarla|mod)", r"foreign\s*mod", r"yabancı\s*fabrika"]):
+        mode = "foreign"
+        if _match(text, [r"\bown\b", r"kendi"]):
+            mode = "own"
+        elif _match(text, [r"\bauto\b"]):
+            mode = "auto"
+        m = re.search(
+            r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})", text, re.I
+        )
+        if m:
+            update_config_field(acc.name, work_mode="fixed", preferred_factory_id=m.group(1))
+            return AgentResult(reply=f"✅ Sabit fabrika: `{m.group(1)}`")
+        update_config_field(acc.name, work_mode=mode, preferred_factory_id=None)
+        return AgentResult(reply=f"✅ {acc.name} fabrika modu: `{mode}`")
+
+    if _match(text, [r"tüm\s*hesap", r"hesaplar\s*durum", r"multi\s*hesap"]):
+        from .store import list_accounts
+
+        lines = []
+        for a in list_accounts()[:10]:
+            try:
+                p = game_api.get_profile(a.token)
+                lines.append(f"• *{a.name}* {p.username} lv{p.level} 💰{p.balance:,} `{a.proxy_id}`")
+            except Exception as e:
+                lines.append(f"• *{a.name}*: {e}")
+        return AgentResult(reply="\n\n".join(lines) if lines else "Hesap yok.")
 
     if _match(text, [r"savaş", r"\bwar\b", r"cephe"]):
         try:

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import json
-import time
-import urllib.error
-import urllib.request
 from dataclasses import dataclass
 from typing import Any
 
 from .config import API_BASE, FARM_DELAY_SEC
+from .stealth_client import stealth_request
 
 
 @dataclass
@@ -25,13 +23,16 @@ class Profile:
     country_name: str | None = None
     province_name: str | None = None
     reputation: int | None = None
+    player_class: str | None = None
+    is_premium: bool = False
+    passive_skill_points: int = 0
 
 
 def api(method: str, path: str, token: str, body: dict | None = None, delay: float = FARM_DELAY_SEC) -> tuple[int, Any]:
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (compatible; DiplomacyYGTBot/1.0)",
+        "User-Agent": "Mozilla/5.0 (compatible; DiplomacyYGTBot/2.1)",
         "Origin": "https://diplomacia.com.tr",
         "Referer": "https://diplomacia.com.tr/",
     }
@@ -39,19 +40,13 @@ def api(method: str, path: str, token: str, body: dict | None = None, delay: flo
     if body is not None:
         headers["Content-Type"] = "application/json"
         data = json.dumps(body).encode()
-    time.sleep(delay)
-    req = urllib.request.Request(API_BASE + path, data=data, headers=headers, method=method)
-    try:
-        with urllib.request.urlopen(req, timeout=35) as r:
-            raw = r.read().decode()
-            return r.status, json.loads(raw) if raw.strip().startswith("{") else {"raw": raw[:300]}
-    except urllib.error.HTTPError as e:
-        raw = e.read().decode()
+    st, raw = stealth_request(method, API_BASE + path, headers=headers, data=data, delay=delay)
+    if raw.strip().startswith("{"):
         try:
-            return e.code, json.loads(raw)
-        except Exception:
-            return e.code, {"error": raw[:300]}
-
+            return st, json.loads(raw)
+        except json.JSONDecodeError:
+            pass
+    return st, {"raw": raw[:300], "error": raw[:200] if st >= 400 else None}
 
 def get_profile(token: str) -> Profile:
     st, d = api("GET", "/players/profile", token, delay=0.3)
@@ -72,6 +67,9 @@ def get_profile(token: str) -> Profile:
         country_name=p.get("country_name"),
         province_name=p.get("province_name"),
         reputation=int(p.get("reputation") or 0) if p.get("reputation") is not None else None,
+        player_class=p.get("player_class"),
+        is_premium=bool(p.get("is_premium")),
+        passive_skill_points=int(p.get("passive_skill_points") or 0),
     )
 
 
@@ -169,7 +167,7 @@ def ensure_factory(token: str) -> str | None:
     return _ensure(token)
 
 
-def farm_once(token: str, factory_id: str | None = None) -> dict:
+def farm_once(token: str, factory_id: str | None = None, account_name: str | None = None) -> dict:
     from .factory_service import run_work_cycle
 
-    return run_work_cycle(token, factory_id)
+    return run_work_cycle(token, factory_id, account_name=account_name)

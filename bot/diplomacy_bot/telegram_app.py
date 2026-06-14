@@ -10,8 +10,12 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
 from . import ai_agent, farmer, game_api
+from .account_pool import format_pool_status, get_proxy_by_id, load_intel_summary, load_rules, suggest_proxy
+from .account_runtime import account_context, run_for_account
 from .catalog import search_endpoints
 from .config import AUTOFARM_INTERVAL_SEC, GEMINI_API_KEY, TELEGRAM_ADMIN_IDS, TELEGRAM_BOT_TOKEN
+from .stealth_client import cooldown_remaining_sec
+from .account_config import AccountConfig, get_config, update_config_field
 from .store import (
     Account,
     add_account,
@@ -20,41 +24,42 @@ from .store import (
     get_account,
     init_db,
     list_accounts,
+    proxy_assignments,
     remove_account,
     set_autofarm,
+    set_proxy,
     update_after_farm,
 )
 
-log = logging.getLogger(__name__)
+from .version import get_version_label
 
-HELP_TEXT = """
-🎮 *Diplomacy YGT Bot v2* — AI + tam API
+HELP_TEXT = f"""
+🎮 *Diplomacy YGT Bot {get_version_label()}* — modüler AI + tam API
 
-*🧠 Yapay zeka & koç*
-Serbest mesaj → aksiyon için Gemini planlar, soru için oyun koçu
-Koç örnekleri: `can ne işe yarıyor` | `fabrika stratejisi` | `savaş nasıl çalışır`
-Aksiyon örnekleri: `farm yap` | `hap kullan` | `görev topla` | `ülkeye katıl`
-`ülke listele` — ülke seçimi (butonlu)
-/play metin — aynı
-/ai metin — aynı
-/confirm — onay bekleyen riskli işlem
-/cancel — bekleyen iptal
+*🧠 Yapay zeka (dinamik)*
+Serbest mesaj → canlı durumuna göre koç / aksiyon
+`akıllı farm` — stat + training + work tek döngü
+`planım` | `stat harca` | `fabrika ayarla foreign`
+Koç: `can ne işe yarıyor` | `fabrika stratejisi`
+/play /ai — Gemini plan
+/confirm /cancel
 
 *🔌 Ham API*
 /api GET /quests [hesap]
-/api POST /factories/work ercan2
-/api POST /transfer/send ercan2 {"recipient_id":"uuid","amount":100}
-
-/endpoints savaş — katalog ara
-/setaccount ercan2 — varsayılan hesap
+/setaccount isim
 
 *Hesap*
-/accounts /add /remove /whoami
+/accounts /add /remove /whoami /version
 
 *Farm*
 /farm [n] [hesap]
-/autofarm on|off [hesap|all]
+/autofarm on|off
+/setfabric isim uuid|own|foreign|auto
+/plan [hesap]
 /daily /ping /status /report
+
+*Multi-IP*
+/proxies /setproxy /intel /cooldown
 """.strip()
 
 
@@ -121,7 +126,17 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id if update.effective_user else 0
     ai = "🧠 Gemini bağlı" if GEMINI_API_KEY else "⚠️ GEMINI_API_KEY yok"
     await update.message.reply_text(
-        f"Diplomacia AI bot aktif.\nID: `{uid}` | {ai}\n\n/help",
+        f"Diplomacia AI bot {get_version_label()} aktif.\nID: `{uid}` | {ai}\n\n/help",
+        parse_mode="Markdown",
+    )
+
+
+@admin_only
+async def cmd_version(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        f"🤖 Diplomacy YGT Bot *{get_version_label()}*\n"
+        f"Modüller: economy, factory, stats, training, war, orchestrator\n"
+        f"Changelog: `bot/CHANGELOG.md`",
         parse_mode="Markdown",
     )
 
@@ -150,6 +165,22 @@ async def cmd_setaccount(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"✅ Varsayılan hesap: *{name}*", parse_mode="Markdown")
 
 
+def _proxy_ctx(acc: Account):
+    return account_context(acc)
+
+
+async def _profile_for_account(a: Account):
+    def _fetch():
+        with account_context(a):
+            return game_api.get_profile(a.token)
+
+    return await asyncio.to_thread(_fetch)
+
+
+async def _api_for_account(a: Account, fn):
+    return await asyncio.to_thread(run_for_account, a, fn, a.token)
+
+
 @admin_only
 async def cmd_accounts(update: Update, context: ContextTypes.DEFAULT_TYPE):
     accs = list_accounts()
@@ -161,7 +192,8 @@ async def cmd_accounts(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for a in accs:
         mark = "⭐" if a.name == default else "•"
         af = "🟢" if a.autofarm else "⚪"
-        lines.append(f"{mark} *{a.name}* — {a.username} | {a.last_balance:,}₺ | {af}")
+        px = a.proxy_id or "direct"
+        lines.append(f"{mark} *{a.name}* — {a.username} | {a.last_balance:,}₺ | {af} | `{px}`")
     await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
 
 
@@ -181,10 +213,16 @@ async def cmd_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def _save_account(update: Update, name: str, token: str):
     try:
-        prof = await asyncio.to_thread(game_api.get_profile, token)
-        acc = add_account(name, token, prof.player_id, prof.username)
+        slot = suggest_proxy(proxy_assignments())
+
+        def _fetch():
+            with account_context(proxy_id=slot.id, proxy_url=slot.url or None):
+                return game_api.get_profile(token)
+
+        prof = await asyncio.to_thread(_fetch)
+        acc = add_account(name, token, prof.player_id, prof.username, slot.id, slot.url)
         await update.message.reply_text(
-            f"✅ *{acc.name}* → {prof.username}\n💰 {prof.balance:,} | lv{prof.level}",
+            f"✅ *{acc.name}* → {prof.username}\n💰 {prof.balance:,} | lv{prof.level} | proxy `{slot.id}`",
             parse_mode="Markdown",
         )
     except Exception as e:
@@ -211,9 +249,9 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lines = []
     for a in accs:
         try:
-            p = await asyncio.to_thread(game_api.get_profile, a.token)
+            p = await _profile_for_account(a)
             lines.append(
-                f"*{a.name}* ({p.username})\n💰 {p.balance:,} | 💎 {p.diamonds} | lv{p.level} | ❤️ {p.health}"
+                f"*{a.name}* ({p.username}) `{a.proxy_id}`\n💰 {p.balance:,} | 💎 {p.diamonds} | lv{p.level} | ❤️ {p.health}"
             )
         except Exception as e:
             lines.append(f"*{a.name}*: {e}")
@@ -233,13 +271,62 @@ async def cmd_farm(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not accs:
         await update.message.reply_text("Hesap yok.")
         return
-    await update.message.reply_text(f"🌾 Farm ({cycles}x, {len(accs)} hesap)...")
+    await update.message.reply_text(f"🌾 Farm ({cycles}x, {len(accs)} hesap, sıralı)...")
     results = []
-    for a in accs:
-        r = await asyncio.to_thread(farmer.run_farm, a.token, a.name, cycles)
+    rules = load_rules()
+    for i, a in enumerate(accs):
+        if i > 0:
+            await asyncio.sleep(rules.stagger_farm_sec)
+        r = await asyncio.to_thread(
+            farmer.run_farm, a.token, a.name, cycles, a.proxy_url or None, a.proxy_id or ""
+        )
         update_after_farm(a.name, r.balance_after)
         results.append(farmer.format_farm_result(r))
     await update.message.reply_text("\n\n".join(results))
+
+
+@admin_only
+async def cmd_setfabric(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) < 2:
+        await update.message.reply_text(
+            "/setfabric isim uuid\n"
+            "/setfabric isim own — kendi eyalet fabrikası\n"
+            "/setfabric isim foreign — bölgedeki en iyi yabancı fabrika\n"
+            "/setfabric isim auto — eski otomatik (build dahil)"
+        )
+        return
+    name, mode = context.args[0].lower(), context.args[1].lower()
+    if not get_account(name):
+        await update.message.reply_text("Hesap bulunamadı.")
+        return
+    if mode in ("own", "foreign", "auto"):
+        update_config_field(name, work_mode=mode, preferred_factory_id=None)
+        await update.message.reply_text(f"✅ {name} work_mode={mode}")
+        return
+    if len(mode) > 20:
+        update_config_field(name, work_mode="fixed", preferred_factory_id=mode)
+        await update.message.reply_text(f"✅ {name} → sabit fabrika `{mode}`", parse_mode="Markdown")
+        return
+    await update.message.reply_text("Geçersiz mod. own|foreign|auto veya fabrika UUID.")
+
+
+@admin_only
+async def cmd_plan(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    accs = _resolve_accounts(context.args[0] if context.args else None) or list_accounts()
+    if not accs:
+        await update.message.reply_text("Hesap yok.")
+        return
+    lines = []
+    for a in accs:
+        cfg = get_config(a.name)
+        lines.append(
+            f"*{a.name}* `{a.proxy_id}`\n"
+            f"  mod: `{cfg.work_mode}` | hub: {'evet' if cfg.is_premium_hub else 'hayır'}\n"
+            f"  fabrika: `{cfg.preferred_factory_id or '—'}` | build: {'evet' if cfg.allow_auto_build else 'hayır'}\n"
+            f"  stat: {', '.join(cfg.stat_priority[:3])}… | training: {'on' if cfg.training_enabled else 'off'}\n"
+            f"  savaş: {'on' if cfg.war_enabled else 'off'}"
+        )
+    await update.message.reply_text("\n\n".join(lines), parse_mode="Markdown")
 
 
 @admin_only
@@ -260,7 +347,7 @@ async def cmd_daily(update: Update, context: ContextTypes.DEFAULT_TYPE):
     accs = _resolve_accounts(context.args[0] if context.args else None) or list_accounts()
     lines = []
     for a in accs:
-        st, d = await asyncio.to_thread(game_api.daily_claim, a.token)
+        st, d = await _api_for_account(a, game_api.daily_claim)
         lines.append(f"{a.name}: {st} — {str(d)[:120]}")
     await update.message.reply_text("\n".join(lines) if lines else "Hesap yok.")
 
@@ -270,9 +357,45 @@ async def cmd_ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     accs = _resolve_accounts(context.args[0] if context.args else None) or list_accounts()
     lines = []
     for a in accs:
-        st, d = await asyncio.to_thread(game_api.ping, a.token)
+        st, d = await _api_for_account(a, game_api.ping)
         lines.append(f"{a.name}: {st}")
     await update.message.reply_text("\n".join(lines) if lines else "Hesap yok.")
+
+
+@admin_only
+async def cmd_proxies(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(format_pool_status(proxy_assignments()), parse_mode="Markdown")
+
+
+@admin_only
+async def cmd_setproxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) < 2:
+        await update.message.reply_text("/setproxy isim proxy_id")
+        return
+    name, proxy_id = context.args[0].lower(), context.args[1]
+    slot = get_proxy_by_id(proxy_id)
+    if not slot:
+        await update.message.reply_text(f"Proxy `{proxy_id}` rules.yaml'da yok.", parse_mode="Markdown")
+        return
+    if not get_account(name):
+        await update.message.reply_text("Hesap bulunamadı.")
+        return
+    set_proxy(name, slot.id, slot.url)
+    await update.message.reply_text(f"✅ {name} → `{slot.id}`", parse_mode="Markdown")
+
+
+@admin_only
+async def cmd_intel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(await asyncio.to_thread(load_intel_summary), parse_mode="Markdown")
+
+
+@admin_only
+async def cmd_cooldown(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    rem = cooldown_remaining_sec()
+    if rem <= 0:
+        await update.message.reply_text("Cooldown yok — istek atılabilir.")
+    else:
+        await update.message.reply_text(f"429 cooldown: ~{rem}s kaldı.")
 
 
 @admin_only
@@ -284,9 +407,9 @@ async def cmd_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
     total, lines = 0, ["📊 *Rapor*"]
     for a in accs:
         try:
-            p = await asyncio.to_thread(game_api.get_profile, a.token)
+            p = await _profile_for_account(a)
             total += p.balance
-            lines.append(f"{'🟢' if a.autofarm else '⚪'} {a.name}: {p.balance:,} lv{p.level}")
+            lines.append(f"{'🟢' if a.autofarm else '⚪'} {a.name}: {p.balance:,} lv{p.level} `{a.proxy_id}`")
         except Exception as e:
             lines.append(f"❌ {a.name}: {e}")
     lines.append(f"\n*Toplam:* {total:,}")
@@ -416,7 +539,7 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             from .response_format import format_country_result
 
-            result = await asyncio.to_thread(game_api.select_country, acc.token, country_id)
+            result = await asyncio.to_thread(run_for_account, acc, game_api.select_country, acc.token, country_id)
             await query.edit_message_text(format_country_result(result), parse_mode="Markdown")
         except Exception as e:
             await query.edit_message_text(f"❌ Ülke seçilemedi: {e}")
@@ -426,22 +549,34 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             from .response_format import format_pills
 
-            result = await asyncio.to_thread(game_api.use_pills, acc.token)
+            result = await asyncio.to_thread(run_for_account, acc, game_api.use_pills, acc.token)
             await query.edit_message_text(format_pills(result), parse_mode="Markdown")
         except Exception as e:
             await query.edit_message_text(f"❌ {e}")
         return
 
-    if data == "action:farm":
-        r = await asyncio.to_thread(farmer.run_farm, acc.token, acc.name, 1)
+    if data in ("action:farm", "action:smartfarm"):
+        r = await asyncio.to_thread(
+            farmer.run_farm, acc.token, acc.name, 1, acc.proxy_url or None, acc.proxy_id or ""
+        )
         update_after_farm(acc.name, r.balance_after)
         await query.edit_message_text(farmer.format_farm_result(r), parse_mode="Markdown")
+        return
+
+    if data == "action:status":
+        from .dynamic_context import format_plan_summary
+
+        p = await _profile_for_account(acc)
+        await query.edit_message_text(
+            format_plan_summary(acc.name) + f"\n\n💰 {p.balance:,} | 💎 {p.diamonds} | lv{p.level}",
+            parse_mode="Markdown",
+        )
         return
 
     if data == "action:quests":
         from .response_format import format_quest_claims
 
-        results = await asyncio.to_thread(game_api.claim_ready_quests, acc.token)
+        results = await asyncio.to_thread(run_for_account, acc, game_api.claim_ready_quests, acc.token)
         await query.edit_message_text(format_quest_claims(results), parse_mode="Markdown")
         return
 
@@ -467,9 +602,15 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def autofarm_job(context: ContextTypes.DEFAULT_TYPE):
-    for acc in autofarm_due(AUTOFARM_INTERVAL_SEC):
+    rules = load_rules()
+    due = list(autofarm_due(AUTOFARM_INTERVAL_SEC))
+    for i, acc in enumerate(due):
+        if i > 0:
+            await asyncio.sleep(rules.stagger_farm_sec)
         try:
-            r = await asyncio.to_thread(farmer.run_farm, acc.token, acc.name, 1)
+            r = await asyncio.to_thread(
+                farmer.run_farm, acc.token, acc.name, 1, acc.proxy_url or None, acc.proxy_id or ""
+            )
             update_after_farm(acc.name, r.balance_after)
             if r.earned_money > 0 and TELEGRAM_ADMIN_IDS:
                 await context.bot.send_message(
@@ -499,16 +640,23 @@ def run() -> None:
         ("start", cmd_start),
         ("help", cmd_help),
         ("whoami", cmd_whoami),
+        ("version", cmd_version),
         ("setaccount", cmd_setaccount),
         ("accounts", cmd_accounts),
         ("add", cmd_add),
         ("remove", cmd_remove),
         ("status", cmd_status),
         ("farm", cmd_farm),
+        ("setfabric", cmd_setfabric),
+        ("plan", cmd_plan),
         ("autofarm", cmd_autofarm),
         ("daily", cmd_daily),
         ("ping", cmd_ping),
         ("report", cmd_report),
+        ("proxies", cmd_proxies),
+        ("setproxy", cmd_setproxy),
+        ("intel", cmd_intel),
+        ("cooldown", cmd_cooldown),
         ("endpoints", cmd_endpoints),
         ("api", cmd_api),
         ("play", cmd_play),

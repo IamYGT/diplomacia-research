@@ -21,6 +21,11 @@ logs/
 *.log
 export/*.tar.gz
 
+# Engagement symlinks (local pentest paths — regenerate via sync_engagement.py)
+engagement/pentest
+engagement/raw
+engagement/docs
+
 # IDE
 .cursor/
 .idea/

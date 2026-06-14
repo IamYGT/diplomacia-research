@@ -14,7 +14,8 @@ from .intent_router import try_fast_path
 from .response_format import format_step_results
 from .game_client import call
 from .safety import action_summary, classify_action, sanitize_path
-from .store import get_account, list_accounts
+from .dynamic_context import build_ai_context
+from .version import get_version_label
 
 log = logging.getLogger(__name__)
 
@@ -60,14 +61,16 @@ def _accounts_context() -> str:
     return "\n".join(lines) or "(hesap yok)"
 
 
-def _build_plan_system() -> str:
+def _build_plan_system(default_account: str = "ygt") -> str:
     accounts = _accounts_context()
     mechanics = load_mechanics()
     catalog = catalog_for_prompt()
     return (
-        "Sen Diplomacia oyun API orkestratörüsün. Türkçe yanıt ver.\n"
+        f"Sen Diplomacia oyun API orkestratörüsün ({get_version_label()}). Türkçe yanıt ver.\n"
         "Görev: kullanıcı AKSİYON isteğini API çağrılarına çevir ve sonucu yorumla.\n"
-        "Saf bilgi/öğretme sorularında steps=[] ve reply_tr ile kısa yönlendirme ver.\n\n"
+        "Saf bilgi/öğretme sorularında steps=[] ve reply_tr ile kısa yönlendirme ver.\n"
+        "Önce hızlı komutlar (farm, stat harca, akıllı farm) yeterliyse steps=[] bırak.\n\n"
+        f"{build_ai_context(default_account)}\n\n"
         f"HESAPLAR:\n{accounts}\n\n"
         f"OYUN:\n{mechanics}\n\n"
         f"API KATALOĞU (method path):\n{catalog}\n\n"
@@ -86,7 +89,7 @@ def _build_plan_system() -> str:
 
 def plan(user_message: str, default_account: str = "ercan2") -> dict:
     user = f"Varsayılan hesap: {default_account}\n\nKullanıcı: {user_message}"
-    return generate_json(_build_plan_system(), user)
+    return generate_json(_build_plan_system(default_account), user)
 
 
 def execute_steps(

@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot import factory_service
 from diplomacy_bot.game_api import Profile
+from diplomacy_bot.modules import factory as factory_mod
 
 
 def _profile(**kw) -> Profile:
@@ -58,9 +59,22 @@ class FactoryServiceTests(unittest.TestCase):
                 ),
             }
         )
-        with patch.object(factory_service, "get_profile", return_value=_profile()):
+        with patch.object(factory_mod, "get_profile", return_value=_profile()):
             fid = factory_service.factory_in_province("tok", _api=mock)
         self.assertEqual(fid, "local")
+
+    def test_factory_in_province_no_fallback_other_region(self):
+        mock = MockApi(
+            {
+                ("GET", "/factories/my"): (
+                    200,
+                    {"factories": [{"id": "far", "province_name": "Other"}]},
+                ),
+            }
+        )
+        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+            fid = factory_service.factory_in_province("tok", _api=mock)
+        self.assertIsNone(fid)
 
     def test_ensure_factory_builds_when_missing(self):
         mock = MockApi(
@@ -69,7 +83,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ("POST", "/factories/build"): (201, {"factory": {"id": "new-f"}}),
             }
         )
-        with patch.object(factory_service, "get_profile", return_value=_profile()):
+        with patch.object(factory_mod, "get_profile", return_value=_profile()):
             fid = factory_service.ensure_factory("tok", _api=mock)
         self.assertEqual(fid, "new-f")
 
@@ -90,13 +104,13 @@ class FactoryServiceTests(unittest.TestCase):
                 return 201, {"factory": {"id": "f2"}}
             return 200, {}
 
-        with patch.object(factory_service, "get_profile", return_value=_profile()):
+        with patch.object(factory_mod, "get_profile", return_value=_profile()):
             fid = factory_service.prepare_join("tok", "f1", _api=api_fn)
         self.assertEqual(fid, "f2")
 
     def test_use_pills_skips_at_full_health(self):
         mock = MockApi({})
-        with patch.object(factory_service, "get_profile", return_value=_profile(health=100)):
+        with patch.object(factory_mod, "get_profile", return_value=_profile(health=100)):
             err = factory_service.use_pills_if_needed("tok", _api=mock)
         self.assertIsNone(err)
         self.assertEqual(mock.calls, [])
@@ -105,7 +119,7 @@ class FactoryServiceTests(unittest.TestCase):
         mock = MockApi(
             {("POST", "/auto/use-pills"): (429, {"error": "cooldown", "remaining_ms": 600000})}
         )
-        with patch.object(factory_service, "get_profile", return_value=_profile(health=0)):
+        with patch.object(factory_mod, "get_profile", return_value=_profile(health=0)):
             err = factory_service.use_pills_if_needed("tok", _api=mock)
         self.assertIsNotNone(err)
         self.assertIn("cooldown", err["error"])
@@ -115,6 +129,7 @@ class FactoryServiceTests(unittest.TestCase):
         mock = MockApi(
             {
                 ("GET", "/factories/work-status"): (200, {"working": False}),
+                ("GET", "/auto/status"): (200, {"next_work_in_ms": 0}),
                 ("GET", "/factories/my"): (
                     200,
                     {"factories": [{"id": "f1", "province_name": "TestProvince"}]},
@@ -123,7 +138,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ("POST", "/factories/work"): (200, {"earned": {"money": 2400}}),
             }
         )
-        with patch.object(factory_service, "get_profile", return_value=_profile(health=100)):
+        with patch.object(factory_mod, "get_profile", return_value=_profile(health=100)):
             result = factory_service.run_work_cycle("tok", _api=mock)
         self.assertTrue(result["ok"])
         self.assertEqual(result["earned"]["money"], 2400)
@@ -132,6 +147,7 @@ class FactoryServiceTests(unittest.TestCase):
         mock = MockApi(
             {
                 ("GET", "/factories/work-status"): (200, {"working": False}),
+                ("GET", "/auto/status"): (200, {"next_work_in_ms": 0}),
                 ("GET", "/factories/my"): (
                     200,
                     {"factories": [{"id": "f1", "province_name": "TestProvince"}]},
@@ -140,7 +156,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ("POST", "/auto/use-pills"): (400, {"error": "Hap bekleme süresi"}),
             }
         )
-        with patch.object(factory_service, "get_profile", return_value=_profile(health=20)):
+        with patch.object(factory_mod, "get_profile", return_value=_profile(health=20)):
             result = factory_service.run_work_cycle("tok", _api=mock)
         self.assertFalse(result["ok"])
         self.assertIn("bekleme", result["error"].lower())

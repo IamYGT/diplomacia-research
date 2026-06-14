@@ -1,0 +1,16 @@
+[Unit]
+Description=Diplomacia Telegram Bot
+After=network.target tor.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/diplomacia-research/bot
+Environment=ACCOUNT_RULES_PATH=/root/diplomacia-research/bot/data/accounts/rules.yaml
+Environment=DIPLOMACIA_INTEL=/root/diplomacia-research/engagement/intel/merged.json
+ExecStart=/root/diplomacia-research/bot/.venv/bin/python3 main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

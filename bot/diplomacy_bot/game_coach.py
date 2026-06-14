@@ -5,6 +5,7 @@ from dataclasses import asdict
 
 from . import game_api
 from .catalog import load_mechanics
+from .dynamic_context import build_ai_context
 from .config import GEMINI_COACH_MODELS, GEMINI_THINKING_BUDGET
 from .gemini_client import generate_text
 
@@ -100,7 +101,9 @@ LOCAL_ANSWERS: dict[str, str] = {
         "• `POST /factories/build` — elmas fabrikası kur (−10.000 💎)\n"
         "• `join` → `work` — çalış, altın+elmas+XP kazan\n"
         "• Fabrika **bulunduğun eyalette** olmalı; ülke değiştirince eski fabrikada çalışamazsın\n"
-        "• ROI: ~10 dk'da bir ~2.500 altın (can + hap cooldown)\n\n"
+        "• ROI: her work ~+20 💎 (elmas fabrikası) — gün sonunda hap maliyeti geri kazanır\n"
+        "• Eyalet uyumu şart; farklı eyaletteyken `yabancı fabrika` veya seyahat\n"
+        "• Bot: `akıllı farm` (stat+work), `fabrika ayarla foreign`\n\n"
         "💡 `farm yap` veya `ne durumdayım` ile başla."
     ),
     "savaş": (
@@ -175,15 +178,13 @@ def coach_with_gemini(
     *,
     account_name: str,
 ) -> str:
-    ctx = ""
+    ctx = build_ai_context(account_name)
     if profile:
-        ctx = (
-            f"\n\nOyuncu bağlamı ({account_name}): "
-            f"lv{profile.level}, can {profile.health}/100, hap {profile.health_pills}, "
-            f"altın {profile.balance:,}, elmas {profile.diamonds}, "
-            f"ülke {profile.country_name or 'yok'}, eyalet {profile.province_name or 'yok'}"
+        ctx += (
+            f"\nOyuncu: lv{profile.level} {profile.player_class or ''} | "
+            f"can {profile.health}/100 | pasif_puan {profile.passive_skill_points}"
         )
-    user = f"Soru: {user_message}{ctx}"
+    user = f"Soru: {user_message}\n\n{ctx}"
     return generate_text(
         _coach_system(),
         user,

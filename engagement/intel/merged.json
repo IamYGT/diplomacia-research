@@ -1,0 +1,498 @@
+{
+  "synced_at": "2026-06-14T02:56:54.805477+00:00",
+  "target": "https://diplomacia.com.tr",
+  "engagement_dir": "/root/pentest-logs/engagements/diplomacia",
+  "raw_dir": "/root/pentest-logs/raw/diplomacia",
+  "findings_count": 16,
+  "findings": [
+    {
+      "severity": "critical",
+      "title": "Admin panel case bypass",
+      "detail": "/ADMIN/ and /Admin/ serve full admin UI without nginx Basic Auth",
+      "evidence": "admin_panel_unauth.html"
+    },
+    {
+      "severity": "critical",
+      "title": "Unauthenticated PII dump",
+      "detail": "/api/online/players returns ~805 players without auth",
+      "evidence": "online_players_dump.json"
+    },
+    {
+      "severity": "critical",
+      "title": "BOLA — player profile by UUID",
+      "detail": "GET /api/players/{uuid} returns 200 without JWT — 300+ profiles in SQLite",
+      "evidence": "diplomacia_players.db / logs/player_db_fill.log"
+    },
+    {
+      "severity": "critical",
+      "title": "GitHub commit email leak — Targan owner",
+      "detail": "targan@ukr.net (SheigetsTaras) exposed in public maze repo commits",
+      "evidence": "logs/targan_github_emails.txt"
+    },
+    {
+      "severity": "high",
+      "title": "PayTR payment flow exposed in bundle",
+      "detail": "POST /api/paytr/start + GET /api/paytr/status/{id} — JWT required, package_id param",
+      "evidence": "logs/osint_wave9.txt / logs/paytr_start_probe.txt"
+    },
+    {
+      "severity": "medium",
+      "title": "Qt dev path leak (Targan maze repo)",
+      "detail": "tgl.pro.user exposes /home/imprtat/dev/tgl/",
+      "evidence": "raw/targan_maze_tgl_pro_user_e0e3b82"
+    },
+    {
+      "severity": "high",
+      "title": "PayTR callback endpoint live",
+      "detail": "POST /api/paytr/callback — HMAC validation PAYTR_INVALID_HASH",
+      "evidence": "logs/paytr_callback_deep.txt"
+    },
+    {
+      "severity": "high",
+      "title": "Admin login API live",
+      "detail": "POST /api/admin/login live — JWT required for /api/admin/*",
+      "evidence": "logs/admin_api_full_map.txt"
+    },
+    {
+      "severity": "high",
+      "title": "Authenticated excessive data exposure",
+      "detail": "GET /api/players/profile returns email, balance, diamonds, resources — not present in unauth BOLA dump",
+      "evidence": "raw/player_authed_profile.json / logs/player_authed_v2.txt"
+    },
+    {
+      "severity": "critical",
+      "title": "BOLA — donation history cross-user",
+      "detail": "GET /api/players/{other_uuid}/donation-history returns 200 — top-15 world_rank batch 12/15 hits (GAWEX 32M, KARAHANLI 25M)",
+      "evidence": "logs/donation_bola_batch_wave12.txt / raw/donation_bola_batch_wave12.json"
+    },
+    {
+      "severity": "medium",
+      "title": "PayTR callback hash validation enforced",
+      "detail": "OID swap, zero amount, idempotent replay, array OID — all PAYTR_INVALID_HASH; bypass requires merchant_key",
+      "evidence": "logs/paytr_idor_wave12.txt"
+    },
+    {
+      "severity": "high",
+      "title": "Socket.io global chat on JWT connect",
+      "detail": "Valid player JWT → global_history event with chat messages and player PII on first poll; threadId/room inject no effect (not Chainlit-class)",
+      "evidence": "logs/socketio_jwt_probe.txt / logs/socketio_chainlit_probe_wave12.txt"
+    },
+    {
+      "severity": "high",
+      "title": "Telegram admin ↔ game UUID xref",
+      "detail": "11 TG admins mapped to game UUIDs including Targan Han owner",
+      "evidence": "manifest.json / tg_xref table"
+    },
+    {
+      "severity": "medium",
+      "title": "Socket.io unauth polling",
+      "detail": "Handshake works without token",
+      "evidence": "high_value.txt"
+    },
+    {
+      "severity": "medium",
+      "title": "Google-only registration",
+      "detail": "/api/auth/register returns 410 for email signup — mass assignment blocked",
+      "evidence": "logs/mass_assignment_probe.txt"
+    },
+    {
+      "severity": "low",
+      "title": "OAuth dev redirect",
+      "detail": "localhost:8081 registered in Google client",
+      "evidence": "manifest.json"
+    }
+  ],
+  "learnings_count": 88,
+  "learnings": [
+    {
+      "id": "L060",
+      "topic": "Player DB wave9",
+      "detail": "470/805 profiles, 104 Google OAuth, 133 cabinet",
+      "severity": "critical"
+    },
+    {
+      "id": "L061",
+      "topic": "Player JWT authed",
+      "detail": "Y.G.T b36f5507-... profile 200; paytr/start 503 web payment disabled; campaign+donation-history 200",
+      "severity": "high"
+    },
+    {
+      "id": "L062",
+      "topic": "Auth API map wave10",
+      "detail": "wars, factories/my, init/data, world/summary all 200 with player JWT",
+      "severity": "high"
+    },
+    {
+      "id": "L063",
+      "topic": "BOLA donation-history",
+      "detail": "GET /api/players/{other}/donation-history -> 200 with victim logs (petrol 2000 Selanik)",
+      "severity": "critical"
+    },
+    {
+      "id": "L064",
+      "topic": "Socket.io JWT chat",
+      "detail": "connect with JWT -> global_history event with live chat PII on poll",
+      "severity": "high"
+    },
+    {
+      "id": "L065",
+      "topic": "Excessive data exposure confirmed",
+      "detail": "auth profile fields: email,balance,diamonds,resources,is_moderator — absent in unauth BOLA",
+      "severity": "high"
+    },
+    {
+      "id": "L066",
+      "topic": "Cabinet donation BOLA wave11",
+      "detail": "5/6 presidents donation-history 200 with logs; ATATURK 24M amount, GAWEX 32M",
+      "severity": "critical"
+    },
+    {
+      "id": "L067",
+      "topic": "Attack chain documented",
+      "detail": "attack_chain_bola_financial.json — BOLA+exposure+socket+admin pivot",
+      "severity": "high"
+    },
+    {
+      "id": "L068",
+      "topic": "OSINT wave11 subdomains",
+      "detail": "wiki=200 Diplomacia Wiki rehberi; www=200 main SPA; stealth curl OK",
+      "severity": "medium"
+    },
+    {
+      "id": "L069",
+      "topic": "2026 BOLA financial trend",
+      "detail": "Uber Eats $2k BOLA May 2026 + PCI 6.5.6 maps to donation-history class",
+      "severity": "high"
+    },
+    {
+      "id": "L070",
+      "topic": "Donation BOLA batch wave12",
+      "detail": "top-15 world_rank: 12/15 hits; GAWEX 32M, KARAHANLI 25M, ATATURK 24M",
+      "severity": "critical"
+    },
+    {
+      "id": "L071",
+      "topic": "Chainlit CVE-2025-68492 test",
+      "detail": "threadId/room/admin inject ignored — global_history only, not thread hijack",
+      "severity": "medium"
+    },
+    {
+      "id": "L072",
+      "topic": "PayTR hash gate wave12",
+      "detail": "all callback variants PAYTR_INVALID_HASH — OID swap/idempotent blocked without key",
+      "severity": "high"
+    },
+    {
+      "id": "L073",
+      "topic": "Wiki subdomain",
+      "detail": "static HTML wiki 78KB; admin/git paths = CF 3994 block page not real",
+      "severity": "low"
+    },
+    {
+      "id": "L074",
+      "topic": "Trend doc wave12",
+      "detail": "docs/39 maps Uber/Chainlit/PayTR research to diplomacia findings",
+      "severity": "info"
+    },
+    {
+      "id": "L075",
+      "topic": "Donation progress DB wave13",
+      "detail": "donation_bola_progress.db separate from players — resume without lock",
+      "severity": "high"
+    },
+    {
+      "id": "L076",
+      "topic": "Batch resume 45/728",
+      "detail": "30 run -> 24 hits; total 36 financial hits; top Almalı 18M rank27",
+      "severity": "critical"
+    },
+    {
+      "id": "L077",
+      "topic": "Wiki WIKI parse",
+      "detail": "27 articles; bagis confirms donation-history + limits 50M daily",
+      "severity": "medium"
+    },
+    {
+      "id": "L078",
+      "topic": "2026 BOLA scrape trend",
+      "detail": "AppSecure/Invicti: UUID scrape at scale bypasses DAST — matches batch 80% hit",
+      "severity": "high"
+    },
+    {
+      "id": "L079",
+      "topic": "GitHub diplomacia-research CONFIRMED",
+      "detail": "IamYGT/diplomacia-research 106 hits — 213 endpoints, Railway URL strategos-backend-production.up.railway.app (404 decom)",
+      "severity": "critical"
+    },
+    {
+      "id": "L080",
+      "topic": "PUT /players/bio write",
+      "detail": "PUT /api/players/bio 200 — HTML entity encode blocks raw XSS; POST/PATCH 404",
+      "severity": "medium"
+    },
+    {
+      "id": "L081",
+      "topic": "Upload avatar CONFIRMED",
+      "detail": "POST /api/upload/avatar field=image base64 — JPEG re-encode, SVG/PHP rejected",
+      "severity": "high"
+    },
+    {
+      "id": "L082",
+      "topic": "Targan GitHub negative",
+      "detail": "Code search paytr/merchant/JWT user:Targan = 0 — cred brute only path for Targan admin",
+      "severity": "info"
+    },
+    {
+      "id": "L083",
+      "topic": "Origin IP negative wave14",
+      "detail": "crt.sh 404, viewdns 403, all subs CF or NXDOMAIN — no origin candidate",
+      "severity": "info"
+    },
+    {
+      "id": "L084",
+      "topic": "Factory upload write wave15",
+      "detail": "POST /upload/factory-image/{own} 200; other factory 403 — auth boundary correct",
+      "severity": "high"
+    },
+    {
+      "id": "L085",
+      "topic": "Country-flag upload write",
+      "detail": "POST /upload/country-flag 200 — country_id body ignored, uses player citizenship country",
+      "severity": "medium"
+    },
+    {
+      "id": "L086",
+      "topic": "Admin assault wave15 negative",
+      "detail": "9 OSINT cred combos 401; party-logo 403 not leader; bundle no Railway URL",
+      "severity": "info"
+    },
+    {
+      "id": "L087",
+      "topic": "Country-flag citizen write CONFIRMED",
+      "detail": "cabinet_role=null citizen uploads flag 200; params ignored; NOT president-only — shared country defacement",
+      "severity": "high"
+    },
+    {
+      "id": "L088",
+      "topic": "Factory RCE negative wave16",
+      "detail": "polyglot/htaccess/filename traversal all re-encode or 400; nginx static jpeg — no shell",
+      "severity": "info"
+    },
+    {
+      "id": "L089",
+      "topic": "Multi-account ban mechanism CONFIRMED",
+      "detail": "Admin /multi-accounts 3+ groups; signals push_token/IP/transfer; manual maBanGroup; honor pledge 2+ rule; NO auto-ban",
+      "severity": "high"
+    }
+  ],
+  "stealth": {
+    "base_delay_sec": 7,
+    "paytr_interval_sec": 65,
+    "admin_brute_interval_sec": 7,
+    "admin_api_login_interval_sec": 7,
+    "bypass_strategy": "xff_rotate"
+  },
+  "stack": {
+    "cdn": "Cloudflare",
+    "frontend": "Expo/React Native Web",
+    "backend": "REST API + Socket.io",
+    "server": "nginx/1.18.0 Ubuntu",
+    "auth": "Google OAuth + JWT Bearer",
+    "payment": "PayTR"
+  },
+  "multi_account": {
+    "cluster_threshold": 3,
+    "signals": [
+      "push_token",
+      "ip_24h",
+      "ip_7d",
+      "reg_ip",
+      "transfer",
+      "similar_name"
+    ],
+    "auto_ban": false,
+    "doc": "docs/45-multi-account-ban-research.md"
+  },
+  "telegram_osint": {
+    "channel": "https://t.me/diplomaciatr",
+    "public_stats": "274 members, 65 online (t.me scrape 2026-06-12)",
+    "admins_owners": [
+      {
+        "peer_id": "5450717192",
+        "display_name": "Targan",
+        "role": "Owner",
+        "status": "recently",
+        "notes": ""
+      },
+      {
+        "peer_id": "8473511664",
+        "display_name": "ati-dipolmasyamod",
+        "role": "Admin",
+        "status": "recently",
+        "notes": "mod account naming"
+      },
+      {
+        "peer_id": "8837307136",
+        "display_name": "Marsu",
+        "role": "Admin",
+        "status": "online",
+        "notes": ""
+      },
+      {
+        "peer_id": "522891168",
+        "display_name": "Nazdravia RR",
+        "role": "Admin",
+        "status": "recently",
+        "notes": ""
+      },
+      {
+        "peer_id": "883849714",
+        "display_name": "Emirhan Ekşioğlu",
+        "role": "Admin",
+        "status": "recently",
+        "notes": ""
+      },
+      {
+        "peer_id": "896416306",
+        "display_name": "MUSTAFA ALMALI",
+        "role": "Admin",
+        "status": "recently",
+        "notes": ""
+      },
+      {
+        "peer_id": "8784222152",
+        "display_name": "Ahmet",
+        "role": "Admin",
+        "status": "recently",
+        "notes": ""
+      },
+      {
+        "peer_id": "6848473369",
+        "display_name": "Saruman",
+        "role": "Admin",
+        "status": "recently",
+        "notes": "star badge"
+      },
+      {
+        "peer_id": "683416286",
+        "display_name": "Furkan",
+        "role": "Admin",
+        "status": "recently",
+        "notes": ""
+      },
+      {
+        "peer_id": "5933486341",
+        "display_name": "Message Scor",
+        "role": "Admin",
+        "status": "bot",
+        "notes": "29205 monthly users - bot"
+      },
+      {
+        "peer_id": "609517172",
+        "display_name": "Rose",
+        "role": "Admin",
+        "status": "bot",
+        "notes": "2182666 monthly users - Telegram Rose bot"
+      }
+    ],
+    "admin_login_candidates": [
+      "admin",
+      "ahmet",
+      "ati-dipolmasyamod",
+      "diplomacia",
+      "emirhan",
+      "furkan",
+      "marsu",
+      "message",
+      "mustafa",
+      "nazdravia",
+      "rose",
+      "saruman",
+      "targan"
+    ],
+    "player_xref": [
+      {
+        "tg_peer_id": "5450717192",
+        "tg_name": "Targan",
+        "tg_role": "Owner",
+        "game_username": "Targan Han",
+        "game_id": "cd9064b5-b57b-4031-9645-0df49f53363a"
+      },
+      {
+        "tg_peer_id": "8837307136",
+        "tg_name": "Marsu",
+        "tg_role": "Admin",
+        "game_username": "MARSU",
+        "game_id": "167e139c-9e10-42f6-826a-339170e75e53"
+      },
+      {
+        "tg_peer_id": "522891168",
+        "tg_name": "Nazdravia RR",
+        "tg_role": "Admin",
+        "game_username": "Nazdravia",
+        "game_id": "dca94921-4351-4ff3-a15c-62947fbaa4d1"
+      },
+      {
+        "tg_peer_id": "883849714",
+        "tg_name": "Emirhan Ekşioğlu",
+        "tg_role": "Admin",
+        "game_username": "EmirhanV",
+        "game_id": "4055f7cf-4fb3-4780-aed1-1a3ec9bba159"
+      },
+      {
+        "tg_peer_id": "896416306",
+        "tg_name": "MUSTAFA ALMALI",
+        "tg_role": "Admin",
+        "game_username": "Mustafa Paşa",
+        "game_id": "0dd85d74-53ac-4126-b158-6c2da4f9e83e"
+      },
+      {
+        "tg_peer_id": "8784222152",
+        "tg_name": "Ahmet",
+        "tg_role": "Admin",
+        "game_username": "AHMET Can NURDOGAN",
+        "game_id": "5ce85672-635b-4806-9ff1-1aa1929d0321"
+      },
+      {
+        "tg_peer_id": "6848473369",
+        "tg_name": "Saruman",
+        "tg_role": "Admin",
+        "game_username": "Saruman",
+        "game_id": "5f0f5431-c3fc-431a-8b42-c3b6062f3d3a"
+      },
+      {
+        "tg_peer_id": "683416286",
+        "tg_name": "Furkan",
+        "tg_role": "Admin",
+        "game_username": "Furkan Aslan Paşa",
+        "game_id": "f8cc3824-bf81-4fdb-8f51-9b775fbd9472"
+      },
+      {
+        "tg_peer_id": "609517172",
+        "tg_name": "Rose",
+        "tg_role": "Admin",
+        "game_username": "rosesbythepark",
+        "game_id": "65026482-caff-4404-867d-3ec5a75e2af5"
+      },
+      {
+        "tg_peer_id": "935081332",
+        "tg_name": "Yiğit",
+        "tg_role": "",
+        "game_username": "Yiğit25",
+        "game_id": "97b20129-add2-48aa-b660-27e650d6b4c2"
+      },
+      {
+        "tg_peer_id": "6483988017",
+        "tg_name": "Burak Aydın",
+        "tg_role": "",
+        "game_username": "BURAK AYDIN",
+        "game_id": "9180a655-fb56-45be-a458-0ad84694e0da"
+      }
+    ],
+    "source_files": [
+      "logs/telegram_osint_full.json",
+      "raw/diplomacia/telegram_player_xref.json"
+    ]
+  },
+  "api_endpoints_count": 0
+}
