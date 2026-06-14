@@ -40,7 +40,19 @@ def main() -> int:
     else:
         print(f"OK teach: {teach.reply[:50].replace(chr(10), ' ')}…")
         if teach.inline_buttons:
-            print(f"OK teach buttons: {len(teach.inline_buttons[0])} adet")
+            labels = [lb for lb, _ in teach.inline_buttons[0]]
+            print(f"OK teach buttons: {labels}")
+            from diplomacy_bot.game_coach import coach_action_buttons
+            from diplomacy_bot.game_api import get_profile
+
+            acc = get_account("ercan2")
+            if acc:
+                p = get_profile(acc.token)
+                if p.health < 100 and p.health_pills > 0:
+                    ordered = coach_action_buttons(p, "can")
+                    if ordered and ordered[0][0][1] != "action:hap":
+                        print("FAIL coach order: hap should be first when low health")
+                        failed += 1
 
     auth = Path("/root/diplomacia-auth.json")
     probe_out = ROOT / "output" / "reverse" / "transfer_race_probe.json"

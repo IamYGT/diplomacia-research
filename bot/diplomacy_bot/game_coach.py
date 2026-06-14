@@ -230,21 +230,62 @@ def answer_teach(
     return local or "Bu konuda `yardım` veya daha spesifik sor — örn. `can ne işe yarıyor`"
 
 
+def _button_priority(
+    profile: game_api.Profile | None,
+    topic: str | None,
+    action: str,
+) -> int:
+    """Düşük puan = önce göster. Can 0 veya can konusu → hap öncelikli."""
+    health = profile.health if profile else 100
+    pills = profile.health_pills if profile else 0
+    low_health = health < 100 and pills > 0
+
+    if action == "hap":
+        if not low_health:
+            return 99
+        if health == 0 or topic == "can":
+            return 0
+        if health < 50:
+            return 1
+        return 4
+
+    if action == "farm":
+        if topic in ("fabrika", "ekonomi"):
+            return 2 if low_health and health == 0 else 1
+        if low_health and health == 0:
+            return 3
+        return 2
+
+    if action == "quests":
+        return 1 if topic == "görev" else 5
+
+    return 50
+
+
 def coach_action_buttons(
     profile: game_api.Profile | None,
     topic: str | None,
 ) -> list[list[tuple[str, str]]] | None:
-    """Koç cevabı altında hızlı aksiyon butonları."""
-    row: list[tuple[str, str]] = []
+    """Koç cevabı altında profil/topic'e göre sıralı hızlı aksiyon butonları."""
+    candidates: list[tuple[int, tuple[str, str]]] = []
+
     if profile and profile.health < 100 and profile.health_pills > 0:
-        row.append(("💊 Hap kullan", "action:hap"))
+        candidates.append(
+            (_button_priority(profile, topic, "hap"), ("💊 Hap kullan", "action:hap"))
+        )
     if topic in ("can", "fabrika", "ekonomi", "görev", None):
-        row.append(("🌾 Farm yap", "action:farm"))
+        candidates.append(
+            (_button_priority(profile, topic, "farm"), ("🌾 Farm yap", "action:farm"))
+        )
     if topic in ("görev", "ekonomi", None):
-        row.append(("🎁 Görev topla", "action:quests"))
-    if not row:
+        candidates.append(
+            (_button_priority(profile, topic, "quests"), ("🎁 Görev topla", "action:quests"))
+        )
+
+    if not candidates:
         return None
-    return [row[:3]]
+    candidates.sort(key=lambda x: x[0])
+    return [[btn for _, btn in candidates[:3]]]
 
 
 class TeachAnswer:

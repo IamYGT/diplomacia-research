@@ -1,11 +1,35 @@
 {
-  "ts": "2026-06-09T20:34:53.231655+00:00",
+  "ts": "2026-06-09T20:42:17.050654+00:00",
   "username": "Ercan2",
   "level": 4,
-  "xp": 842,
+  "xp": 859,
   "min_transfer_level": 5,
   "race_ran": false,
+  "level_up_attempted": true,
+  "level_up": {
+    "ok": false,
+    "level": 4,
+    "xp": 859,
+    "cycles": 1,
+    "log": [
+      {
+        "step": "farm",
+        "cycle": 0,
+        "result": {
+          "ok": false,
+          "earned": {},
+          "error": "Hap kullanım bekleme süresi dolmadı.",
+          "cooldown_ms": 583727
+        }
+      },
+      {
+        "step": "stop",
+        "reason": "pill_cooldown",
+        "ms": 583727
+      }
+    ]
+  },
   "status": "skipped",
-  "reason": "lv4 < 5 — önce farm/quest ile level atla",
-  "suggestion": "Telegram: `farm yap` veya günlük/görev XP"
+  "reason": "lv4 < 5 — farm/quest veya --level-up",
+  "suggestion": "python3 scripts/transfer_race_probe.py --level-up"
 }

@@ -39,7 +39,11 @@ done
 
 # Transfer race probe (lv<5 skip veya lv5+ ok — auth varsa çalıştır)
 if [[ -f /root/diplomacia-auth.json ]]; then
-  python3 "$ROOT/scripts/transfer_race_probe.py" >/dev/null
+  if [[ "${TRANSFER_RACE_LEVEL_UP:-}" == "1" ]]; then
+    python3 "$ROOT/scripts/transfer_race_probe.py" --level-up >/dev/null
+  else
+    python3 "$ROOT/scripts/transfer_race_probe.py" >/dev/null
+  fi
   python3 - "$ROOT/output/reverse/transfer_race_probe.json" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1], encoding="utf-8"))
