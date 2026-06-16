@@ -3,8 +3,8 @@ module.exports = {
     {
       name: "diplomacy-ygt-bot",
       cwd: "/root/diplomacia-research/bot",
-      script: "main.py",
-      interpreter: ".venv/bin/python3",
+      script: "run_bot.sh",
+      interpreter: "bash",
       instances: 1,
       autorestart: true,
       max_restarts: 20,
@@ -13,6 +13,7 @@ module.exports = {
         NODE_ENV: "production",
         ACCOUNT_RULES_PATH: "/root/diplomacia-research/bot/data/accounts/rules.yaml",
         DIPLOMACIA_INTEL: "/root/diplomacia-research/engagement/intel/merged.json",
+        CRASH_NOTIFY_COOLDOWN_SEC: "90",
       },
     },
   ],

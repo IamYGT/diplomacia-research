@@ -11,7 +11,7 @@ Profilde `skills` (aktif: kisla, bilim_insani…) ve `passive_skills` / `passive
 |----------|-----|
 | `GET /players/passive-skills` | `available_points`, `passive_skills` |
 | `POST /players/passive-skills/spend` | `{"skill": "...", "points": N}` |
-| `POST /players/skills/upgrade` | Aktif skill (`kisla`, type: `gold`/`diamond`) |
+| `POST /players/skills/upgrade` | Aktif skill — `{"skill":"kisla","type":"money"}` veya `type":"diamond"` |
 | `GET /players/profile` | `skills`, `passive_skill_points` snapshot |
 
 ## Öncelik sırası (varsayılan — config ile değişir)
