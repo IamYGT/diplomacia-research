@@ -14,6 +14,7 @@ from .intent_router import try_fast_path
 from .response_format import format_step_results
 from .game_client import call
 from .safety import action_summary, classify_action, sanitize_path
+from .store import get_account, list_accounts
 from .dynamic_context import build_ai_context
 from .version import get_version_label
 
@@ -45,11 +46,18 @@ class AgentResult:
     needs_confirmation: bool = False
     pending_actions: list[dict] = field(default_factory=list)
     inline_buttons: list[list[tuple[str, str]]] | None = None
+    parse_mode: str | None = "Markdown"
 
 
-def _accounts_context() -> str:
+def _accounts_context(telegram_user_id: int | None = None) -> str:
+    from .auth import scoped_list_accounts
+
+    if telegram_user_id:
+        accounts = scoped_list_accounts(telegram_user_id)
+    else:
+        accounts = list_accounts()
     lines = []
-    for a in list_accounts():
+    for a in accounts:
         try:
             p = game_api.get_profile(a.token)
             lines.append(
@@ -61,8 +69,8 @@ def _accounts_context() -> str:
     return "\n".join(lines) or "(hesap yok)"
 
 
-def _build_plan_system(default_account: str = "ygt") -> str:
-    accounts = _accounts_context()
+def _build_plan_system(default_account: str = "ygt", telegram_user_id: int | None = None) -> str:
+    accounts = _accounts_context(telegram_user_id)
     mechanics = load_mechanics()
     catalog = catalog_for_prompt()
     return (
@@ -87,9 +95,9 @@ def _build_plan_system(default_account: str = "ygt") -> str:
     )
 
 
-def plan(user_message: str, default_account: str = "ercan2") -> dict:
+def plan(user_message: str, default_account: str = "ercan2", *, telegram_user_id: int | None = None) -> dict:
     user = f"Varsayılan hesap: {default_account}\n\nKullanıcı: {user_message}"
-    return generate_json(_build_plan_system(default_account), user)
+    return generate_json(_build_plan_system(default_account, telegram_user_id), user)
 
 
 def execute_steps(
@@ -147,6 +155,7 @@ def run_agent(
     default_account: str = "ercan2",
     *,
     allow_confirm: bool = False,
+    telegram_user_id: int | None = None,
 ) -> AgentResult:
     if not allow_confirm:
         fast = try_fast_path(user_message, default_account)
@@ -164,7 +173,7 @@ def run_agent(
             )
 
     try:
-        plan_data = plan(user_message, default_account)
+        plan_data = plan(user_message, default_account, telegram_user_id=telegram_user_id)
     except RuntimeError as e:
         fast = try_fast_path(user_message, default_account)
         if fast is not None:

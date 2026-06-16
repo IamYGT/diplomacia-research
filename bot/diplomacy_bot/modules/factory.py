@@ -1,12 +1,40 @@
 from __future__ import annotations
 
+import time
 from typing import Any, Callable
 
 from ..account_config import AccountConfig
 from ..game_api import api as default_api, get_profile
-from .economy import work_ready
+from .economy import get_auto_status, work_ready
 
 ApiFn = Callable[..., tuple[int, Any]]
+
+_FACTORY_CACHE: dict[str, tuple[float, str]] = {}
+_FACTORY_CACHE_TTL = 900.0
+
+
+def _cache_key(account_name: str, mode: str) -> str:
+    return f"{account_name}:{mode}"
+
+
+def _get_cached_factory(account_name: str, mode: str) -> str | None:
+    row = _FACTORY_CACHE.get(_cache_key(account_name, mode))
+    if not row:
+        return None
+    ts, fid = row
+    if time.time() - ts > _FACTORY_CACHE_TTL:
+        _FACTORY_CACHE.pop(_cache_key(account_name, mode), None)
+        return None
+    return fid
+
+
+def _set_cached_factory(account_name: str, mode: str, factory_id: str | None) -> None:
+    if factory_id:
+        _FACTORY_CACHE[_cache_key(account_name, mode)] = (time.time(), factory_id)
+
+
+def clear_factory_cache() -> None:
+    _FACTORY_CACHE.clear()
 
 
 def _score_factory(f: dict, province: str | None) -> float:
@@ -68,6 +96,9 @@ def resolve_factory_id(token: str, cfg: AccountConfig, *, _api: ApiFn = default_
     mode = cfg.work_mode
     if mode == "fixed" and cfg.preferred_factory_id:
         return cfg.preferred_factory_id, None
+    cached = _get_cached_factory(cfg.account_name, mode)
+    if cached and mode in ("foreign", "own", "auto"):
+        return cached, None
     if mode == "foreign":
         fid = pick_foreign_factory(token, _api=_api)
         if fid:
@@ -96,42 +127,44 @@ def resolve_factory_id(token: str, cfg: AccountConfig, *, _api: ApiFn = default_
 
 def prepare_join(
     token: str,
-    factory_id: str,
+    factory_id: str | None,
     cfg: AccountConfig,
     *,
     _api: ApiFn = default_api,
     build_suffix: str = "2",
-) -> tuple[str, str | None]:
-    """leave → join. Bölge hatasında sadece auto mod + allow_auto_build ile kur."""
+) -> tuple[str | None, str | None]:
+    """join — zaten çalışıyorsa dokunma; factory_id yoksa resolve et."""
     if is_traveling(token, _api=_api):
         return factory_id, "seyahat halindesin — bekle"
 
-    _, ws = _api("GET", "/factories/work-status", token, delay=0.2)
+    _, ws = _api("GET", "/factories/work-status", token, delay=0.15)
     if ws.get("working"):
-        _api("POST", "/factories/leave", token, {}, delay=0.3)
+        return factory_id or ws.get("factory_id"), None
 
-    if cfg.work_mode != "fixed":
+    if not factory_id:
         resolved, err = resolve_factory_id(token, cfg, _api=_api)
         if err:
-            return factory_id, err
-        if resolved:
-            factory_id = resolved
+            return None, err
+        factory_id = resolved
 
-    _, joined = _api("POST", "/factories/join", token, {"factory_id": factory_id}, delay=0.3)
+    if not factory_id:
+        return None, "fabrika seçilemedi"
+
+    _, joined = _api("POST", "/factories/join", token, {"factory_id": factory_id}, delay=0.2)
     err_text = str((joined or {}).get("error") or (joined or {}).get("message") or "")
     if joined.get("error") and "bölge" in err_text.lower():
-        _api("POST", "/factories/leave", token, {}, delay=0.2)
+        _api("POST", "/factories/leave", token, {}, delay=0.15)
         if cfg.work_mode == "auto" or cfg.allow_auto_build:
             st, built = _api(
                 "POST",
                 "/factories/build",
                 token,
                 {"type": "elmas", "name": f"BotFarm{build_suffix}"},
-                delay=0.3,
+                delay=0.2,
             )
             if st in (200, 201):
                 factory_id = (built.get("factory") or {}).get("id") or factory_id
-                _api("POST", "/factories/join", token, {"factory_id": factory_id}, delay=0.3)
+                _api("POST", "/factories/join", token, {"factory_id": factory_id}, delay=0.2)
                 return factory_id, None
         return factory_id, "bölge uyumsuz — hedef fabrikaya seyahat et veya /setfabric"
     if joined.get("error"):
@@ -139,9 +172,11 @@ def prepare_join(
     return factory_id, None
 
 
-def use_pills_if_needed(token: str, *, _api: ApiFn = default_api) -> dict | None:
-    prof = get_profile(token)
-    if prof.health >= 100:
+def use_pills_if_needed(token: str, *, _api: ApiFn = default_api, health: int | None = None) -> dict | None:
+    if health is None:
+        prof = get_profile(token)
+        health = prof.health
+    if health >= 100:
         return None
     st, pills = _api("POST", "/auto/use-pills", token, {}, delay=0.3)
     if st != 200:
@@ -160,10 +195,44 @@ def run_work_cycle(
     _api: ApiFn = default_api,
 ) -> dict:
     result: dict[str, Any] = {"ok": False, "earned": {}, "error": None, "factory_id": factory_id}
-    ready, wait_ms = work_ready(token, _api=_api)
-    if not ready:
+    status = get_auto_status(token, _api=_api)
+    wait_ms = int(status.get("next_work_in_ms") or 0)
+    if wait_ms > 0:
         result["error"] = "work cooldown"
         result["cooldown_ms"] = wait_ms
+        return result
+
+    if "health" in status:
+        health = int(status.get("health") or 0)
+    else:
+        try:
+            health = get_profile(token).health
+        except Exception:
+            health = 100
+    pill_cd = int(status.get("pill_cooldown_ms") or 0)
+
+    _, ws = _api("GET", "/factories/work-status", token, delay=0.15)
+    if ws.get("working"):
+        factory_id = factory_id or ws.get("factory_id") or _get_cached_factory(cfg.account_name, cfg.work_mode)
+        result["factory_id"] = factory_id
+        if health < 100:
+            if pill_cd > 0:
+                result["error"] = "hap cooldown"
+                result["cooldown_ms"] = pill_cd
+                return result
+            pill_err = use_pills_if_needed(token, _api=_api, health=health)
+            if pill_err:
+                result["error"] = pill_err["error"]
+                result["cooldown_ms"] = pill_err.get("cooldown_ms")
+                return result
+        st, work = _api("POST", "/factories/work", token, {}, delay=0.2)
+        earned = work.get("earned") or {}
+        result["earned"] = earned
+        result["ok"] = st == 200
+        if result["ok"] and factory_id:
+            _set_cached_factory(cfg.account_name, cfg.work_mode, factory_id)
+        if not result["ok"]:
+            result["error"] = work.get("error") or work.get("message") or f"work HTTP {st}"
         return result
 
     fid, resolve_err = resolve_factory_id(token, cfg, _api=_api)
@@ -181,16 +250,23 @@ def run_work_cycle(
         result["error"] = join_err
         return result
 
-    pill_err = use_pills_if_needed(token, _api=_api)
-    if pill_err:
-        result["error"] = pill_err["error"]
-        result["cooldown_ms"] = pill_err.get("cooldown_ms")
-        return result
+    if health < 100:
+        if pill_cd > 0:
+            result["error"] = "hap cooldown"
+            result["cooldown_ms"] = pill_cd
+            return result
+        pill_err = use_pills_if_needed(token, _api=_api, health=health)
+        if pill_err:
+            result["error"] = pill_err["error"]
+            result["cooldown_ms"] = pill_err.get("cooldown_ms")
+            return result
 
-    st, work = _api("POST", "/factories/work", token, {}, delay=0.3)
+    st, work = _api("POST", "/factories/work", token, {}, delay=0.2)
     earned = work.get("earned") or {}
     result["earned"] = earned
     result["ok"] = st == 200
+    if result["ok"] and factory_id:
+        _set_cached_factory(cfg.account_name, cfg.work_mode, factory_id)
     if not result["ok"]:
         result["error"] = work.get("error") or work.get("message") or f"work HTTP {st}"
     return result

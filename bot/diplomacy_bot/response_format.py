@@ -158,6 +158,158 @@ def format_api_result(path: str, data: Any) -> str:
     return text[:450] + ("…" if len(text) > 450 else "")
 
 
+def format_factories_bundle(factories: list[dict], work: dict | None = None) -> str:
+    lines = ["🏭 *Fabrikalarım*"]
+    if not factories:
+        lines.append("Kayıtlı fabrika yok.")
+    for f in factories[:8]:
+        name = f.get("name") or "?"
+        fid = f.get("id") or f.get("factory_id") or "?"
+        lvl = f.get("level", "?")
+        prov = f.get("province_name") or f.get("region") or ""
+        workers = f.get("worker_count") or f.get("workers")
+        extra = f" · {workers} işçi" if workers is not None else ""
+        lines.append(f"• *{name}* (lv{lvl}){extra}\n  `{fid}` {prov}")
+    if work and isinstance(work, dict):
+        if work.get("working"):
+            lines.append(f"\n✅ Şu an çalışıyor: `{work.get('factory_id', '?')}`")
+        else:
+            lines.append("\n⏳ Aktif work yok")
+    return "\n".join(lines)
+
+
+def format_military_bundle(data: dict) -> str:
+    if not data:
+        return "Asker bilgisi yok."
+    power = data.get("military_power")
+    units = data.get("units") or {}
+    barracks = data.get("barracks") or {}
+    lines = ["🪖 *Askeri durum*"]
+    if power is not None:
+        lines.append(f"Güç: *{power:,}*" if isinstance(power, int) else f"Güç: *{power}*")
+    if isinstance(units, dict) and units:
+        unit_lines = []
+        for k, v in list(units.items())[:8]:
+            unit_lines.append(f"  {k}: {v}")
+        lines.append("Birimler:\n" + "\n".join(unit_lines))
+    elif isinstance(units, list) and units:
+        for u in units[:6]:
+            if isinstance(u, dict):
+                lines.append(f"  • {u.get('type', '?')}: {u.get('count', '?')}")
+    if barracks:
+        lines.append(f"Kışla: `{str(barracks)[:120]}`")
+    return "\n".join(lines) if len(lines) > 1 else "🪖 Asker verisi boş."
+
+
+def format_military_ops(data: dict) -> str:
+    if not data:
+        return "Aktif askeri operasyon yok."
+    op = data.get("operation")
+    joined = data.get("is_joined")
+    if not op:
+        return "Aktif askeri operasyon yok."
+    name = op.get("name") or op.get("title") or "Operasyon"
+    lines = [f"🎯 *{name}*", f"Katıldın: {'✅' if joined else '❌'}"]
+    if data.get("joined_until"):
+        lines.append(f"Bitiş: {data['joined_until']}")
+    return "\n".join(lines)
+
+
+def format_training_bundle(war: dict | None, attack: dict | None = None) -> str:
+    if attack and attack.get("ok"):
+        d = attack.get("result", {}).get("data") or {}
+        return f"🏋️ *Antrenman saldırısı* ✅\n{d.get('message') or str(d)[:300]}"
+    if attack and attack.get("skipped"):
+        return f"🏋️ Antrenman atlandı: `{attack['skipped']}`"
+    if attack and not attack.get("ok"):
+        return f"🏋️ Antrenman: {attack.get('error') or attack}"
+    if war:
+        name = war.get("name") or war.get("war_name") or "Antrenman"
+        wid = war.get("id") or war.get("war_id") or "?"
+        return f"🏋️ *{name}*\nID: `{wid}`\nÜcretsiz saldırı için butona bas."
+    return "🏋️ Antrenman savaşı bulunamadı."
+
+
+def format_war_contribute(result: dict) -> str:
+    if result.get("ok"):
+        d = result.get("result", {}).get("data") or {}
+        side = result.get("result", {}).get("side", "?")
+        return f"⚔️ *Savaşa katkı* ({side}) ✅\n{d.get('message') or str(d)[:300]}"
+    if result.get("skipped"):
+        return f"⚔️ Savaş katkısı atlandı: `{result['skipped']}`"
+    return f"⚔️ Savaş katkısı başarısız: {result.get('error') or result}"
+
+
+def format_auto_status_detail(status: dict) -> str:
+    if not status:
+        return "Otomasyon durumu alınamadı."
+    work_ms = int(status.get("next_work_in_ms") or 0)
+    pill_ms = int(status.get("pill_cooldown_ms") or 0)
+    free = status.get("free_attack_available")
+    lines = [
+        "🤖 *Otomasyon durumu*",
+        f"Auto work: {'🟢' if status.get('auto_work_active') else '⚪'}",
+        f"Auto war: {'🟢' if status.get('auto_war_active') else '⚪'}",
+        f"Work: {'✅ hazır' if work_ms <= 0 else f'⏳ {work_ms // 1000}s'}",
+        f"Hap CD: {'✅' if pill_ms <= 0 else f'⏳ {pill_ms // 1000}s'}",
+        f"Ücretsiz saldırı: {'✅' if free else '⏳ bekliyor'}",
+        f"Hap stoğu: {status.get('health_pills', '?')}",
+    ]
+    return "\n".join(lines)
+
+
+def format_online_info(payload: dict) -> str:
+    if payload.get("count") is not None:
+        return f"🌐 *Online oyuncular:* ~{payload['count']}"
+    data = payload.get("data") or {}
+    if isinstance(data, dict):
+        for key in ("online", "count", "players_online", "total"):
+            if key in data:
+                return f"🌐 *Online:* {data[key]}"
+    return f"🌐 Online: `{str(data)[:200]}`"
+
+
+def format_craft_result(result: dict) -> str:
+    if result.get("ok"):
+        d = result.get("data") or {}
+        if isinstance(d, dict):
+            msg = d.get("message") or d.get("success")
+            pills = d.get("pills_crafted") or d.get("health_pills")
+            parts = [f"💎 {result.get('diamonds')} elmas → hap"]
+            if pills is not None:
+                parts.append(f"kazanılan: {pills}")
+            if msg:
+                parts.append(str(msg))
+            return "✅ " + " | ".join(parts)
+        return f"✅ Hap üretildi ({result.get('diamonds')} elmas)"
+    err = result.get("error")
+    if isinstance(result.get("data"), dict):
+        err = err or result["data"].get("error") or result["data"].get("message")
+    return f"❌ Hap üretilemedi: {err or '?'}"
+
+
+def format_passive_detail(data: dict) -> str:
+    pts = int(data.get("available_points") or 0)
+    skills = data.get("passive_skills") or {}
+    lines = [f"⚡ *Pasif yetenekler* — {pts} puan bekliyor"]
+    if isinstance(skills, dict):
+        for k, v in list(skills.items())[:10]:
+            if isinstance(v, dict):
+                lvl = v.get("level", "?")
+                lines.append(f"  • {k}: seviye {lvl}")
+            else:
+                lines.append(f"  • {k}: {v}")
+    return "\n".join(lines)
+
+
+def format_ping_result(result: dict) -> str:
+    if result.get("ok"):
+        d = result.get("data") or {}
+        msg = d.get("message") if isinstance(d, dict) else None
+        return f"📡 Ping OK (HTTP {result.get('status')}){f' — {msg}' if msg else ''}"
+    return f"📡 Ping başarısız: HTTP {result.get('status')}"
+
+
 def format_step_results(results: list[dict]) -> str:
     lines = []
     for i, r in enumerate(results, 1):

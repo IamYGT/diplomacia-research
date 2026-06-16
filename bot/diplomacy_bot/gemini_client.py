@@ -99,3 +99,19 @@ def generate_text(
 
     result = _call(payload, parse_json=False, models=models)
     return str(result).strip()
+
+
+def verify_connection() -> dict:
+    """Startup smoke — seçili model + gecikme (ms)."""
+    import time
+
+    from .config import GEMINI_MODEL
+
+    t0 = time.perf_counter()
+    out = generate_json(
+        'Sadece JSON: {"reply_tr":"ok","ok":true}',
+        "ping",
+        models=[GEMINI_MODEL],
+    )
+    ms = int((time.perf_counter() - t0) * 1000)
+    return {"model": GEMINI_MODEL, "latency_ms": ms, "ok": bool(out.get("reply_tr"))}

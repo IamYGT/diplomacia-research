@@ -7,15 +7,31 @@ from pathlib import Path
 from .config import DATA_DIR
 
 CATALOG_PATH = DATA_DIR / "api_catalog.json"
+PROBE_EXTRA_PATH = DATA_DIR / "api_probe_extra.json"
 MECHANICS_PATH = DATA_DIR / "game_mechanics.md"
 
 
 @lru_cache(maxsize=1)
+def load_probe_extra() -> list[dict]:
+    if not PROBE_EXTRA_PATH.exists():
+        return []
+    data = json.loads(PROBE_EXTRA_PATH.read_text(encoding="utf-8"))
+    return list(data.get("endpoints") or [])
+
+
+@lru_cache(maxsize=1)
 def load_catalog() -> list[dict]:
+    base: list[dict] = []
     if CATALOG_PATH.exists():
         data = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-        return data.get("endpoints", [])
-    return []
+        base = list(data.get("endpoints") or [])
+    seen = {f"{e.get('method','').upper()} {e.get('path','')}" for e in base}
+    for ep in load_probe_extra():
+        key = f"{ep.get('method', 'GET').upper()} {ep.get('path', '')}"
+        if key not in seen:
+            base.append({**ep, "probe_only": True})
+            seen.add(key)
+    return base
 
 
 def search_endpoints(query: str, limit: int = 25) -> list[dict]:

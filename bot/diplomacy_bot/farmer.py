@@ -38,6 +38,99 @@ def _tick_to_farm(t: TickResult) -> FarmResult:
     )
 
 
+def run_quick_farm(token: str, account_name: str, proxy_url: str | None = None, proxy_id: str = "") -> FarmResult:
+    """Tek work döngüsü + stat otomasyonu — çağıran `interactive_account_context` içinde olmalı."""
+    from .modules import factory, stats
+
+    cfg = get_config(account_name)
+    actions: list[dict] = []
+    try:
+        prof = game_api.get_profile(token)
+        balance_before = prof.balance
+        username = prof.username
+    except Exception as e:
+        return FarmResult(
+            account_name=account_name,
+            username="?",
+            ok=False,
+            balance_before=0,
+            balance_after=0,
+            earned_money=0,
+            earned_xp=0,
+            earned_diamonds=0,
+            error=str(e)[:200],
+        )
+
+    if cfg.stat_auto_enabled:
+        pre = stats.run_stat_automation(token, cfg)
+        if pre.get("passive") or pre.get("upgrades"):
+            actions.append({"stat_auto_pre": pre})
+
+    from .modules import premium as premium_mod
+
+    skip_work, skip_reason = premium_mod.should_skip_manual_work(token, cfg)
+    if skip_work:
+        actions.append({"skipped": skip_reason})
+        try:
+            after = game_api.get_profile(token)
+            balance_after = after.balance
+        except Exception:
+            balance_after = balance_before
+        if cfg.stat_auto_enabled:
+            post = stats.run_stat_automation(token, cfg)
+            if post.get("passive") or post.get("upgrades"):
+                actions.append({"stat_auto_post": post})
+        return FarmResult(
+            account_name=account_name,
+            username=username,
+            ok=True,
+            balance_before=balance_before,
+            balance_after=balance_after,
+            earned_money=0,
+            earned_xp=0,
+            earned_diamonds=0,
+            error=None,
+            factory_id=None,
+            actions=actions or None,
+        )
+
+    work = factory.run_work_cycle(token, cfg)
+    earned = work.get("earned") or {}
+    money = int(earned.get("money") or 0)
+    xp = int(earned.get("xp") or 0)
+    diamonds = int(earned.get("diamonds") or 0)
+    ok = bool(work.get("ok"))
+    balance_after = balance_before + money if ok else balance_before
+    if ok:
+        try:
+            after = game_api.get_profile(token)
+            balance_after = after.balance
+        except Exception:
+            pass
+        if cfg.stat_auto_enabled:
+            post = stats.run_stat_automation(token, cfg)
+            if post.get("passive") or post.get("upgrades"):
+                actions.append({"stat_auto_post": post})
+    err_msg = None
+    if not ok:
+        from .user_errors import format_work_error
+
+        err_msg = format_work_error(work.get("error"), cooldown_ms=work.get("cooldown_ms"))
+    return FarmResult(
+        account_name=account_name,
+        username=username,
+        ok=ok,
+        balance_before=balance_before,
+        balance_after=balance_after,
+        earned_money=money,
+        earned_xp=xp,
+        earned_diamonds=diamonds,
+        error=err_msg or work.get("error"),
+        factory_id=work.get("factory_id"),
+        actions=actions or None,
+    )
+
+
 def run_farm(token: str, account_name: str, cycles: int = 1, proxy_url: str | None = None, proxy_id: str = "") -> FarmResult:
     from .account_pool import prepare_egress
     from .stealth_client import reset_request_proxy, set_request_proxy
@@ -62,6 +155,9 @@ def run_farm(token: str, account_name: str, cycles: int = 1, proxy_url: str | No
 
 def format_farm_result(r: FarmResult) -> str:
     if r.error and r.earned_money <= 0 and not r.ok:
+        if r.error.startswith(("⏳", "❤️", "💊", "🏭", "🧳")):
+            fab = f"\n🏭 `{r.factory_id}`" if r.factory_id else ""
+            return f"{r.error}{fab}"
         hint = ""
         err = (r.error or "").lower()
         if "bekleme" in err or "cooldown" in err:

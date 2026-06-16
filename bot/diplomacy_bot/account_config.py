@@ -4,9 +4,52 @@ import json
 import sqlite3
 from dataclasses import dataclass, field
 
-from .config import DB_PATH
-
 DEFAULT_STAT_PRIORITY = ["kisla", "savas_teknikleri", "bilim_insani", "ekonomi"]
+
+# Çoklu hesap görev profilleri
+BOT_ROLES = ("farm", "war", "hybrid", "hub", "off")
+ROLE_LABELS_TR = {
+    "farm": "🌾 Farm",
+    "war": "⚔️ Savaş",
+    "hybrid": "🔀 Karma",
+    "hub": "⭐ Premium hub",
+    "off": "⏸ Durdu",
+}
+_LEGACY_ROLE_MAP = {
+    "farmer": "farm",
+    "premium_hub": "hub",
+    "warrior": "war",
+}
+
+
+def normalize_role(role: str | None) -> str:
+    r = (role or "farm").strip().lower()
+    r = _LEGACY_ROLE_MAP.get(r, r)
+    return r if r in BOT_ROLES else "farm"
+
+
+def role_label(role: str | None) -> str:
+    return ROLE_LABELS_TR.get(normalize_role(role), role or "?")
+
+
+def apply_role_defaults(cfg: "AccountConfig") -> "AccountConfig":
+    """Rol seçilince war/training/hub bayraklarını tutarlı yap."""
+    role = normalize_role(cfg.role)
+    cfg.role = role
+    if role == "farm":
+        cfg.war_enabled = False
+        cfg.training_enabled = True
+    elif role == "war":
+        cfg.war_enabled = True
+        cfg.training_enabled = True
+    elif role == "hybrid":
+        cfg.war_enabled = True
+        cfg.training_enabled = True
+    elif role == "hub":
+        cfg.war_enabled = False
+        cfg.training_enabled = False
+        cfg.is_premium_hub = True
+    return cfg
 
 # Canlı probe (ygt/kalemiye): pasif skill anahtarı vergi_uzmani
 CLASS_STAT_PRIORITY: dict[str, list[str]] = {
@@ -19,11 +62,12 @@ CLASS_STAT_PRIORITY: dict[str, list[str]] = {
 @dataclass
 class AccountConfig:
     account_name: str
-    role: str = "farmer"  # farmer | premium_hub
+    role: str = "farm"  # farm | war | hybrid | hub | off
     work_mode: str = "own"  # own | foreign | fixed | auto
     preferred_factory_id: str | None = None
     allow_auto_build: bool = False
     stat_priority: list[str] = field(default_factory=lambda: list(DEFAULT_STAT_PRIORITY))
+    stat_auto_enabled: bool = True  # altınla otomatik yükselt + pasif harca (farm döngüsü)
     war_enabled: bool = False
     target_war_id: str | None = None
     contribute_side: str = "auto"  # attacker | defender | auto
@@ -32,12 +76,27 @@ class AccountConfig:
     craft_pills_when_low: bool = True
     min_pill_stock: int = 5
     craft_diamond_batch: int = 3000
+    primary_factory_id: str | None = None
+    default_salary_rate: int = 87
+    default_build_name: str = "BotFarm"
+
+
+def _migrate_config_columns(c: sqlite3.Connection) -> None:
+    cols = {row[1] for row in c.execute("PRAGMA table_info(account_config)").fetchall()}
+    for col, ddl in (
+        ("primary_factory_id", "ALTER TABLE account_config ADD COLUMN primary_factory_id TEXT"),
+        ("default_salary_rate", "ALTER TABLE account_config ADD COLUMN default_salary_rate INTEGER DEFAULT 87"),
+        ("default_build_name", "ALTER TABLE account_config ADD COLUMN default_build_name TEXT DEFAULT 'BotFarm'"),
+        ("stat_auto_enabled", "ALTER TABLE account_config ADD COLUMN stat_auto_enabled INTEGER DEFAULT 1"),
+    ):
+        if col not in cols:
+            c.execute(ddl)
 
 
 def _conn() -> sqlite3.Connection:
-    c = sqlite3.connect(DB_PATH)
-    c.row_factory = sqlite3.Row
-    return c
+    from .store import _conn as store_conn
+
+    return store_conn()
 
 
 def init_config_table() -> None:
@@ -58,10 +117,14 @@ def init_config_table() -> None:
                 is_premium_hub INTEGER DEFAULT 0,
                 craft_pills_when_low INTEGER DEFAULT 1,
                 min_pill_stock INTEGER DEFAULT 5,
-                craft_diamond_batch INTEGER DEFAULT 3000
+                craft_diamond_batch INTEGER DEFAULT 3000,
+                primary_factory_id TEXT,
+                default_salary_rate INTEGER DEFAULT 87,
+                default_build_name TEXT DEFAULT 'BotFarm'
             )
             """
         )
+        _migrate_config_columns(c)
 
 
 def get_config(account_name: str) -> AccountConfig:
@@ -70,17 +133,19 @@ def get_config(account_name: str) -> AccountConfig:
     with _conn() as c:
         row = c.execute("SELECT * FROM account_config WHERE account_name=?", (name,)).fetchone()
     if not row:
-        return AccountConfig(account_name=name)
+        cfg = AccountConfig(account_name=name)
+        return apply_role_defaults(cfg)
     priority = json.loads(row["stat_priority_json"] or "[]")
     if not priority:
         priority = list(DEFAULT_STAT_PRIORITY)
-    return AccountConfig(
+    cfg = AccountConfig(
         account_name=name,
-        role=row["role"] or "farmer",
+        role=row["role"] or "farm",
         work_mode=row["work_mode"] or "own",
         preferred_factory_id=row["preferred_factory_id"],
         allow_auto_build=bool(row["allow_auto_build"]),
         stat_priority=priority,
+        stat_auto_enabled=bool(row["stat_auto_enabled"]) if "stat_auto_enabled" in row.keys() else True,
         war_enabled=bool(row["war_enabled"]),
         target_war_id=row["target_war_id"],
         contribute_side=row["contribute_side"] or "auto",
@@ -89,26 +154,33 @@ def get_config(account_name: str) -> AccountConfig:
         craft_pills_when_low=bool(row["craft_pills_when_low"]),
         min_pill_stock=int(row["min_pill_stock"] or 5),
         craft_diamond_batch=int(row["craft_diamond_batch"] or 3000),
+        primary_factory_id=row["primary_factory_id"] if "primary_factory_id" in row.keys() else None,
+        default_salary_rate=int(row["default_salary_rate"] or 87) if "default_salary_rate" in row.keys() else 87,
+        default_build_name=(row["default_build_name"] or "BotFarm") if "default_build_name" in row.keys() else "BotFarm",
     )
+    return apply_role_defaults(cfg)
 
 
 def save_config(cfg: AccountConfig) -> None:
+    cfg = apply_role_defaults(cfg)
     init_config_table()
     with _conn() as c:
         c.execute(
             """
             INSERT INTO account_config (
                 account_name, role, work_mode, preferred_factory_id, allow_auto_build,
-                stat_priority_json, war_enabled, target_war_id, contribute_side,
+                stat_priority_json, stat_auto_enabled, war_enabled, target_war_id, contribute_side,
                 training_enabled, is_premium_hub, craft_pills_when_low,
-                min_pill_stock, craft_diamond_batch
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                min_pill_stock, craft_diamond_batch,
+                primary_factory_id, default_salary_rate, default_build_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(account_name) DO UPDATE SET
                 role=excluded.role,
                 work_mode=excluded.work_mode,
                 preferred_factory_id=excluded.preferred_factory_id,
                 allow_auto_build=excluded.allow_auto_build,
                 stat_priority_json=excluded.stat_priority_json,
+                stat_auto_enabled=excluded.stat_auto_enabled,
                 war_enabled=excluded.war_enabled,
                 target_war_id=excluded.target_war_id,
                 contribute_side=excluded.contribute_side,
@@ -116,7 +188,10 @@ def save_config(cfg: AccountConfig) -> None:
                 is_premium_hub=excluded.is_premium_hub,
                 craft_pills_when_low=excluded.craft_pills_when_low,
                 min_pill_stock=excluded.min_pill_stock,
-                craft_diamond_batch=excluded.craft_diamond_batch
+                craft_diamond_batch=excluded.craft_diamond_batch,
+                primary_factory_id=excluded.primary_factory_id,
+                default_salary_rate=excluded.default_salary_rate,
+                default_build_name=excluded.default_build_name
             """,
             (
                 cfg.account_name,
@@ -125,6 +200,7 @@ def save_config(cfg: AccountConfig) -> None:
                 cfg.preferred_factory_id,
                 1 if cfg.allow_auto_build else 0,
                 json.dumps(cfg.stat_priority),
+                1 if cfg.stat_auto_enabled else 0,
                 1 if cfg.war_enabled else 0,
                 cfg.target_war_id,
                 cfg.contribute_side,
@@ -133,6 +209,9 @@ def save_config(cfg: AccountConfig) -> None:
                 1 if cfg.craft_pills_when_low else 0,
                 cfg.min_pill_stock,
                 cfg.craft_diamond_batch,
+                cfg.primary_factory_id,
+                cfg.default_salary_rate,
+                cfg.default_build_name,
             ),
         )
 

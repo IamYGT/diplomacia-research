@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from dataclasses import dataclass
 from typing import Any
 
 from .config import API_BASE, FARM_DELAY_SEC
 from .stealth_client import stealth_request
+
+# Ölçüm amaçlı: her API çağrısının metod/path/status/süresini yazar.
+# Dashboard yavaşlığını çağrı bazında izole etmek için eklendi.
+_timing_log = logging.getLogger("api.timing")
 
 
 @dataclass
@@ -40,7 +46,9 @@ def api(method: str, path: str, token: str, body: dict | None = None, delay: flo
     if body is not None:
         headers["Content-Type"] = "application/json"
         data = json.dumps(body).encode()
+    _t0 = time.monotonic()
     st, raw = stealth_request(method, API_BASE + path, headers=headers, data=data, delay=delay)
+    _timing_log.info("api %s %s -> %d in %.2fs", method, path, st, time.monotonic() - _t0)
     if raw.strip().startswith("{"):
         try:
             return st, json.loads(raw)
@@ -130,6 +138,21 @@ def use_pills(token: str) -> dict:
     if st not in (200, 201):
         raise RuntimeError(d.get("error") or d.get("message") or f"pills HTTP {st}")
     return d
+
+
+def try_use_pills(token: str) -> dict:
+    """Hap kullan — exception yok, UI için yapılandırılmış sonuç."""
+    st, d = api("POST", "/auto/use-pills", token, {}, delay=0.3)
+    body = d if isinstance(d, dict) else {"raw": str(d)[:200]}
+    if st in (200, 201):
+        return {"ok": True, "status": st, "data": body}
+    return {
+        "ok": False,
+        "status": st,
+        "error": body.get("error") or body.get("message") or f"pills HTTP {st}",
+        "cooldown_ms": body.get("remaining_ms") or body.get("pill_cooldown_ms"),
+        "data": body,
+    }
 
 
 def get_my_wars(token: str) -> dict:
