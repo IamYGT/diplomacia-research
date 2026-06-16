@@ -9,9 +9,8 @@ from ..game_api import api as default_api, get_profile
 
 ApiFn = Callable[..., tuple[int, Any]]
 
-# upgrade 429 throttle — rate limit kalıcı (oyun-side). Bot-side cooldown POST 429'da
-# set edilmez (dashboard/profile kilitlemesin), bu yüzden upgrade throttle ayrı:
-# run_stat_automation tüm kaynakların (farmer/orchestrator/stat_queue) ortak noktası.
+# upgrade 429 throttle (kalıcı oyun-side) — run_stat_automation ortak noktası (farmer/orchestrator/stat_queue).
+# bot-side cooldown POST 429'da set edilmez (dashboard/profile kilitlemesin), bu yüzden ayrı throttle.
 _LAST_UPGRADE_429_AT: float = 0.0
 _UPGRADE_THROTTLE_SEC = 600
 
