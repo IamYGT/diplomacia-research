@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import time
 from typing import Any
 
@@ -12,10 +11,10 @@ from .account_runtime import account_context
 from .dynamic_context import invalidate_snapshot_cache
 from .modules import stats
 from .store import Account, list_accounts
+from .config import STAT_QUEUE_INTERVAL_SEC
 
 log = logging.getLogger(__name__)
 
-STAT_QUEUE_INTERVAL_SEC = int(os.environ.get("STAT_QUEUE_INTERVAL_SEC", "60"))
 _WAKE_GRACE_SEC = 2.0
 _MIN_RUN_GAP_SEC = 8.0
 

@@ -78,13 +78,6 @@ def _is_throttle(code: int, body: str) -> bool:
     return "fazla istek" in low or "retryafter" in low or "too many" in low
 
 
-def _parse_retry_after(body: str) -> int:
-    try:
-        return int(json.loads(body).get("retryAfter", 90))
-    except Exception:
-        return 90
-
-
 def stealth_request(
     method: str,
     url: str,
