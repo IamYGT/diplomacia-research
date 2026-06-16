@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from datetime import datetime, timezone
 from typing import Any, Callable
 
@@ -7,6 +8,12 @@ from ..account_config import CLASS_STAT_PRIORITY, AccountConfig, DEFAULT_STAT_PR
 from ..game_api import api as default_api, get_profile
 
 ApiFn = Callable[..., tuple[int, Any]]
+
+# upgrade 429 throttle — rate limit kalıcı (oyun-side). Bot-side cooldown POST 429'da
+# set edilmez (dashboard/profile kilitlemesin), bu yüzden upgrade throttle ayrı:
+# run_stat_automation tüm kaynakların (farmer/orchestrator/stat_queue) ortak noktası.
+_LAST_UPGRADE_429_AT: float = 0.0
+_UPGRADE_THROTTLE_SEC = 600
 
 
 def normalize_upgrade_type(currency: str) -> str:
@@ -226,10 +233,16 @@ def run_stat_automation(
     """Pasif harca + altınla yükselt — farm / orchestrator ortak."""
     if not cfg.stat_auto_enabled:
         return {"passive": [], "upgrades": []}
+    # upgrade 429 throttle: her deneme profile'a yük bindirip dashboard'u yavaşlatıyor.
+    global _LAST_UPGRADE_429_AT
+    if time.time() - _LAST_UPGRADE_429_AT < _UPGRADE_THROTTLE_SEC:
+        return {"passive": [], "upgrades": []}
     passive = spend_available(token, cfg, _api=_api)
     upgrades = auto_upgrade_gold(
         token, cfg, max_starts=max(1, max_upgrades), _api=_api
     )
+    if any(u.get("status") == 429 for u in upgrades):
+        _LAST_UPGRADE_429_AT = time.time()
     return {"passive": passive, "upgrades": upgrades}
 
 
