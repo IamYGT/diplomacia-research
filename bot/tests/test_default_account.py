@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot.store import Account
-from diplomacy_bot import telegram_app
+from diplomacy_bot import telegram_helpers
 
 
 def _ygt() -> Account:
@@ -25,19 +25,24 @@ def _ygt() -> Account:
         proxy_id="tor-01",
         proxy_url="",
         status="active",
+        telegram_user_id=42,
     )
 
 
 class DefaultAccountTests(unittest.TestCase):
-    def test_stale_ercan2_falls_back_to_ygt(self):
+    def test_stale_name_falls_back_to_user_account(self):
         ctx = MagicMock()
         ctx.user_data = {"default_account": "ercan2"}
+        update = MagicMock()
+        update.effective_user.id = 42
 
-        with patch("diplomacy_bot.telegram_app.get_account") as ga, patch(
-            "diplomacy_bot.telegram_app.list_accounts", return_value=[_ygt()]
+        with (
+            patch("diplomacy_bot.telegram_helpers.resolve_account", return_value=None),
+            patch("diplomacy_bot.telegram_helpers._user_accounts", return_value=[_ygt()]),
+            patch("diplomacy_bot.telegram_helpers.get_session", return_value=None),
+            patch("diplomacy_bot.telegram_helpers.upsert_session"),
         ):
-            ga.side_effect = lambda name: _ygt() if name == "ygt" else None
-            name = telegram_app._default_account(ctx)
+            name = telegram_helpers._default_account(ctx, 42)
 
         self.assertEqual(name, "ygt")
         self.assertEqual(ctx.user_data["default_account"], "ygt")
@@ -46,10 +51,25 @@ class DefaultAccountTests(unittest.TestCase):
         ctx = MagicMock()
         ctx.user_data = {"default_account": "ygt"}
 
-        with patch("diplomacy_bot.telegram_app.get_account", return_value=_ygt()):
-            name = telegram_app._default_account(ctx)
+        with (
+            patch("diplomacy_bot.telegram_helpers.resolve_account", return_value=_ygt()),
+            patch("diplomacy_bot.telegram_helpers.get_session", return_value=None),
+        ):
+            name = telegram_helpers._default_account(ctx, 42)
 
         self.assertEqual(name, "ygt")
+
+    def test_no_accounts_returns_none(self):
+        ctx = MagicMock()
+        ctx.user_data = {}
+
+        with (
+            patch("diplomacy_bot.telegram_helpers._user_accounts", return_value=[]),
+            patch("diplomacy_bot.telegram_helpers.get_session", return_value=None),
+        ):
+            name = telegram_helpers._default_account(ctx, 42)
+
+        self.assertIsNone(name)
 
 
 if __name__ == "__main__":
