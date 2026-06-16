@@ -49,10 +49,33 @@ class TelegramUiTests(unittest.TestCase):
             "premium": True,
             "passive_available": 4,
             "autofarm": True,
+            "quests_claimable": 2,
+            "training_ready": True,
         }
         html = telegram_ui.format_dashboard_html(_acc(), snap)
         self.assertIn("Şimdi ne yapmalı", html)
         self.assertIn("Can Doldur", html)
+        self.assertIn("görev", html)
+        self.assertIn("Hazır:", html)
+
+    def test_dashboard_work_countdown(self):
+        snap = {
+            "username": "YGT",
+            "level": 1,
+            "class": "x",
+            "province": "p",
+            "country": "c",
+            "balance": 0,
+            "diamonds": 0,
+            "health": 100,
+            "pills": 0,
+            "work_ready": False,
+            "work_wait_ms": 45_000,
+            "passive_available": 0,
+            "autofarm": False,
+        }
+        html = telegram_ui.format_dashboard_html(_acc(), snap)
+        self.assertIn("45 sn", html)
 
     def test_help_html(self):
         self.assertIn("Ana Sayfa", telegram_ui.format_help_html())

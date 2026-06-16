@@ -36,7 +36,7 @@ class AccountRuntimeTests(unittest.TestCase):
         acc = self._acc()
         out = run_for_account(acc, lambda x: x * 2, 5)
         self.assertEqual(out, 10)
-        prep.assert_called_once_with("tor-01")
+        prep.assert_not_called()
         set_proxy.assert_called_once_with("socks5h://127.0.0.1:9050")
         reset.assert_called_once_with("token")
 

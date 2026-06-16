@@ -48,6 +48,8 @@ class MockApi:
 
 
 class FactoryModuleTests(unittest.TestCase):
+    def setUp(self) -> None:
+        factory_mod.clear_factory_cache()
     def test_fixed_mode_uses_preferred_id_no_build(self):
         cfg = AccountConfig(
             account_name="a1",
@@ -103,6 +105,23 @@ class FactoryModuleTests(unittest.TestCase):
             fid, err = factory_mod.resolve_factory_id("tok", cfg, _api=mock)
         self.assertEqual(fid, "dia1")
         self.assertIsNone(err)
+
+    def test_run_work_cycle_skips_join_when_already_working(self):
+        cfg = AccountConfig(account_name="a1", work_mode="foreign")
+        mock = MockApi(
+            {
+                ("GET", "/auto/status"): (200, {"next_work_in_ms": 0, "health": 100}),
+                ("GET", "/factories/work-status"): (200, {"working": True, "factory_id": "fab-1"}),
+                ("POST", "/factories/work"): (200, {"earned": {"money": 100, "xp": 1}}),
+            }
+        )
+        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+            r = factory_mod.run_work_cycle("tok", cfg, _api=mock)
+        self.assertTrue(r["ok"])
+        join_calls = [c for c in mock.calls if c[1] == "/factories/join"]
+        region_calls = [c for c in mock.calls if c[1].startswith("/factories/region")]
+        self.assertEqual(join_calls, [])
+        self.assertEqual(region_calls, [])
 
 
 if __name__ == "__main__":
