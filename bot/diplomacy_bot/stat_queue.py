@@ -216,6 +216,12 @@ def tick_stat_queue(acc: Account) -> dict | None:
     if cooldown_remaining_sec() > 0:
         return None
 
+    # _WAKE_AT gelecekteyse API'ye dokunma (Tor overlap + gereksiz get_active_skills).
+    name = acc.name.strip().lower()
+    wake = _WAKE_AT.get(name)
+    if wake and time.time() < wake:
+        return None
+
     with account_context(acc):
         active = stats.get_active_skills(acc.token)
 
@@ -226,7 +232,6 @@ def tick_stat_queue(acc: Account) -> dict | None:
         result = stats.run_stat_automation(acc.token, cfg)
         active_after = stats.get_active_skills(acc.token)
 
-    name = acc.name.strip().lower()
     _LAST_RUN[name] = time.time()
     upgraded = False
     for u in result.get("upgrades") or []:
@@ -248,6 +253,13 @@ def tick_stat_queue(acc: Account) -> dict | None:
             _WAKE_AT[name] = time.time() + nearest + _WAKE_GRACE_SEC
     elif _has_ready_skill(active_after, cfg):
         _WAKE_AT[name] = time.time() + _MIN_RUN_GAP_SEC
+    elif any(
+        u.get("status") == 429 or "rate" in str(u.get("error") or "").lower()
+        for u in (result.get("upgrades") or [])
+    ):
+        # 429 kalıcı (oyun-side) — upgrade her deneme tüm API'yi kilitliyor (cooldown global).
+        # 10dk bekle → dashboard/profile cooldown penceresi daralır, snapshot çalışsın.
+        _WAKE_AT[name] = time.time() + 600
     else:
         _WAKE_AT[name] = time.time() + STAT_QUEUE_INTERVAL_SEC
     invalidate_snapshot_cache(acc.name)
