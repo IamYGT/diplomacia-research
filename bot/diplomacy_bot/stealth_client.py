@@ -130,17 +130,19 @@ def stealth_request(
                 with urllib.request.urlopen(req, timeout=timeout) as r:
                     st, body = r.status, r.read().decode(errors="replace")
             if _is_throttle(st, body):
-                # 429: cooldown set et, hemen dön. Eski kod sleep(ra+5) × 3 retry yapıp
-                # arka plan job'larını ~5dk blokluyordu (290sn). Job'lar periyodik —
-                # sonraki tick cooldown sonrası tekrar dener, retry'ya gerek yok.
-                _last_429_at = time.time()
+                # 429: cooldown set et, hemen dön. AMA upgrade POST 429 cooldown tetiklemesin —
+                # oyun rate limit upgrade-specific; profile/dashboard (GET) ayrı çalışsın.
+                # Aksi halde her upgrade deneme tüm API'yi (cooldown global) kilitliyordu.
+                if method.upper() != "POST":
+                    _last_429_at = time.time()
                 return st, body
             return st, body
         except urllib.error.HTTPError as e:
             body = e.read().decode(errors="replace")
             if _is_throttle(e.code, body):
-                # 429: cooldown set et, hemen dön (üstteki throttle dalıyla aynı gerekçe).
-                _last_429_at = time.time()
+                # 429: GET cooldown set et; POST (upgrade) set etme — dashboard/profile kilitlemesin.
+                if method.upper() != "POST":
+                    _last_429_at = time.time()
                 return e.code, body
             return e.code, body
         except Exception as e:
