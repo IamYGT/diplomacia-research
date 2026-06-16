@@ -12,6 +12,7 @@ from typing import Any
 from .account_pool import load_rules
 
 _request_proxy: contextvars.ContextVar[str | None] = contextvars.ContextVar("request_proxy", default=None)
+_interactive_fast: contextvars.ContextVar[bool] = contextvars.ContextVar("interactive_fast", default=False)
 _last_429_at: float = 0.0
 
 USER_AGENTS = [
@@ -26,6 +27,19 @@ def set_request_proxy(proxy_url: str | None) -> contextvars.Token:
 
 def reset_request_proxy(token: contextvars.Token) -> None:
     _request_proxy.reset(token)
+
+
+def set_interactive_fast(enabled: bool = True) -> contextvars.Token:
+    """Telegram buton/tuş — kısa delay (autofarm arka planı yavaş kalır)."""
+    return _interactive_fast.set(enabled)
+
+
+def reset_interactive_fast(token: contextvars.Token) -> None:
+    _interactive_fast.reset(token)
+
+
+def is_interactive_fast() -> bool:
+    return bool(_interactive_fast.get())
 
 
 def get_request_proxy() -> str | None:
@@ -83,12 +97,25 @@ def stealth_request(
     """HTTP isteği — SOCKS proxy (Tor), stealth delay, 429 backoff."""
     global _last_429_at
     rules = load_rules()
-    wait = delay if delay is not None else rules.min_request_delay_sec
-    time.sleep(wait + random.uniform(0, 1.5))
+    fast = _interactive_fast.get()
+    if fast:
+        base = 0.0 if delay is None else float(delay)
+        wait = min(base, 0.15)
+        jitter = random.uniform(0, 0.05)
+        cap = int(os.environ.get("INTERACTIVE_API_TIMEOUT_SEC", "15"))
+        timeout = min(timeout, cap) if cap > 0 else timeout
+    else:
+        wait = delay if delay is not None else rules.min_request_delay_sec
+        jitter = random.uniform(0, 1.5)
+    time.sleep(wait + jitter)
 
     since_429 = time.time() - _last_429_at
     if since_429 < rules.cooldown_on_429_sec:
-        time.sleep(rules.cooldown_on_429_sec - since_429)
+        remaining = rules.cooldown_on_429_sec - since_429
+        if fast:
+            ra = int(remaining) + 1
+            return 429, json.dumps({"error": "rate_limited", "retryAfter": ra, "message": f"API limiti ({ra}s)"})
+        time.sleep(remaining)
 
     hdrs = {
         "Accept": "application/json, text/html, */*",
@@ -109,19 +136,19 @@ def stealth_request(
                 req = urllib.request.Request(url, data=data, headers=hdrs, method=method.upper())
                 with urllib.request.urlopen(req, timeout=timeout) as r:
                     st, body = r.status, r.read().decode(errors="replace")
-            if _is_throttle(st, body) and attempt < 3:
-                ra = _parse_retry_after(body)
+            if _is_throttle(st, body):
+                # 429: cooldown set et, hemen dön. Eski kod sleep(ra+5) × 3 retry yapıp
+                # arka plan job'larını ~5dk blokluyordu (290sn). Job'lar periyodik —
+                # sonraki tick cooldown sonrası tekrar dener, retry'ya gerek yok.
                 _last_429_at = time.time()
-                time.sleep(ra + 5)
-                continue
+                return st, body
             return st, body
         except urllib.error.HTTPError as e:
             body = e.read().decode(errors="replace")
-            if _is_throttle(e.code, body) and attempt < 3:
-                ra = _parse_retry_after(body)
+            if _is_throttle(e.code, body):
+                # 429: cooldown set et, hemen dön (üstteki throttle dalıyla aynı gerekçe).
                 _last_429_at = time.time()
-                time.sleep(ra + 5)
-                continue
+                return e.code, body
             return e.code, body
         except Exception as e:
             if attempt < 3:
