@@ -72,7 +72,7 @@ def run_quick_farm(token: str, account_name: str, proxy_url: str | None = None, 
     if skip_work:
         actions.append({"skipped": skip_reason})
         try:
-            after = game_api.get_profile(token)
+            after = game_api.get_profile(token, fresh=True)
             balance_after = after.balance
         except Exception:
             balance_after = balance_before
@@ -103,7 +103,7 @@ def run_quick_farm(token: str, account_name: str, proxy_url: str | None = None, 
     balance_after = balance_before + money if ok else balance_before
     if ok:
         try:
-            after = game_api.get_profile(token)
+            after = game_api.get_profile(token, fresh=True)
             balance_after = after.balance
         except Exception:
             pass

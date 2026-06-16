@@ -56,12 +56,29 @@ def api(method: str, path: str, token: str, body: dict | None = None, delay: flo
             pass
     return st, {"raw": raw[:300], "error": raw[:200] if st >= 400 else None}
 
-def get_profile(token: str) -> Profile:
+_PROFILE_CACHE: dict[str, tuple[float, Profile]] = {}
+_PROFILE_CACHE_TTL = 20.0  # 4 kaynak (farmer/features/coach/readiness) profile çağırıyor — rate limit dedup
+
+
+def invalidate_profile_cache(token: str | None = None) -> None:
+    """upgrade/farm sonrası balance değişti — cache temizle (None=hepsi)."""
+    if token is None:
+        _PROFILE_CACHE.clear()
+    else:
+        _PROFILE_CACHE.pop(token, None)
+
+
+def get_profile(token: str, *, fresh: bool = False) -> Profile:
+    now = time.monotonic()
+    if not fresh:
+        cached = _PROFILE_CACHE.get(token)
+        if cached and now - cached[0] < _PROFILE_CACHE_TTL:
+            return cached[1]
     st, d = api("GET", "/players/profile", token, delay=0.3)
     if st != 200:
         raise RuntimeError(d.get("error") or f"profile HTTP {st}")
     p = d.get("player", {})
-    return Profile(
+    _profile = Profile(
         player_id=str(p.get("id", "")),
         username=str(p.get("username", "?")),
         balance=int(p.get("balance") or 0),
@@ -79,6 +96,8 @@ def get_profile(token: str) -> Profile:
         is_premium=bool(p.get("is_premium")),
         passive_skill_points=int(p.get("passive_skill_points") or 0),
     )
+    _PROFILE_CACHE[token] = (now, _profile)
+    return _profile
 
 
 def list_countries(token: str) -> list[dict]:
