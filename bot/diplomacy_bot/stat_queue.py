@@ -12,6 +12,7 @@ from .dynamic_context import invalidate_snapshot_cache
 from .modules import stats
 from .store import Account, list_accounts
 from .config import STAT_QUEUE_INTERVAL_SEC
+from .stealth_client import cooldown_remaining_sec
 
 log = logging.getLogger(__name__)
 
@@ -208,6 +209,11 @@ def tick_stat_queue(acc: Account) -> dict | None:
     """Tek hesap — sıradaki hazır stat veya cooldown bitince yükselt."""
     cfg = get_config(acc.name)
     if not cfg.stat_auto_enabled or normalize_role(cfg.role) == "off":
+        return None
+
+    # Rate limit aktifse upgrade/profile deneme — cooldown bitene kadar bekle.
+    # Yoksa her tick 429 alıp _last_429_at yeniler → cooldown sonsuz döngü + dashboard boş snapshot.
+    if cooldown_remaining_sec() > 0:
         return None
 
     with account_context(acc):
