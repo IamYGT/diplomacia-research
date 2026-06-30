@@ -37,6 +37,29 @@ def run_unittests() -> None:
         record(FAIL, "unittest", f"failures={len(r.failures)} errors={len(r.errors)}")
 
 
+def run_pytest() -> None:
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "pytest", str(BOT / "tests"), "-q", "--tb=no"],
+            cwd=str(BOT),
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+    except FileNotFoundError:
+        record(WARN, "pytest", "pytest modülü yok")
+        return
+    except subprocess.TimeoutExpired:
+        record(FAIL, "pytest", "timeout 180s")
+        return
+    tail = (proc.stdout or proc.stderr or "").strip().splitlines()
+    summary = tail[-1] if tail else f"exit={proc.returncode}"
+    if proc.returncode == 0:
+        record(PASS, "pytest", summary)
+    else:
+        record(FAIL, "pytest", summary[:160])
+
+
 def run_tor() -> None:
     from diplomacy_bot.tor_pool import rotate_newnym, tor_socks_url
 
@@ -74,6 +97,79 @@ def run_accounts_api() -> None:
             record(PASS, f"api_profile:{a.name}", f"{p.username} lv{p.level} proxy={a.proxy_id}")
         except Exception as e:
             record(FAIL, f"api_profile:{a.name}", str(e)[:120])
+
+
+def run_api_route_registry() -> None:
+    from diplomacy_bot.api_route_registry import BOT_API_ROUTES, find_unregistered_routes
+
+    missing = find_unregistered_routes()
+    if missing:
+        record(FAIL, "api_route_registry", f"{len(missing)} kayıtsız yol: {missing[:3]}")
+    else:
+        record(PASS, "api_route_registry", f"{len(BOT_API_ROUTES)} route tanımlı")
+
+
+def run_wiki_registry_check() -> None:
+    from diplomacy_bot.wiki_diff import wiki_registry_aligned
+
+    wiki = wiki_registry_aligned()
+    if wiki.get("skipped"):
+        record(WARN, "wiki_registry", wiki.get("reason", "atlandı"))
+    elif wiki.get("ok"):
+        record(PASS, "wiki_registry", f"snapshot={wiki.get('snapshot')} aligned")
+    else:
+        miss = wiki.get("missing_in_registry") or []
+        record(FAIL, "wiki_registry", f"{len(miss)} gap: {miss[:2]}")
+
+
+def run_api_replay_contracts() -> None:
+    from diplomacy_bot.api_route_replay import compare_catalog_vs_registry, run_replay_suite
+
+    replay = run_replay_suite()
+    if replay.get("ok"):
+        record(PASS, "api_replay_cassette", f"{replay['passed']}/{replay['total']} route")
+    else:
+        detail = replay.get("missing_replay") or replay.get("contract_failures") or replay.get("failures")
+        record(FAIL, "api_replay_cassette", str(detail)[:120])
+
+    catalog = compare_catalog_vs_registry()
+    if catalog.get("skipped"):
+        record(WARN, "api_catalog_diff", catalog.get("reason", "?"))
+    elif catalog.get("ok"):
+        mm = len(catalog.get("method_mismatch") or [])
+        record(PASS, "api_catalog_diff", f"bot⊆catalog method_warn={mm}")
+    else:
+        miss = catalog.get("missing_in_catalog") or []
+        record(FAIL, "api_catalog_diff", f"{len(miss)} eksik: {miss[:2]}")
+
+
+def run_api_route_probe() -> None:
+    from diplomacy_bot.account_runtime import account_context
+    from diplomacy_bot.api_route_probe import run_probe_suite
+    from diplomacy_bot.game_api import api
+    from diplomacy_bot.store import get_account, init_db, list_accounts
+
+    init_db()
+    accs = list_accounts()
+    if not accs:
+        record(WARN, "api_route_probe", "hesap yok — atlandı")
+        return
+    acc = accs[0]
+
+    def _api(method, path, token, body=None, delay=0.12):
+        return api(method, path, token, body, delay=delay)
+
+    try:
+        with account_context(acc):
+            report = run_probe_suite(_api, acc.token, safe_only=True, delay=0.1)
+        if report.get("ok"):
+            record(PASS, "api_route_probe", f"{report['passed']}/{report['total']} safe route")
+        else:
+            fails = report.get("failures") or []
+            detail = fails[0].get("contract_error") or fails[0].get("error") if fails else "?"
+            record(FAIL, "api_route_probe", f"{report['failed_count']} fail — {detail[:80]}")
+    except Exception as e:
+        record(FAIL, "api_route_probe", str(e)[:120])
 
 
 def run_telegram() -> None:
@@ -129,8 +225,13 @@ def main() -> int:
     print("=== Diplomacia Bot Verify ===\n")
     subprocess.run([sys.executable, str(REPO / "scripts" / "sync_engagement.py")], check=False)
     run_unittests()
+    run_pytest()
+    run_api_route_registry()
+    run_wiki_registry_check()
+    run_api_replay_contracts()
     run_tor()
     run_accounts_api()
+    run_api_route_probe()
     run_telegram()
 
     fails = sum(1 for s, _, _ in results if s == FAIL)

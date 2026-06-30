@@ -41,6 +41,52 @@ def _next_action(
     return "idle", "Hazır — döngüyü başlat"
 
 
+def _analysis_health(analysis: dict) -> int:
+    h = analysis.get("health")
+    return int(h) if h is not None else 0
+
+
+def _pill_status_alert(analysis: dict) -> str:
+    """Can düşük / hap CD — üst uyarı bloğu."""
+    health = _analysis_health(analysis)
+    pill_ms = int(analysis.get("pill_ms") or 0)
+    pills = int(analysis.get("pills") or 0)
+    if health >= 100:
+        return ""
+    if pills <= 0:
+        return f"🚨 <b>Can {health}/100</b> — hap yok, elmas→hap craft gerekli"
+    if not analysis.get("pill_ready") and pill_ms > 0:
+        return (
+            f"🚨 <b>Can {health}/100 — farm durdu</b>\n"
+            f"⏳ Hap bekleme: <b>{format_ms(pill_ms)}</b> · sonra 💊 Can Doldur"
+        )
+    return f"💊 <b>Can {health}/100</b> — önce Can Doldur, sonra çalış"
+
+
+def _work_status_line(analysis: dict) -> str:
+    """Fabrika/work satırı — can 0 + working API uyumsuzluğu."""
+    h_raw = analysis.get("health")
+    health = int(h_raw) if h_raw is not None else 100
+    if analysis.get("working"):
+        fid = html.escape(str(analysis.get("work_factory_id") or "?"))
+        if health < 100:
+            return (
+                f"⚙️ Sunucu fabrikada gösteriyor: <code>{fid}</code>\n"
+                f"<i>❤️ Can {health}/100 — kazanç için önce hap gerekebilir</i>"
+            )
+        return f"⚙️ Fabrikada çalışıyor: <code>{fid}</code>"
+    if analysis.get("work_ready"):
+        return "✅ <b>Work hazır</b> — çalışabilirsin"
+    return f"⏳ Work CD: <b>{format_ms(analysis.get('work_ms'))}</b>"
+
+
+def _show_farm_roi(analysis: dict) -> bool:
+    """Can düşük + sunucu working — kazanç tahmini yanıltıcı."""
+    if _analysis_health(analysis) < 100 and analysis.get("working"):
+        return False
+    return True
+
+
 def analyze_farm_board_enriched(
     pack: dict,
     cfg: AccountConfig | None = None,
@@ -63,7 +109,7 @@ def analyze_farm_board_enriched(
         health_prof = int(prof.get("health") or 0)
         username = prof.get("username") or "?"
 
-    aa = analyze_auto_status(auto)
+    aa = analyze_auto_status(auto, profile_health=health_prof)
     craft_profile = {
         "diamonds": diamonds,
         "health_pills": aa.get("pills") or pills_prof,
@@ -72,7 +118,7 @@ def analyze_farm_board_enriched(
 
     work_ms = int(aa.get("work_ms") or 0)
     pill_ms = int(aa.get("pill_ms") or 0)
-    health = int(aa.get("health") or health_prof)
+    health = int(aa.get("health") or 0)
     pills = int(aa.get("pills") or pills_prof)
     working = bool(work_st.get("working"))
     work_factory_id = work_st.get("factory_id") or work_st.get("current_factory_id")
@@ -104,6 +150,8 @@ def analyze_farm_board_enriched(
     presets = sorted(set(presets))[:5]
 
     tips: list[str] = []
+    if health < 100 and not aa.get("pill_ready") and pill_ms > 0:
+        tips.append(f"🚨 Farm beklemede — hap CD {format_ms(pill_ms)}")
     if work_ms > 0:
         tips.append(f"Work CD: {format_ms(work_ms)} — beklerken stat/görev yap")
     if craft_a.get("can_craft"):
@@ -121,6 +169,8 @@ def analyze_farm_board_enriched(
         "username": username,
         "balance": balance,
         "diamonds": diamonds,
+        "health": health,
+        "pills": pills,
         "working": working,
         "work_factory_id": work_factory_id,
         "work_mode": cfg.work_mode,
@@ -156,30 +206,32 @@ def format_farm_board_html(
         f"💰 {int(analysis.get('balance') or 0):,}₺ · 💎 {analysis.get('diamonds', 0):,} · "
         f"❤️ {analysis.get('health', '?')}/100 · 💊 {analysis.get('pills', '?')}",
     ]
+    alert = _pill_status_alert(analysis)
+    if alert:
+        lines.append(alert)
 
-    if analysis.get("working"):
-        fid = analysis.get("work_factory_id") or "?"
-        lines.append(f"⚙️ Fabrikada çalışıyor: <code>{html.escape(str(fid))}</code>")
-    elif analysis.get("work_ready"):
-        lines.append("✅ <b>Work hazır</b> — çalışabilirsin")
-    else:
-        lines.append(f"⏳ Work CD: <b>{format_ms(analysis.get('work_ms'))}</b>")
+    lines.append(_work_status_line(analysis))
 
     if not analysis.get("pill_ready") and int(analysis.get("pill_ms") or 0) > 0:
-        lines.append(f"⏳ Hap CD: {format_ms(analysis.get('pill_ms'))}")
+        lines.append(f"⏳ Hap CD: <b>{format_ms(analysis.get('pill_ms'))}</b>")
 
-    lines.append(
-        f"\n<b>💎↔️💊 Elmas–hap döngüsü</b>\n"
-        f"• Work başına ~<b>{analysis.get('diamonds_per_work')}</b> elmas\n"
-        f"• Önerilen craft: <b>{analysis.get('suggested_batch', 0)}</b> elmas "
-        f"(DB batch: {analysis.get('craft_batch_cfg')})\n"
-        f"• Başabaş: ~<b>{analysis.get('breakeven_works')}</b> work · "
-        f"gün tahmini ~{analysis.get('daily_diamond_est', 0):,} elmas"
-    )
-    lines.append(
-        f"Hap hedef: {analysis.get('min_pill_stock')} · "
-        f"Otomatik craft: {'açık' if analysis.get('craft_pills_when_low') else 'kapalı'}"
-    )
+    if _show_farm_roi(analysis):
+        lines.append(
+            f"\n<b>💎↔️💊 Elmas–hap döngüsü</b>\n"
+            f"• Work başına ~<b>{analysis.get('diamonds_per_work')}</b> elmas\n"
+            f"• Önerilen craft: <b>{analysis.get('suggested_batch', 0)}</b> elmas "
+            f"(DB batch: {analysis.get('craft_batch_cfg')})\n"
+            f"• Başabaş: ~<b>{analysis.get('breakeven_works')}</b> work · "
+            f"gün tahmini ~{analysis.get('daily_diamond_est', 0):,} elmas"
+        )
+        lines.append(
+            f"Hap hedef: {analysis.get('min_pill_stock')} · "
+            f"Otomatik craft: {'açık' if analysis.get('craft_pills_when_low') else 'kapalı'}"
+        )
+    else:
+        lines.append(
+            "\n<i>💡 Can düşükken kazanç tahmini gizlendi — önce 💊 Can Doldur</i>"
+        )
 
     lines.append(f"\n<b>🎯 Sıradaki:</b> {html.escape(str(analysis.get('next_action_label')))}")
 
@@ -251,9 +303,19 @@ def farm_board_inline_markup(analysis: dict) -> "InlineKeyboardMarkup":
     if craft_row:
         rows.append(craft_row[:4])
 
+    pill_ms = int(a.get("pill_ms") or 0)
+    h_raw = a.get("health")
+    health = int(h_raw) if h_raw is not None else 100
+    if a.get("can_use_pill"):
+        pill_btn = InlineKeyboardButton("💊 Can doldur", callback_data="farm:hap")
+    elif health < 100 and pill_ms > 0:
+        pill_btn = InlineKeyboardButton(f"⏳ Hap {format_ms(pill_ms)}", callback_data="action:farmboard")
+    else:
+        pill_btn = InlineKeyboardButton("💊 Can doldur", callback_data="farm:hap")
+
     rows.append(
         [
-            InlineKeyboardButton("💊 Can doldur", callback_data="farm:hap"),
+            pill_btn,
             InlineKeyboardButton(
                 "🔁 Oto craft " + ("✓" if a.get("craft_pills_when_low") else "✗"),
                 callback_data="farm:toggle:autocraft",

@@ -1,0 +1,291 @@
+{
+  "schema": 1,
+  "intro": "Her sürüm, oyundaki bir sonraki hamlen için botun ne öğrendiğini anlatır.",
+  "releases": [
+    {
+      "version": "4.14.0",
+      "date": "2026-06-30",
+      "codename": "Can Senkronu",
+      "title": "6 turluk can/hap serüveni — profil, panel ve push birleşti",
+      "story": "Altı turda can sistemi baştan sona yenilendi.\n\nTur 1: Profil canı artık farm kararlarının tek kaynağı — auto/status 100 gösterse bile gerçek can 0 ise farm durur.\nTur 2: Ana sayfa ve farm paneli can 0 + hap uyarıları gösterir.\nTur 3: Makale beğenme komutları ve otomatik beğen rozeti düzeldi.\nTur 4: Premium sunucu farm mesajları can/hap durumunu açıklar.\nTur 5: Hap cooldown bitince Telegram bildirimi + tek tık Can Doldur.\nTur 6: Tüm izleme tek state dosyasında; arka plan job'ları tek scheduler'da.",
+      "highlights": [
+        "❤️ work_health — profil canı öncelikli",
+        "🚨 Dashboard can 0 uyarısı + farm board pill CD",
+        "📰 Makale beğen fast-path + otomatik rozet",
+        "💊 Hap CD bitince push + Ana Sayfa / Can Doldur butonları",
+        "📁 health_watch_state.json — birleşik izleme",
+        "⏱️ feature_scheduler — alert + pill job tek kayıt"
+      ],
+      "try_now": [
+        "Can 0 iken 🏠 Ana Sayfa — üst uyarıyı gör",
+        "Hap CD bitince bildirim bekle veya farm:hap",
+        "/guncellemeler — 6 tur hikayesi",
+        "makale beğen aç — otomatik beğen rozeti"
+      ]
+    },
+    {
+      "version": "4.11.4",
+      "date": "2026-06-19",
+      "codename": "Akıllı bağlantı",
+      "title": "İkinci hesap üzerine yazma yok · seyahat komutu düzeldi",
+      "story": "«Seyahat et Alaska» artık Gemini'ye gitmeden çalışır.\n\nFarklı oyuncunun token'ı mevcut hesabın üzerine yazılmaz — otomatik yeni hesap açılır veya /add ile eklersin.",
+      "highlights": [
+        "🚶 seyahat et <eyalet> — anında",
+        "🆕 İkinci token → ayrı hesap",
+        "/connect — çoklu hesap rehberi",
+        "🔑 Token yenileme — doğru hesaba gider"
+      ],
+      "try_now": [
+        "Seyahat et Alaska",
+        "İkinci hesap: /add farmci → token",
+        "/accounts — iki hesap görünmeli"
+      ]
+    },
+    {
+      "version": "4.11.3",
+      "date": "2026-06-19",
+      "codename": "Seyahat sekmesi",
+      "title": "Seyahat sekmesi callback hatası giderildi",
+      "story": "«Seyahat» sekmesine tıklayınca TypeError oluşuyordu — province parametresi yanlış geçiliyordu. Düzeltildi.",
+      "highlights": [
+        "🚶 menu:travel artık çalışıyor",
+        "📍 Bulunduğun il panelde görünür"
+      ],
+      "try_now": [
+        "Üst sekmeden Seyahat",
+        "Seyahat durumu ve iptal butonları"
+      ]
+    },
+    {
+      "version": "4.11.2",
+      "date": "2026-06-19",
+      "codename": "Ana sayfa düzeltmesi",
+      "title": "Ana sayfa artık «Hazırlanıyor»da takılmıyor",
+      "story": "Panel açılırken kısa «Hazırlanıyor» mesajından sonra veri gelmiyordu — arka plan güncellemesi başlamıyordu. Düzeltildi: /menu ve 🏠 Ana Sayfa her zaman canlı veriyi çeker.\n\nCanlı sağlık probu: bot/scripts/live_health_probe.py",
+      "highlights": [
+        "🏠 Ana sayfa sonsuz bekleme giderildi",
+        "🔄 Placeholder sonrası otomatik veri çekimi",
+        "📡 live_health_probe.py ile API izleme",
+        "✅ Token geçerliyken panel ~7 sn içinde doluyor"
+      ],
+      "try_now": [
+        "/menu veya 🏠 Ana Sayfa",
+        "Birkaç saniye bekle — panel dolmalı",
+        "Takılırsa 🔄 Yenile"
+      ]
+    },
+    {
+      "version": "4.11.1",
+      "date": "2026-06-19",
+      "codename": "Akıllı farm",
+      "title": "Otomatik farm artık spam yapmaz — token kopunca rehber gelir",
+      "story": "«Geçersiz token» uyarısı dakikada bir tekrar etmiyor. Token düştüğünde otomatik farm durur; konsol kodu ve adımlar bir kez gelir.\n\nBaşarılı turlarda kazanç, yapılan işler ve bakiye tek mesajda özetlenir.",
+      "highlights": [
+        "🚫 Token spam kaldırıldı",
+        "🔑 Farm durunca otomatik yenileme rehberi",
+        "📊 Zengin tur özeti (kazanç + işler)",
+        "⏳ Seyahat/bekleme kısa bilgi — gereksiz uyarı yok"
+      ],
+      "try_now": [
+        "Token süresi dolunca farm mesajına bak",
+        "eyJ… yapıştır → farm tekrar aç",
+        "/kolay ile otomatik farm ayarla"
+      ]
+    },
+    {
+      "version": "4.11.0",
+      "date": "2026-06-19",
+      "codename": "Token yenileme",
+      "title": "Token geçersiz olunca bot seni yönlendirir",
+      "story": "Oturum süresi dolunca artık sadece uyarı yok. Bot 4 adımlı rehber gönderir, konsol kodunu verir ve token'ını bu sohbette bekler.\n\n«Yeni token al» butonu veya Ana Sayfa açılınca otomatik akış başlar. eyJ… yapıştırman yeterli.",
+      "highlights": [
+        "🔑 Token geçersiz → adım adım yenileme",
+        "📋 Konsol kodu otomatik gönderilir",
+        "⏳ Bot token bekler — nereye yapıştıracağın belli",
+        "🔁 Geçersiz token tekrarında yeniden rehber"
+      ],
+      "try_now": [
+        "Token süresi dolunca Ana Sayfa",
+        "🔑 Yeni token al butonu",
+        "eyJ… token'ı sohbete yapıştır"
+      ]
+    },
+    {
+      "version": "4.10.3",
+      "date": "2026-06-18",
+      "codename": "Panel kurtarma",
+      "title": "Silinen panel ve hesap değişimi düzgün çalışır",
+      "story": "Ana Sayfa panelini silersen bot takılmaz — yenisini açar. Klavyeden Ana Sayfa aynı mesajı güncellemeye devam eder; düzenleme olmazsa otomatik yeni panel gelir.\n\nFarklı sohbet veya eski pin kaldığında eski mesaj temizlenir, güncel sohbette tek panel kalır. Çok hesapta hesap değişince aynı panel güncellenir.",
+      "highlights": [
+        "🔁 Panel silinince otomatik yeni mesaj",
+        "💬 Eski pin / farklı sohbet — temiz geçiş",
+        "👥 Çok hesap — aynı panel güncellenir",
+        "❓ Yardım metni güncellendi"
+      ],
+      "try_now": [
+        "Paneli sil → 🏠 Ana Sayfa",
+        "İki hesap arası geç → panel güncellenir",
+        "❓ Yardım — tek panel notu"
+      ]
+    },
+    {
+      "version": "4.10.2",
+      "date": "2026-06-18",
+      "codename": "Sessiz Ana Sayfa",
+      "title": "Klavyeden Ana Sayfa artık aynı mesajı günceller",
+      "story": "🏠 Ana Sayfa'ya her bastığında yeni mesaj açılmıyor — var olan panel aynı yerde güncelleniyor. Sohbet daha temiz.\n\n/help, /setrole ve diğer tüm komutlar da klavye aç/kapa tercihine uyuyor.",
+      "highlights": [
+        "🏠 Ana Sayfa — pin'li mesajı düzenler, flood yok",
+        "⌨️ Tüm komutlar klavye tercihine uyumlu",
+        "🔄 Yenile hâlâ sadece istekle"
+      ],
+      "try_now": [
+        "🏠 Ana Sayfa — 3 kez bas, tek mesaj kalsın",
+        "/help — klavye kapalıyken kalksın",
+        "⚙️ Ayarlar → Alttaki butonlar"
+      ]
+    },
+    {
+      "version": "4.10.1",
+      "date": "2026-06-18",
+      "codename": "Tek panel",
+      "title": "Dashboard flood düzeltmesi + klavye her yerde",
+      "story": "Ana Sayfa artık sohbeti doldurmuyor: eski panel silinir, tek mesaj kalır. «Güncelleniyor» yazısı sadece sen «Yenile» dediğinde gelir — arka planda sürekli titreme yok.\n\nAlttaki butonlar kapalıyken ilk rehber üst sekmeleri anlatıyor. Connect ve yardım da klavye tercihine uyuyor.",
+      "highlights": [
+        "🏠 Tek dashboard mesajı — eski panel silinir",
+        "🔄 Yenile sadece istekle — sessiz önbellek",
+        "⌨️ Klavye tercihi connect/yardım/dispatch'te de geçerli",
+        "👋 Klavye kapalı rehber — üst sekmeler"
+      ],
+      "try_now": [
+        "🏠 Ana Sayfa — eski paneller silinir",
+        "🔄 Yenile — canlı veri",
+        "⚙️ Alttaki butonlar kapat — üst sekmelerle gez"
+      ]
+    },
+    {
+      "version": "4.10.0",
+      "date": "2026-06-18",
+      "codename": "Sekmeler",
+      "title": "Savaş ve Seyahat ayrı sekme — alttaki butonlar isteğe bağlı",
+      "story": "Menüler sadeleşti: her ekranın üstünde üç sekme var — Ana, Savaş, Seyahat. Savaş listesi ve seyahat durumu artık ana sayfayla karışmıyor.\n\nAlttaki büyük butonlar isteğe bağlı: Ayarlar → «Alttaki butonlar (aç/kapa)» ile kapatabilirsin; sadece üst sekmelerle de oynarsın.\n\nKlavyede de Ana Sayfa, Savaş ve Seyahat ayrı buton — tek dokunuşla ilgili sekmeye gidersin.",
+      "highlights": [
+        "⚔️ Savaş sekmesi — liste + katkı butonları",
+        "🚶 Seyahat sekmesi — durum, yenile, iptal",
+        "🏠 Ana | ⚔️ Savaş | 🚶 Seyahat üst çubuğu",
+        "⌨️ Alttaki butonlar aç/kapa — Ayarlar'dan",
+        "📱 Daha az karışık dashboard"
+      ],
+      "try_now": [
+        "Üstten: ⚔️ Savaş sekmesi",
+        "Üstten: 🚶 Seyahat",
+        "⚙️ Ayarlar → Alttaki butonlar (aç/kapa)",
+        "Alttan: ⚔️ Savaş veya 🚶 Seyahat"
+      ]
+    },
+    {
+      "version": "4.9.1",
+      "date": "2026-06-18",
+      "codename": "Kolay mod cilası",
+      "title": "Rehber, ödül mesajı, diğer hesaplar",
+      "story": "İlk /start'ta tek seferlik 3 buton rehberi geliyor — Altın Kazan, Savaşa Vur, Programı Çalıştır.\n\nProgram çalışınca artık «Altın kazandın: +1.200» gibi net sonuç yazıyor; bekleme varsa dakika/saniye Türkçe anlatılıyor.\n\nBirden fazla hesabın varsa Ayarlar'da «Diğer Hesaplar» butonu çıkıyor.",
+      "highlights": [
+        "👋 İlk giriş rehberi — tek seferlik",
+        "💰 Program sonrası net ödül satırı",
+        "👥 Ayarlar → Diğer Hesaplar",
+        "🔔 Bildirim açık mesajlar (sessiz değil)"
+      ],
+      "try_now": [
+        "/start — rehberi gör (ilk sefer)",
+        "▶️ Programı Çalıştır — ödül satırını gör",
+        "⚙️ Ayarlar — çok hesapta Diğer Hesaplar"
+      ]
+    },
+    {
+      "version": "4.9.0",
+      "date": "2026-06-18",
+      "codename": "Kolay kullanım",
+      "title": "Büyük butonlar, az teknik kelime",
+      "story": "Bu sürüm 35 yaş ve üzeri oyuncular için yazıldı. Komut ezberlemek yok: altta dört satır büyük buton var — Altın Kazan, Savaşa Vur, Programı Çalıştır, Can Doldur.\n\n«Program» demek: bot sırayla savaşa katılır, fabrikada çalışır, antrenman yapar. Bekleme varsa «biraz bekle» der; sen sadece «Devam Et» basarsın.\n\nAna sayfada da aynı büyük butonlar var. Yardım menüsü kısaltıldı — teknik terimler çıkarıldı.",
+      "highlights": [
+        "▶️ Programı Çalıştır — tek tuşla savaş + altın + antrenman",
+        "⚔️ Savaşa Vur — ayrı tek tuş",
+        "🌾 Altın Kazan — farm yerine anlaşılır isim",
+        "📋 /kolay — program menüsü",
+        "❓ Kısa yardım — komut listesi yok"
+      ],
+      "try_now": [
+        "/kolay — program menüsü",
+        "Alttan: Programı Çalıştır",
+        "Alttan: Savaşa Vur",
+        "Yaz: devam et"
+      ]
+    },
+    {
+      "version": "4.8.0",
+      "date": "2026-06-18",
+      "codename": "Görev zinciri",
+      "title": "Savaş, farm ve antrenman tek planda",
+      "story": "Önceki sürüm yolu haritaya çizmişti; bu sürüm o yolu bir göreve dönüştürüyor. «Görev başlat» dediğinde bot sırayla savaş katkısı, farm ve antrenman aşamalarını yürütüyor — cooldown veya seyahat varsa bekleyip kaldığı yerden devam ediyor.\n\nSavaş katkısı artık her yerden aynı motoru kullanıyor: eski menü, yeni war_ops pipeline. Cooldown, seyahat, hap ve asker hazırlığı Telegram'da net yazılıyor.\n\nAna sayfada sürüm rozeti var; /mission ve /setmain komutları eklendi. Filo tick'i aktif görevi orchestrator'dan önce çalıştırıyor.",
+      "highlights": [
+        "📋 Görev sistemi — savaş → farm → antrenman, SQLite'da kalıcı",
+        "🗡️ Birleşik katkı formatı — cooldown, taraf, hazırlık adımları",
+        "👑 /setmain — ana hesap değiştirme",
+        "🆕 Dashboard sürüm rozeti",
+        "⚔️ Savaş öncesi hap + orchestrator cooldown durumu"
+      ],
+      "try_now": [
+        "Görev — /mission new https://diplomacia.com.tr/wars/war/329",
+        "Doğal dil — görev başlat sırbistan savaşı",
+        "Ana hesap — /setmain ygt",
+        "Katkı — savaşa katkı"
+      ]
+    },
+    {
+      "version": "4.7.0",
+      "date": "2026-06-18",
+      "codename": "Görev hazırlığı",
+      "title": "Savaşa giden yol artık haritada",
+      "story": "Uzun süredir bot fabrikada çalışıyor, stat harcıyor, savaş listesini gösteriyordu — ama «şu ülkeye git, şu savaşa vur, sonra farm yap» döngüsü parça parçaydı. Bu sürümle parçalar birbirine bağlandı.\n\nSeyahat artık sadece «bekle» demiyor: eyalet adıyla yola çıkabiliyorsun. Savaş linkini (ör. /wars/war/329) veya «Sırbistan savaşı» gibi bir cümleyi bot anlıyor; kim saldırgan, kim savunmacı — önce gösteriyor, sonra sen karar veriyorsun.\n\nKatkı vermeden önce bot nefes alıyor: can düşükse hap, asker azsa eğitim, cooldown varsa bekliyor. Seyahat halindeyken gereksiz farm denemesi yapılmıyor; filo tick'i «yoldasın» deyip duruyor.",
+      "highlights": [
+        "🚶 Manuel seyahat — «seyahat et Tahran», «seyahat durum», «seyahat iptal»",
+        "⚔️ Savaş URL ve doğal dil — war/329 veya ülke adıyla hedef seçimi",
+        "🛡️ Katkı pipeline — cooldown, seyahat, hap, asker, sonra vuruş",
+        "👑 Ana hesap (varsayılan ygt) — /setmain ile değiştirilebilir",
+        "📋 Bu panel — sürüm hikâyeleri Türkçe, burada"
+      ],
+      "try_now": [
+        "Güncellemeler — /guncellemeler",
+        "Savaş ayarla — https://diplomacia.com.tr/wars/war/329",
+        "Seyahat — seyahat durum",
+        "Katkı — savaşa katkı (hedef seçildikten sonra)"
+      ]
+    },
+    {
+      "version": "4.6.0",
+      "date": "2026-06-16",
+      "codename": "Nefes alan bot",
+      "title": "429 fırtınasından çıkış",
+      "story": "Bot bir süre kendi kendine API'ye abanıyordu; dashboard açılırken altı istek birden gidiyor, sunucu «yavaşla» diyordu. Bu sürümde nefes düzeni kuruldu: stat kuyruğu rate limit'e saygılı, dashboard önce hafif açılıp sonra zenginleşiyor, Telegram modülü parçalandı ki bakım kolaylaşsın.",
+      "highlights": [
+        "429 sonrası akıllı bekleme — kör retry yok",
+        "Dashboard iki aşamalı yükleme",
+        "callbacks.py ayrıldı — bakım kolaylığı"
+      ],
+      "try_now": []
+    },
+    {
+      "version": "4.5.0",
+      "date": "2026-06-14",
+      "codename": "Gösterge paneli",
+      "title": "Ana sayfa artık «ne yapmalıyım?» diyor",
+      "story": "Dashboard sadece bakiye göstermiyordu; görev hazır mı, farm cooldown kaç saniye, antrenman serbest mi — hepsi tek bakışta. API kataloğu genişledi; bot oyunun daha çok köşesini tanıyor.",
+      "highlights": [
+        "Hazır rozeti — görev, farm, antrenman, savaş",
+        "Work geri sayımı ana sayfada",
+        "213+ endpoint kataloğu"
+      ],
+      "try_now": []
+    }
+  ]
+}

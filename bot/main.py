@@ -13,6 +13,9 @@ def main() -> None:
         from diplomacy_bot.telegram_app import run
 
         import diplomacy_bot.dashboard_readiness  # noqa: F401 — dashboard patch (publish + markup)
+        import diplomacy_bot.runtime_install  # noqa: F401
+
+        diplomacy_bot.runtime_install.install_all_runtime_hooks()
 
         run()
     except SystemExit as e:

@@ -245,7 +245,7 @@ def format_war_board_html(
     return "\n".join(lines)
 
 
-def war_board_inline_markup(analysis: dict) -> "InlineKeyboardMarkup":
+def war_board_inline_markup(analysis: dict, *, attacks_enabled: bool = True) -> "InlineKeyboardMarkup":
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
     from .telegram_ui import back_home_button
@@ -266,29 +266,32 @@ def war_board_inline_markup(analysis: dict) -> "InlineKeyboardMarkup":
         contrib_row.append(
             InlineKeyboardButton(f"🗡️{i}", callback_data=f"war:contrib:{i}")
         )
-    if pick_row:
+    if pick_row and attacks_enabled:
         rows.append(pick_row)
         rows.append(contrib_row)
 
-    side = str((analysis or {}).get("suggested_side") or "attacker")
-    rows.append(
-        [
-            InlineKeyboardButton(
-                "⚔️ Saldırgan" + (" ✓" if side == "attacker" else ""),
-                callback_data="war:side:attacker",
-            ),
-            InlineKeyboardButton(
-                "🛡️ Savunucu" + (" ✓" if side == "defender" else ""),
-                callback_data="war:side:defender",
-            ),
-        ]
-    )
-    rows.append(
-        [
-            InlineKeyboardButton("🗡️ Hedefe katkı", callback_data="action:warcontrib"),
-            InlineKeyboardButton("🔄 Yenile", callback_data="action:wars"),
-        ]
-    )
+    if attacks_enabled:
+        side = str((analysis or {}).get("suggested_side") or "attacker")
+        rows.append(
+            [
+                InlineKeyboardButton(
+                    "⚔️ Saldırgan" + (" ✓" if side == "attacker" else ""),
+                    callback_data="war:side:attacker",
+                ),
+                InlineKeyboardButton(
+                    "🛡️ Savunucu" + (" ✓" if side == "defender" else ""),
+                    callback_data="war:side:defender",
+                ),
+            ]
+        )
+        rows.append(
+            [
+                InlineKeyboardButton("🗡️ Hedefe katkı", callback_data="action:warcontrib"),
+                InlineKeyboardButton("🔄 Yenile", callback_data="action:wars"),
+            ]
+        )
+    else:
+        rows.append([InlineKeyboardButton("🔄 Yenile", callback_data="action:wars")])
     rows.append([back_home_button()])
     return InlineKeyboardMarkup(rows)
 

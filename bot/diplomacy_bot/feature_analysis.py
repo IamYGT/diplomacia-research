@@ -204,12 +204,17 @@ def analyze_passive(data: dict, cfg: AccountConfig, player_class: str | None = N
     }
 
 
-def analyze_auto_status(status: dict) -> dict[str, Any]:
+def analyze_auto_status(status: dict, *, profile_health: int | None = None) -> dict[str, Any]:
     status = status or {}
     work_ms = int(status.get("next_work_in_ms") or 0)
     pill_ms = int(status.get("pill_cooldown_ms") or 0)
     war_ms = int(status.get("next_war_in_ms") or 0)
     atk_ms = int(status.get("free_attack_cooldown_ms") or 0)
+    health = (
+        int(profile_health)
+        if profile_health is not None
+        else int(status.get("health") or 0)
+    )
     return {
         "work_ready": work_ms <= 0,
         "work_ms": work_ms,
@@ -221,7 +226,7 @@ def analyze_auto_status(status: dict) -> dict[str, Any]:
         "attack_ms": atk_ms,
         "auto_work": bool(status.get("auto_work_active")),
         "auto_war": bool(status.get("auto_war_active")),
-        "health": int(status.get("health") or 0),
+        "health": health,
         "health_max": int(status.get("health_max") or 100),
         "pills": int(status.get("health_pills") or 0),
         "regen": status.get("health_regen_amount"),
@@ -246,6 +251,12 @@ def build_readiness(
     ta = training_analysis or {}
 
     items: list[str] = []
+    health = int(aa.get("health") or 0)
+    pills = int(aa.get("pills") or 0)
+    if health == 0 and pills > 0:
+        items.append("🚨 Can 0 — 💊 Can Doldur")
+    elif health < 100 and pills > 0 and aa.get("pill_ready"):
+        items.append(f"💊 Can {health}/100 — hap kullan")
     if qa.get("claimable_count"):
         items.append(f"📜 {qa['claimable_count']} görev ödülü (~{qa.get('pending_money', 0):,}₺)")
     if aa.get("work_ready"):

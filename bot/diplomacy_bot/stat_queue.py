@@ -11,16 +11,30 @@ from .account_runtime import account_context
 from .dynamic_context import invalidate_snapshot_cache
 from .modules import stats
 from .store import Account, list_accounts
-from .config import STAT_QUEUE_INTERVAL_SEC
+from .config import STAT_QUEUE_INTERVAL_SEC, AUTOFARM_INTERVAL_SEC
 from .stealth_client import cooldown_remaining_sec
 
 log = logging.getLogger(__name__)
 
 _WAKE_GRACE_SEC = 2.0
 _MIN_RUN_GAP_SEC = 8.0
+# Bakiye yetersizse upgrade denemesi farm geliri gelene kadar bekler.
+# Balance yalnızca autofarm tick'inde arttığı için backoff'u farm aralığına sabitle.
+# Aksi halde her dakika 3×400 üretilip API bant genişliği dashboard'tan çalınıyor.
+_INSUFFICIENT_FUNDS_BACKOFF_SEC = min(AUTOFARM_INTERVAL_SEC, 300)
 
 _WAKE_AT: dict[str, float] = {}
 _LAST_RUN: dict[str, float] = {}
+# Bakiye-backoff — _WAKE_AT'tan ayrı: tüm skill'ler para yetersizliğiyle reddedilince
+# balance farm geliri gelene dek upgrade denemesini durdurur. _WAKE_AT bir skill
+# cooldown'ını da temsil eder; onu block edersek "başka ready skill" durumunu kırarız.
+_FUNDS_BACKOFF: dict[str, float] = {}
+# Token-ölüm backoff — token 401/403 verince profile çağrısını kesene dek durdur.
+# Self-healing: backoff bitince yeniden probelenır, token yenilenmişse (200) temizlenir.
+# Token manuel yenilendiği için uzun (10 dk) ama sonsuz değil — dashboard bant
+# genişliğini korur, kullanıcı token yenileyene kadar stat job yük üretmez.
+_TOKEN_DEAD_BACKOFF_SEC = 600
+_TOKEN_DEAD: dict[str, float] = {}
 
 
 def _has_ready_skill(active: dict, cfg: AccountConfig) -> bool:
@@ -194,6 +208,11 @@ def should_tick_now(active: dict, cfg: AccountConfig, account_name: str) -> bool
     now = time.time()
     if now - _LAST_RUN.get(name, 0) < _MIN_RUN_GAP_SEC:
         return False
+    # Bakiye-backoff: tüm skill'ler para yetersizliğiyle reddedildiyse, balance farm
+    # geliri gelene dek bekle. _WAKE_AT'tan AYRI — çünkü _WAKE_AT bir skill cooldown
+    # bitişini de temsil eder ve o sırada BAŞKA ready skill varsa tick etmeliyiz.
+    if now < _FUNDS_BACKOFF.get(name, 0.0):
+        return False
     if _has_ready_skill(active, cfg):
         return True
     if name not in _WAKE_AT:
@@ -221,9 +240,31 @@ def tick_stat_queue(acc: Account) -> dict | None:
     wake = _WAKE_AT.get(name)
     if wake and time.time() < wake:
         return None
+    # Bakiye-backoff aktifse upgrade deneme — balance farm geliri gelene dek bekle.
+    if time.time() < _FUNDS_BACKOFF.get(name, 0.0):
+        return None
+
+    # Token-ölüm backoff aktifse profile çağrısı yapma — token ölü iken her dakika
+    # profile→401 çağrısı dashboard bant genişliğini boğuyordu. Backoff bitince
+    # yeniden probelanır; token yenilenmişse (200) _TOKEN_DEAD aşağıda temizlenir.
+    if time.time() < _TOKEN_DEAD.get(name, 0.0):
+        return None
 
     with account_context(acc):
         active = stats.get_active_skills(acc.token)
+
+    # Token ölümü tespiti: get_active_skills profile→401/403 döndürdü (active boş).
+    # Upgrade denemeden backoff'a gir — token manuel yenilenene kadar yük üretme.
+    if not active and stats._LAST_PROFILE_STATUS in (401, 403):
+        _TOKEN_DEAD[name] = time.time() + _TOKEN_DEAD_BACKOFF_SEC
+        log.warning(
+            "stat_queue: token auth hatası (HTTP %s) acc=%s — %ds backoff",
+            stats._LAST_PROFILE_STATUS, acc.name, _TOKEN_DEAD_BACKOFF_SEC,
+        )
+        return None
+    # Profile başarılı (200) → token yaşıyor, eski token-dead backoff'u temizle.
+    if active:
+        _TOKEN_DEAD.pop(name, None)
 
     if not should_tick_now(active, cfg, acc.name):
         return None
@@ -237,6 +278,8 @@ def tick_stat_queue(acc: Account) -> dict | None:
     for u in result.get("upgrades") or []:
         if u.get("ok"):
             upgraded = True
+            # Bakiye yenilendi (upgrade başarılı) → funds-backoff'u kaldır.
+            _FUNDS_BACKOFF.pop(name, None)
             note_pending_wake(
                 acc.name,
                 pending_at=u.get("pending_at"),
@@ -251,6 +294,13 @@ def tick_stat_queue(acc: Account) -> dict | None:
         nearest = stats.nearest_pending_seconds(active_after)
         if nearest is not None and nearest > 0:
             _WAKE_AT[name] = time.time() + nearest + _WAKE_GRACE_SEC
+    elif result.get("all_insufficient"):
+        # Tüm skill'ler bakiye yetersizliğiyle reddedildi (para yok, cooldown değil).
+        # Skill'ler "ready" görünüyor ama balance farm geliri gelene kadar yetmeyecek.
+        # Her dakika yeniden denemek yalnızca 3×400 üretip dashboard'u boğuyor.
+        # _WAKE_AT yerine _FUNDS_BACKOFF: cooldown biten başka skill gelirse yine de
+        # para olmadığı için reddedilir, ama _WAKE_AT karışmaz (ready-skill mantığı bozulmaz).
+        _FUNDS_BACKOFF[name] = time.time() + _INSUFFICIENT_FUNDS_BACKOFF_SEC
     elif _has_ready_skill(active_after, cfg):
         _WAKE_AT[name] = time.time() + _MIN_RUN_GAP_SEC
     elif any(

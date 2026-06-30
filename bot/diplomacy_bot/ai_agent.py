@@ -158,6 +158,23 @@ def run_agent(
     telegram_user_id: int | None = None,
 ) -> AgentResult:
     if not allow_confirm:
+        from .store import get_account
+
+        acc = get_account(default_account)
+        if acc:
+            from .intent_travel_fast import try_travel_fast_path
+            from .intent_updates_fast import try_updates_fast_path
+            from .intent_war_fast import try_war_reference_fast_path
+
+            travel_fast = try_travel_fast_path(user_message, acc)
+            if travel_fast is not None:
+                return travel_fast
+            updates_fast = try_updates_fast_path(user_message, acc)
+            if updates_fast is not None:
+                return updates_fast
+            war_fast = try_war_reference_fast_path(user_message, acc)
+            if war_fast is not None:
+                return war_fast
         fast = try_fast_path(user_message, default_account)
         if fast is not None:
             return fast

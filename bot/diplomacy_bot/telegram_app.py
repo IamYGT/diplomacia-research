@@ -1275,6 +1275,36 @@ async def stat_queue_job(context: ContextTypes.DEFAULT_TYPE):
             log.exception("stat_queue %s: %s", acc.name, e)
 
 
+async def press_like_job(context: ContextTypes.DEFAULT_TYPE):
+    """auto_like_articles açık hesaplar için yeni makaleleri beğen (~5 dk)."""
+    from .account_config import get_config
+    from .press_likes import auto_like_articles, format_like_result_html
+    from .store import list_accounts
+
+    for acc in list_accounts():
+        cfg = get_config(acc.name)
+        if not cfg.auto_like_articles:
+            continue
+        try:
+            res = await asyncio.to_thread(auto_like_articles, acc.token, acc.name)
+        except Exception as e:
+            log.warning("press_like %s: %s", acc.name, e)
+            continue
+        # Beğeni olduysa (veya hata varsa) kullanıcıya bildir; beğenilen yoksa sessiz.
+        if res.get("liked", 0) > 0 or res.get("errors", 0) > 0:
+            notify_uid = acc.telegram_user_id or (next(iter(TELEGRAM_ADMIN_IDS)) if TELEGRAM_ADMIN_IDS else None)
+            if notify_uid:
+                try:
+                    await context.bot.send_message(
+                        chat_id=notify_uid,
+                        text=format_like_result_html(res),
+                        parse_mode="HTML",
+                        disable_web_page_preview=True,
+                    )
+                except Exception:
+                    pass
+
+
 async def autofarm_job(context: ContextTypes.DEFAULT_TYPE):
     from .fleet_live import format_tick_line
     from .fleet_manager import tick_one
@@ -1392,6 +1422,7 @@ def run() -> None:
 
         app.job_queue.run_repeating(stat_queue_job, interval=STAT_QUEUE_INTERVAL_SEC, first=15)
         app.job_queue.run_repeating(autofarm_job, interval=60, first=30)
+        app.job_queue.run_repeating(press_like_job, interval=300, first=60)
 
     log.info("Bot %s başlıyor…", get_version_label())
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)

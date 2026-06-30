@@ -6,6 +6,7 @@ from typing import Any, Callable
 from ..account_config import AccountConfig
 from ..game_api import api as default_api, get_profile
 from .economy import get_auto_status, work_ready
+from .travel import ensure_in_province, is_traveling
 
 ApiFn = Callable[..., tuple[int, Any]]
 
@@ -68,11 +69,29 @@ def list_region_factories(token: str, *, _api: ApiFn = default_api) -> list[dict
     return data.get("factories") or []
 
 
+def list_world_factories(token: str, *, _api: ApiFn = default_api) -> list[dict]:
+    st, data = _api("GET", "/factories/world?page=1&limit=30", token, delay=0.3)
+    if st != 200:
+        return []
+    return data.get("factories") or []
+
+
+def pick_world_factory(token: str, *, _api: ApiFn = default_api) -> tuple[str | None, str | None]:
+    """En iyi dünya fabrikası — (id, province_name)."""
+    prof = get_profile(token)
+    factories = list_world_factories(token, _api=_api)
+    if not factories:
+        return None, None
+    best = max(factories, key=lambda f: _score_factory(f, prof.province_name))
+    return best.get("id"), best.get("province_name")
+
+
 def pick_foreign_factory(token: str, *, _api: ApiFn = default_api) -> str | None:
     prof = get_profile(token)
     factories = list_region_factories(token, _api=_api)
     if not factories:
-        return None
+        fid, _ = pick_world_factory(token, _api=_api)
+        return fid
     best = max(factories, key=lambda f: _score_factory(f, prof.province_name))
     return best.get("id")
 
@@ -84,26 +103,28 @@ def build_factory(token: str, name: str = "BotFarm", *, _api: ApiFn = default_ap
     return (built.get("factory") or {}).get("id") or factory_in_province(token, _api=_api)
 
 
-def is_traveling(token: str, *, _api: ApiFn = default_api) -> bool:
-    st, data = _api("GET", "/provinces/travel/status", token, delay=0.2)
-    if st != 200:
-        return False
-    return bool(data.get("traveling") or data.get("in_transit"))
-
-
 def resolve_factory_id(token: str, cfg: AccountConfig, *, _api: ApiFn = default_api) -> tuple[str | None, str | None]:
     """UUID + hata mesajı."""
     mode = cfg.work_mode
     if mode == "fixed" and cfg.preferred_factory_id:
         return cfg.preferred_factory_id, None
     cached = _get_cached_factory(cfg.account_name, mode)
-    if cached and mode in ("foreign", "own", "auto"):
+    if cached and mode in ("foreign", "own", "auto", "world"):
         return cached, None
     if mode == "foreign":
         fid = pick_foreign_factory(token, _api=_api)
         if fid:
             return fid, None
         return None, "eyalette uygun yabancı fabrika bulunamadı"
+    if mode == "world":
+        fid, prov = pick_world_factory(token, _api=_api)
+        if fid:
+            if prov and cfg.auto_travel_enabled:
+                tr = ensure_in_province(token, str(prov), _api=_api)
+                if tr.get("traveling"):
+                    return fid, "seyahat başlatıldı — varınca tekrar dene"
+            return fid, None
+        return None, "dünya fabrikası bulunamadı"
     if mode == "own":
         fid = factory_in_province(token, _api=_api)
         if fid:
@@ -153,6 +174,27 @@ def prepare_join(
     _, joined = _api("POST", "/factories/join", token, {"factory_id": factory_id}, delay=0.2)
     err_text = str((joined or {}).get("error") or (joined or {}).get("message") or "")
     if joined.get("error") and "bölge" in err_text.lower():
+        if cfg.auto_travel_enabled and factory_id:
+            target_prov = None
+            if factory_id:
+                _, my_fac = _api("GET", "/factories/my", token, delay=0.15)
+                for f in (my_fac.get("factories") or []):
+                    if str(f.get("id")) == str(factory_id):
+                        target_prov = f.get("province_name")
+                        break
+                if not target_prov:
+                    region = list_region_factories(token, _api=_api)
+                    for f in region:
+                        if str(f.get("id")) == str(factory_id):
+                            target_prov = f.get("province_name")
+                            break
+            if target_prov:
+                tr = ensure_in_province(token, str(target_prov), _api=_api)
+                if tr.get("ok") and not tr.get("traveling"):
+                    _api("POST", "/factories/join", token, {"factory_id": factory_id}, delay=0.2)
+                    return factory_id, None
+                if tr.get("traveling"):
+                    return factory_id, "seyahat başlatıldı — varınca tekrar dene"
         _api("POST", "/factories/leave", token, {}, delay=0.15)
         if cfg.work_mode == "auto" or cfg.allow_auto_build:
             st, built = _api(
@@ -174,8 +216,9 @@ def prepare_join(
 
 def use_pills_if_needed(token: str, *, _api: ApiFn = default_api, health: int | None = None) -> dict | None:
     if health is None:
-        prof = get_profile(token)
-        health = prof.health
+        from .health_sync import work_health
+
+        health = work_health(token, _api=_api)
     if health >= 100:
         return None
     st, pills = _api("POST", "/auto/use-pills", token, {}, delay=0.3)
@@ -202,13 +245,9 @@ def run_work_cycle(
         result["cooldown_ms"] = wait_ms
         return result
 
-    if "health" in status:
-        health = int(status.get("health") or 0)
-    else:
-        try:
-            health = get_profile(token).health
-        except Exception:
-            health = 100
+    from ..health_sync import work_health
+
+    health = work_health(token, _api=_api, auto_status=status)
     pill_cd = int(status.get("pill_cooldown_ms") or 0)
 
     _, ws = _api("GET", "/factories/work-status", token, delay=0.15)
@@ -225,6 +264,7 @@ def run_work_cycle(
                 result["error"] = pill_err["error"]
                 result["cooldown_ms"] = pill_err.get("cooldown_ms")
                 return result
+            result["used_pills"] = True
         st, work = _api("POST", "/factories/work", token, {}, delay=0.2)
         earned = work.get("earned") or {}
         result["earned"] = earned
@@ -260,6 +300,7 @@ def run_work_cycle(
             result["error"] = pill_err["error"]
             result["cooldown_ms"] = pill_err.get("cooldown_ms")
             return result
+        result["used_pills"] = True
 
     st, work = _api("POST", "/factories/work", token, {}, delay=0.2)
     earned = work.get("earned") or {}

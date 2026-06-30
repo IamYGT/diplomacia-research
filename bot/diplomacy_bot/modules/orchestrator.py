@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from ..account_config import AccountConfig, get_config, normalize_role
 from ..game_api import get_profile
-from . import economy, factory, premium, stats, training, war
+from . import economy, factory, premium, stats, training, travel, war
 
 ApiFn = economy.ApiFn
 
@@ -41,6 +41,14 @@ def tick_account(
         result.error = "paused"
         return result
 
+    if travel.is_traveling(token, _api=api_fn):
+        ts = travel.get_travel_status(token, _api=api_fn)
+        result.error = "seyahat halindesin — bekle"
+        if ts:
+            result.actions.append({"travel": {"remaining_ms": ts.remaining_ms, "destination": ts.destination}})
+        _persist_runtime_state(account_name, result)
+        return result
+
     try:
         prof = get_profile(token)
     except Exception as e:
@@ -75,26 +83,50 @@ def tick_account(
 
     skip_work, skip_reason = premium.should_skip_manual_work(token, cfg, _api=api_fn)
 
-    # 3. Antrenman
+    # 3. Savaş öncesi hazırlık (hap + can)
+    if role in ("war", "hybrid") and cfg.war_enabled:
+        craft_pre = economy.ensure_pills(token, cfg, _api=api_fn)
+        if craft_pre:
+            result.actions.append({"economy_pre": craft_pre})
+        try:
+            from ..health_sync import work_health
+
+            status_pre = economy.get_auto_status(token, _api=api_fn)
+            health_pre = work_health(token, _api=api_fn, auto_status=status_pre)
+            if health_pre < 100 and int(status_pre.get("pill_cooldown_ms") or 0) <= 0:
+                pills_pre = economy.use_pills(token, _api=api_fn)
+                if pills_pre.get("ok"):
+                    result.actions.append({"use_pills_pre": pills_pre})
+        except Exception:
+            pass
+
+    # 4. Antrenman
     if cfg.training_enabled and role in ("farm", "war", "hybrid"):
         tr = training.try_free_attack(token, cfg, _api=api_fn)
         if tr:
             result.actions.append({"training": tr})
 
-    # 4. Savaş (savaş + karma)
+    # 5. Savaş (savaş + karma)
     if role in ("war", "hybrid") and cfg.war_enabled:
         wr = war.try_contribute(token, cfg, _api=api_fn)
         if wr:
             result.actions.append({"war": wr})
 
-    # 5–6. Farm döngüsü (farm + karma) — premium auto/work açıksa sunucu yapar
+    # 6–7. Farm döngüsü (farm + karma) — premium auto/work açıksa sunucu yapar
     if role in ("farm", "hybrid"):
         craft = economy.ensure_pills(token, cfg, _api=api_fn)
         if craft:
             result.actions.append({"economy": craft})
 
         if skip_work:
-            result.actions.append({"skipped": skip_reason})
+            skip_action: dict = {"skipped": skip_reason}
+            if skip_reason == "premium_auto_work":
+                from ..health_sync import work_health
+
+                status_pre = economy.get_auto_status(token, _api=api_fn)
+                skip_action["health"] = work_health(token, _api=api_fn, auto_status=status_pre)
+                skip_action["pill_cooldown_ms"] = int(status_pre.get("pill_cooldown_ms") or 0)
+            result.actions.append(skip_action)
             result.ok = True
             if cfg.stat_auto_enabled:
                 stat_post = stats.run_stat_automation(token, cfg, _api=api_fn)
@@ -105,6 +137,8 @@ def tick_account(
         else:
             work = factory.run_work_cycle(token, cfg, _api=api_fn)
             result.factory_id = work.get("factory_id")
+            if work.get("used_pills"):
+                result.actions.append({"use_pills_pre": {"ok": True, "source": "farm"}})
             if work.get("ok"):
                 e = work.get("earned") or {}
                 result.earned_money = int(e.get("money") or 0)
@@ -156,7 +190,13 @@ def _persist_runtime_state(account_name: str, result: TickResult) -> None:
             set_runtime_state(account_name, "cooldown")
             return
     for action in result.actions:
-        if isinstance(action, dict) and action.get("cooldown_ms"):
+        if not isinstance(action, dict):
+            continue
+        if action.get("cooldown_ms"):
+            set_runtime_state(account_name, "cooldown")
+            return
+        war_act = action.get("war") or {}
+        if isinstance(war_act, dict) and war_act.get("skipped") == "war_cooldown":
             set_runtime_state(account_name, "cooldown")
             return
     if result.ok and result.earned_money > 0:

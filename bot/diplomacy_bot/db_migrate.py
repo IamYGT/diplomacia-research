@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from typing import Callable
 
-CURRENT_SCHEMA_VERSION = 5
+CURRENT_SCHEMA_VERSION = 11
 
 MigrationFn = Callable[[sqlite3.Connection], None]
 
@@ -130,12 +130,93 @@ def _migration_5_plaintext_tokens(c: sqlite3.Connection) -> None:
             )
 
 
+def _migration_10_dashboard_pin(c: sqlite3.Connection) -> None:
+    if not _table_exists(c, "bot_sessions"):
+        return
+    if not _column_exists(c, "bot_sessions", "dashboard_chat_id"):
+        c.execute(
+            "ALTER TABLE bot_sessions ADD COLUMN dashboard_chat_id INTEGER DEFAULT 0"
+        )
+    if not _column_exists(c, "bot_sessions", "dashboard_message_id"):
+        c.execute(
+            "ALTER TABLE bot_sessions ADD COLUMN dashboard_message_id INTEGER DEFAULT 0"
+        )
+
+
+def _migration_9_reply_keyboard_pref(c: sqlite3.Connection) -> None:
+    if not _table_exists(c, "bot_sessions"):
+        return
+    if not _column_exists(c, "bot_sessions", "reply_keyboard_enabled"):
+        c.execute(
+            "ALTER TABLE bot_sessions ADD COLUMN reply_keyboard_enabled INTEGER DEFAULT 1"
+        )
+
+
+def _migration_8_easy_guide(c: sqlite3.Connection) -> None:
+    if not _table_exists(c, "bot_sessions"):
+        return
+    if not _column_exists(c, "bot_sessions", "easy_guide_shown"):
+        c.execute(
+            "ALTER TABLE bot_sessions ADD COLUMN easy_guide_shown INTEGER DEFAULT 0"
+        )
+
+
+def _migration_7_account_missions(c: sqlite3.Connection) -> None:
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS account_missions (
+            account_name TEXT PRIMARY KEY,
+            mission_id TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'active',
+            plan_json TEXT NOT NULL,
+            runtime_json TEXT NOT NULL,
+            created_at REAL NOT NULL,
+            updated_at REAL NOT NULL
+        )
+        """
+    )
+    c.execute(
+        "CREATE INDEX IF NOT EXISTS idx_account_missions_status ON account_missions(status)"
+    )
+
+
+def _migration_6_main_account(c: sqlite3.Connection) -> None:
+    if not _table_exists(c, "accounts"):
+        return
+    if not _column_exists(c, "accounts", "is_main"):
+        c.execute("ALTER TABLE accounts ADD COLUMN is_main INTEGER DEFAULT 0")
+    if not _column_exists(c, "bot_sessions", "main_account"):
+        c.execute("ALTER TABLE bot_sessions ADD COLUMN main_account TEXT DEFAULT ''")
+    # Varsayılan ana hesap: ygt (varsa)
+    row = c.execute(
+        "SELECT name FROM accounts WHERE LOWER(name)='ygt' LIMIT 1"
+    ).fetchone()
+    if row:
+        c.execute("UPDATE accounts SET is_main=0")
+        c.execute("UPDATE accounts SET is_main=1 WHERE LOWER(name)='ygt'")
+
+
+def _migration_11_pending_token_account(c: sqlite3.Connection) -> None:
+    if not _table_exists(c, "bot_sessions"):
+        return
+    if not _column_exists(c, "bot_sessions", "pending_token_account"):
+        c.execute(
+            "ALTER TABLE bot_sessions ADD COLUMN pending_token_account TEXT DEFAULT ''"
+        )
+
+
 MIGRATIONS: list[tuple[int, MigrationFn]] = [
     (1, _migration_1_indexes),
     (2, _migration_2_persistence_tables),
     (3, _migration_3_token_enc),
     (4, _migration_4_snapshot_indexes),
     (5, _migration_5_plaintext_tokens),
+    (6, _migration_6_main_account),
+    (7, _migration_7_account_missions),
+    (8, _migration_8_easy_guide),
+    (9, _migration_9_reply_keyboard_pref),
+    (10, _migration_10_dashboard_pin),
+    (11, _migration_11_pending_token_account),
 ]
 
 

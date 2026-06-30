@@ -733,8 +733,11 @@ def try_fast_path(user_message: str, default_account: str) -> "AgentResult | Non
                 reply=(
                     "📰 Makale için başlık + içerik gerekli.\n\n"
                     "Örnek:\n"
-                    "`makale başlık: Rapor konu: Bugün fabrikada 2500 altın kazandım...`"
-                )
+                    "`makale başlık: Rapor konu: Bugün fabrikada 2500 altın kazandım...`\n\n"
+                    "💡 <b>makale beğen</b> yaz → yeni makaleleri anlık beğen\n"
+                    "💡 <b>makale beğen aç</b> → otomatik beğenme (~5 dk)"
+                ),
+                parse_mode="HTML",
             )
 
     if _match(

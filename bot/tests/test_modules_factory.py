@@ -47,6 +47,19 @@ class MockApi:
         return 404, {"error": "not found"}
 
 
+from contextlib import contextmanager
+
+
+@contextmanager
+def patch_profile(**kw):
+    prof = _profile(**kw)
+    with (
+        patch("diplomacy_bot.game_api.get_profile", return_value=prof),
+        patch.object(factory_mod, "get_profile", return_value=prof),
+    ):
+        yield
+
+
 class FactoryModuleTests(unittest.TestCase):
     def setUp(self) -> None:
         factory_mod.clear_factory_cache()
@@ -65,7 +78,7 @@ class FactoryModuleTests(unittest.TestCase):
                 ("POST", "/factories/work"): (200, {"earned": {"money": 2400, "diamonds": 20}}),
             }
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+        with patch_profile():
             r = factory_mod.run_work_cycle("tok", cfg, _api=mock)
         self.assertTrue(r["ok"])
         join_calls = [c for c in mock.calls if c[0] == "POST" and c[1] == "/factories/join"]
@@ -115,7 +128,7 @@ class FactoryModuleTests(unittest.TestCase):
                 ("POST", "/factories/work"): (200, {"earned": {"money": 100, "xp": 1}}),
             }
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+        with patch_profile():
             r = factory_mod.run_work_cycle("tok", cfg, _api=mock)
         self.assertTrue(r["ok"])
         join_calls = [c for c in mock.calls if c[1] == "/factories/join"]

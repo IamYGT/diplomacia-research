@@ -27,9 +27,9 @@ class UserErrorsTests(unittest.TestCase):
         msg = format_hap_preflight({"health": 50, "pills": 10, "pill_cooldown_ms": 120_000})
         self.assertIn("cooldown", (msg or "").lower())
 
-    def test_farm_preflight_work_wait(self):
-        msg = format_farm_preflight({"health": 80, "work_wait_ms": 30_000})
-        self.assertIn("Work cooldown", msg or "")
+    def test_farm_preflight_zero_health(self):
+        msg = format_farm_preflight({"health": 0, "pills": 5, "pill_cooldown_ms": 0})
+        self.assertIn("Can 0", msg or "")
 
     def test_pill_error_cooldown(self):
         self.assertIn("cooldown", format_pill_error({"remaining_ms": 60_000}).lower())

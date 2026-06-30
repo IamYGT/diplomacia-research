@@ -1,0 +1,8 @@
+#!/bin/sh
+# Git pre-commit — bot API dosyaları değiştiyse sözleşme testleri
+set -e
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+CHANGED=$(git diff --cached --name-only 2>/dev/null || true)
+echo "$CHANGED" | grep -qE '^bot/(diplomacy_bot/|tests/fixtures/api_|tests/test_api_route|scripts/(check|record)_api)' || exit 0
+echo "pre-commit: API contract check…"
+cd "$ROOT/bot" && python3 scripts/check_api_contracts.py --pytest

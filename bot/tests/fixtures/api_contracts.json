@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "description": "Minimal başarı yanıtları — api_route_contract doğrulaması",
+    "generator": "hand-maintained"
+  },
+  "samples": [
+    {
+      "route_id": "players.profile",
+      "status": 200,
+      "data": {
+        "username": "test",
+        "level": 5,
+        "balance": 1000,
+        "health": 100
+      }
+    },
+    {
+      "route_id": "auto.status",
+      "status": 200,
+      "data": {
+        "next_work_in_ms": 0,
+        "pill_cooldown_ms": 0,
+        "health_pills": 10
+      }
+    },
+    {
+      "route_id": "countries.list",
+      "status": 200,
+      "data": {
+        "countries": []
+      }
+    },
+    {
+      "route_id": "quests.list",
+      "status": 200,
+      "data": {
+        "quests": []
+      }
+    },
+    {
+      "route_id": "wars.my_country",
+      "status": 200,
+      "data": {
+        "wars": []
+      }
+    },
+    {
+      "route_id": "factories.my",
+      "status": 200,
+      "data": {
+        "factories": []
+      }
+    },
+    {
+      "route_id": "provinces.all",
+      "status": 200,
+      "data": {
+        "provinces": []
+      }
+    },
+    {
+      "route_id": "training.my",
+      "status": 404,
+      "data": {
+        "error": "not found"
+      }
+    },
+    {
+      "route_id": "auto.use_pills",
+      "status": 429,
+      "data": {
+        "error": "cooldown",
+        "remaining_ms": 600000
+      }
+    }
+  ]
+}

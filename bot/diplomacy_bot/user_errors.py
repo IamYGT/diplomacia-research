@@ -45,8 +45,10 @@ def format_work_error(error: str | None = None, *, cooldown_ms: int | None = Non
 
 
 def format_hap_preflight(snap: dict) -> str | None:
-    health = int(snap.get("health") or 0)
-    pills = int(snap.get("pills") or 0)
+    from .health_sync import snap_health
+
+    health = snap_health(snap)
+    pills = int(snap.get("pills") or snap.get("health_pills") or 0)
     pill_cd = int(snap.get("pill_cooldown_ms") or 0)
     if health >= 100:
         return "❤️ Can zaten dolu (100/100)."
@@ -58,10 +60,12 @@ def format_hap_preflight(snap: dict) -> str | None:
 
 
 def format_farm_preflight(snap: dict) -> str | None:
+    from .health_sync import snap_health
+
     work_wait = int(snap.get("work_wait_ms") or 0)
     if work_wait > 0:
         return f"⏳ Work cooldown — {format_ms(work_wait)} sonra tekrar dene."
-    health = int(snap.get("health") or 0)
+    health = snap_health(snap)
     if health <= 0:
         pills = int(snap.get("pills") or 0)
         pill_cd = int(snap.get("pill_cooldown_ms") or 0)

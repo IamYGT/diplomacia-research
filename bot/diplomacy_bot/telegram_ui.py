@@ -239,6 +239,21 @@ def format_dashboard_html(acc: Account, snap: dict | None = None) -> str:
     if snap.get("error"):
         err_line = f"⚠️ {html.escape(str(snap['error'])[:100])}\n"
 
+    # Token-auth hatası (401/403/oturum süresi dolmuş) — yanltıcı boş layout
+    # ("Seviye ? · ?" / 0 altın) göstermek yerine belirgin, net bir yenileme
+    # mesajı en üstte. Kullanıcı verilerin neden boş olduğunu hemen anlar.
+    from .token_recovery import is_token_auth_error
+
+    if snap.get("error") and is_token_auth_error(str(snap["error"])):
+        return (
+            f"<b>🔑 Oturum süresi doldu — token yenile</b>\n\n"
+            f"<b>{html.escape(str(snap.get('username') or acc.name))}</b> için oyun-side oturum iptal edilmiş.\n"
+            f"Bu yüzden veriler (seviye, bakiye, can) şu an görünmüyor.\n\n"
+            f"<b>Çözüm:</b> diplomacia.com.tr'ye giriş yap, taze token al ve bota yapıştır "
+            f"(veya <code>/connect</code>).\n\n"
+            f"<i>🕐 {datetime.now(timezone.utc).strftime('%H:%M')} UTC</i>"
+        )
+
     age = snapshot_cache_age_sec(acc.name)
     age_note = ""
     if age is not None:

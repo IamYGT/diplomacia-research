@@ -232,7 +232,9 @@ async def _render_feature(data: str, acc: Account) -> tuple[str, InlineKeyboardM
         )
 
     if data == "action:warcontrib":
-        pack = await asyncio.to_thread(_run, lambda: game_features.run_war_contribute(acc.token, acc.name))
+        from .war_ops import run_war_contribute
+
+        pack = await asyncio.to_thread(_run, lambda: run_war_contribute(acc.token, acc.name))
         invalidate_snapshot_cache(acc.name)
         return format_war_contribute_html(pack, pack.get("analysis")), markup, parse_mode
 

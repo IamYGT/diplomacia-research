@@ -39,20 +39,28 @@ def _mark_sent(event_key: str) -> None:
         _LAST_NOTIFY.pop(k, None)
 
 
-def send_telegram_message(chat_id: int, text: str) -> bool:
+def send_telegram_message(
+    chat_id: int,
+    text: str,
+    *,
+    reply_markup: dict | None = None,
+) -> bool:
     """Düşük seviye Telegram gönderi — sendMessage API. Başarı bool döner."""
     token = _bot_token()
     if not token or not chat_id:
         return False
     try:
+        payload: dict = {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
         r = requests.post(
             f"https://api.telegram.org/bot{token}/sendMessage",
-            json={
-                "chat_id": chat_id,
-                "text": text,
-                "parse_mode": "HTML",
-                "disable_web_page_preview": True,
-            },
+            json=payload,
             timeout=15,
         )
         data = r.json()
@@ -65,6 +73,18 @@ def send_telegram_message(chat_id: int, text: str) -> bool:
         return False
 
 
+def pill_ready_reply_markup() -> dict:
+    """Hap hazır bildirimi — Ana Sayfa + Can Doldur."""
+    return {
+        "inline_keyboard": [
+            [
+                {"text": "🏠 Ana Sayfa", "callback_data": "dash:home"},
+                {"text": "💊 Can Doldur", "callback_data": "farm:hap"},
+            ]
+        ]
+    }
+
+
 def notify_event(
     chat_id: int,
     event_key: str,
@@ -72,6 +92,7 @@ def notify_event(
     body: str,
     *,
     also_admin: bool = False,
+    reply_markup: dict | None = None,
 ) -> bool:
     """User-scoped bildirim + dedup.
 
@@ -82,11 +103,11 @@ def notify_event(
     if _is_within_cooldown(event_key):
         return False
     text = f"<b>{title}</b>\n{body}" if body else f"<b>{title}</b>"
-    ok = send_telegram_message(chat_id, text)
+    ok = send_telegram_message(chat_id, text, reply_markup=reply_markup)
     if also_admin:
         for admin_id in TELEGRAM_ADMIN_IDS:
             if admin_id != chat_id:
-                send_telegram_message(admin_id, text)
+                send_telegram_message(admin_id, text, reply_markup=reply_markup)
     if ok:
         _mark_sent(event_key)
     return ok

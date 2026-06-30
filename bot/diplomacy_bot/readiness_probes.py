@@ -31,14 +31,16 @@ def auto_raw_from_row(row: dict) -> dict:
         "free_attack_cooldown_ms": int(row.get("free_attack_cooldown_ms") or 0),
         "auto_work_active": bool(row.get("auto_work_active")),
         "auto_war_active": bool(row.get("auto_war_active")),
+        "health": int(row.get("health") or 0),
         "health_pills": int(row.get("pills") or 0),
     }
 
 
 def analyze_from_snapshot_row(row: dict, cfg) -> dict[str, dict]:
     auto_raw = auto_raw_from_row(row)
+    profile_h = int(row.get("health") or 0)
     return {
-        "auto": analyze_auto_status(auto_raw),
+        "auto": analyze_auto_status(auto_raw, profile_health=profile_h),
         "passive": analyze_passive(
             {"available_points": row.get("passive_available"), "passive_skills": {}},
             cfg,
@@ -117,7 +119,9 @@ def probe_readiness_full(token: str, account_name: str, *, api_delay: float = 0.
             return {}
 
     def a():
-        return analyze_auto_status(economy.get_auto_status(token) or {})
+        from .health_sync import analyze_auto_with_profile
+
+        return analyze_auto_with_profile(token)
 
     def w():
         try:

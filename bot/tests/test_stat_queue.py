@@ -91,6 +91,42 @@ def test_tick_runs_when_wake_due():
     assert r.get("upgrades")
 
 
+def test_tick_suspends_on_token_auth_error():
+    """Token 401/403 → stat_queue upgrade denemeden backoff'a girer.
+
+    Token ölü iken her dakika profile→401 çağrısı dashboard bant genişliğini
+    boğuyordu. get_active_skills {} + son HTTP 401 → _TOKEN_DEAD backoff set.
+    """
+    import diplomacy_bot.stat_queue as sq
+
+    sq._WAKE_AT.clear()
+    sq._LAST_RUN.clear()
+    sq._TOKEN_DEAD.clear()
+    sq._FUNDS_BACKOFF.clear()
+    stats._LAST_PROFILE_STATUS = 401
+    cfg = AccountConfig("ygt", stat_auto_enabled=True)
+
+    with patch("diplomacy_bot.stat_queue.get_config", return_value=cfg):
+        with patch("diplomacy_bot.stat_queue.stats.get_active_skills", return_value={}):
+            with patch("diplomacy_bot.stat_queue.account_context"):
+                r = tick_stat_queue(_acc())
+    assert r is None  # upgrade denemedi
+    assert sq._TOKEN_DEAD.get("ygt", 0) > 0  # backoff set
+
+    # Backoff aktifken sonraki tick erken döner (profile çağrısı yapmaz).
+    called = {"n": 0}
+
+    def boom(*a, **k):
+        called["n"] += 1
+        return {}
+
+    with patch("diplomacy_bot.stat_queue.stats.get_active_skills", side_effect=boom):
+        with patch("diplomacy_bot.stat_queue.account_context"):
+            r2 = tick_stat_queue(_acc())
+    assert r2 is None
+    assert called["n"] == 0  # profile çağrılmadı (backoff erken-return)
+
+
 def test_preview_queue_ready_skill():
     import diplomacy_bot.stat_queue as sq
 

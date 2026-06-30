@@ -9,7 +9,7 @@ from .account_pool import load_rules
 from .account_runtime import account_context
 from .game_api import get_profile
 from .store import Account, get_account, list_accounts, update_after_farm
-from .modules.orchestrator import TickResult, tick_account
+from .modules.orchestrator import TickResult
 
 
 @dataclass
@@ -95,7 +95,9 @@ def tick_one(acc: Account) -> TickResult:
     if normalize_role(cfg.role) == "off":
         return TickResult(account_name=acc.name, error="paused")
     with account_context(acc, rotate_egress=True):
-        result = tick_account(acc.token, acc.name, cfg=cfg)
+        from .modules.scheduler import schedule_account
+
+        result = schedule_account(acc.token, acc.name, cfg=cfg)
     if result.balance_after:
         update_after_farm(acc.name, result.balance_after)
     return result

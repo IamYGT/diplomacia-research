@@ -14,6 +14,11 @@ ApiFn = Callable[..., tuple[int, Any]]
 _LAST_UPGRADE_429_AT: float = 0.0
 _UPGRADE_THROTTLE_SEC = 600
 
+# get_active_skills'in son profile HTTP durumu — stat_queue token-ölümü (401/403)
+# tespiti için. Token ölü iken her dakika profile→401 çağrısı dashboard bant
+# genişliğini boğuyordu; bu durum stat_queue'da self-healing backoff tetikler.
+_LAST_PROFILE_STATUS: int | None = None
+
 
 def normalize_upgrade_type(currency: str) -> str:
     """Oyun API: type = money | diamond (gold/altin/elmas değil)."""
@@ -242,7 +247,19 @@ def run_stat_automation(
     )
     if any(u.get("status") == 429 for u in upgrades):
         _LAST_UPGRADE_429_AT = time.time()
-    return {"passive": passive, "upgrades": upgrades}
+    # Bakiye yetersizliği: hiç upgrade başlamadıysa ve tüm denemeler `required`
+    # ile reddedildiyse, balance farm geliri gelene kadar yetmeyecek demektir.
+    # Caller (stat_queue) bunu bakiye-backoff tetikleyicisi olarak kullanır —
+    # aksi halde her dakika 3×400 üretilip API bant genişliği dashboard'tan çalınır.
+    funds_only = bool(upgrades) and all(
+        not u.get("ok") and u.get("required") is not None and u.get("status") == 400
+        for u in upgrades
+    )
+    return {
+        "passive": passive,
+        "upgrades": upgrades,
+        "all_insufficient": funds_only,
+    }
 
 
 def auto_upgrade_gold(
@@ -315,7 +332,9 @@ def resolve_active_priority(cfg: AccountConfig, active_keys: list[str]) -> list[
 
 
 def get_active_skills(token: str, *, _api: ApiFn = default_api) -> dict:
+    global _LAST_PROFILE_STATUS
     st, data = _api("GET", "/players/profile", token, delay=0.15)
+    _LAST_PROFILE_STATUS = st
     if st != 200 or not isinstance(data, dict):
         return {}
     player = data.get("player") or {}
