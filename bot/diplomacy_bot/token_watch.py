@@ -56,19 +56,23 @@ def scan_token_inbox(*, force: bool = False) -> dict[str, str]:
     TOKEN_INBOX.mkdir(parents=True, exist_ok=True)
     found: dict[str, str] = {}
     for path in sorted(TOKEN_INBOX.glob("*")):
-        if not path.is_file():
-            continue
-        key = path.name.lower()
-        if key.endswith(".jwt"):
-            key = key[:-4]
-        elif key.endswith(".txt"):
-            key = key[:-4]
-        mtime = path.stat().st_mtime
-        prev = _inbox_mtime.get(str(path), 0.0)
-        if not force and mtime <= prev:
-            continue
-        tok = _read_token_from_path(path)
-        if not tok:
+        try:
+            if not path.is_file():
+                continue
+            key = path.name.lower()
+            if key.endswith(".jwt"):
+                key = key[:-4]
+            elif key.endswith(".txt"):
+                key = key[:-4]
+            mtime = path.stat().st_mtime
+            prev = _inbox_mtime.get(str(path), 0.0)
+            if not force and mtime <= prev:
+                continue
+            tok = _read_token_from_path(path)
+            if not tok:
+                continue
+        except Exception as e:
+            log.warning("token_inbox scan skip %s: %s", path.name, e)
             continue
         _inbox_mtime[str(path)] = mtime
         found[key] = tok
