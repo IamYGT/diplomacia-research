@@ -48,6 +48,13 @@ def _acc(name: str = "u99_worker", uid: int = 99) -> Account:
 
 
 class FleetStatusTests(unittest.TestCase):
+    def test_empty_status_uses_real_token_inbox_path(self):
+        with patch("diplomacy_bot.fleet_status.scoped_list_accounts", return_value=[]):
+            html = format_fleet_ops_status(515491882)
+        self.assertIn("data/token_inbox/u515491882_01.jwt", html)
+        self.assertIn("/fleetstart", html)
+        self.assertNotIn("{uid}", html)
+
     def test_next_steps_suggest_factory_when_not_fixed(self):
         acc = _acc()
         cfg = MagicMock(work_mode="foreign", preferred_factory_id=None, role="hybrid")

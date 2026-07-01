@@ -161,8 +161,8 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
     if not accs:
         return (
             "👥 Henüz hesap yok.\n\n"
-            "<i>Token yapıştır veya <code>data/token_inbox/u{uid}_01.jwt</code> + "
-            "<code>/fleetinbox</code></i>"
+            f"<i>Token yapıştır veya <code>data/token_inbox/u{telegram_user_id}_01.jwt</code> bırak, "
+            "sonra <code>/fleetstart</code> çalıştır.</i>"
         )
     fid, prov, err = resolve_operator_factory(telegram_user_id)
     af_on = sum(1 for a in accs if a.autofarm)

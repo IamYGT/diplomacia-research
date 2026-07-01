@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.27.4 ✅ Faz 4.5–4.21
+**Sürüm:** 4.27.5 ✅ Faz 4.5–4.22
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -64,6 +64,7 @@
 | 4.19 | Sade işlemler menüsü | ✅ | Duplicate `Hybrid/Bootstrap` ayrımı kaldırıldı |
 | 4.20 | Mission plan görünürlüğü | ✅ | Region/autopilot sonuçları gerçek faz planını gösterir |
 | 4.21 | Boş autopilot rehberi | ✅ | Worker yoksa token_inbox dosya yolu gösterilir |
+| 4.22 | Boş status rehberi | ✅ | `/fleet status` gerçek `u{uid}_01.jwt` yolunu gösterir |
 
 ---
 
@@ -100,7 +101,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.27.4):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç mesajları gerçek mission planını ve `Durum / Başlat / İşlemler / Ana panel` geri dönüş butonlarını taşır; worker yoksa doğru `data/token_inbox/u{uid}_01.jwt` yolunu gösterir.
+**Filo paneli (v4.27.5):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını ve doğru `data/token_inbox/u{uid}_01.jwt` yolunu gösterir.
 
 ---
 
@@ -204,6 +205,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.27.5 | Boş `/fleet status` gerçek token_inbox yolunu ve `/fleetstart` akışını gösterir |
 | 2026-07-01 | 4.27.4 | Boş autopilot sonucunda token_inbox dosya yolu ve tekrar başlatma rehberi |
 | 2026-07-01 | 4.27.3 | Region/autopilot sonuçlarında gerçek mission faz planı görünür |
 | 2026-07-01 | 4.27.2 | İşlemler menüsünde duplicate Hybrid/Bootstrap ayrımı kaldırıldı |
