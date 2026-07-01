@@ -70,8 +70,13 @@ def format_region_mission_html(result, province: str) -> str:
 def format_autopilot_html(result) -> str:
     import html
 
+    inbox_line = f"📥 Inbox: {result.inbox.ok}/{result.inbox.total} import"
+    if result.inbox.total == 1 and result.inbox.results and not result.inbox.results[0].ok:
+        if "boş" in result.inbox.results[0].message.lower():
+            inbox_line = "📥 Inbox: yeni token yok"
     lines = [
         f"<b>▶️ Filo autopilot</b> → <b>{html.escape(result.province)}</b>",
+        inbox_line,
         f"🛠 Otonomi: {result.repair.ok}/{result.repair.total} hesap hazır",
         f"🧭 Mission: {result.mission.batch.ok}/{result.mission.batch.total} hesap kuyruğa alındı",
         f"<code>{html.escape(result.mission.fleet_id)}</code>\n",

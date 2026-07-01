@@ -18,6 +18,7 @@ class FleetMissionEnqueueResult:
 @dataclass
 class FleetAutopilotResult:
     province: str
+    inbox: FleetBatchResult
     repair: FleetBatchResult
     mission: FleetMissionEnqueueResult
 
@@ -32,9 +33,11 @@ def start_fleet_autopilot_for_uid(
     vote: bool = False,
     candidate_id: str = "",
 ) -> FleetAutopilotResult:
-    """Tek operatör aksiyonu: otonomi ayarlarını onar ve kalıcı bölge mission'ı yaz."""
+    """Tek operatör aksiyonu: inbox import, otonomi onarım, kalıcı bölge mission."""
+    from .fleet_inbox_import import import_inbox_for_uid
     from .fleet_autonomy_repair import repair_fleet_autonomy_for_uid
 
+    inbox = import_inbox_for_uid(telegram_user_id)
     repair = repair_fleet_autonomy_for_uid(telegram_user_id, role=role)
     mission = enqueue_region_missions_for_uid(
         telegram_user_id,
@@ -45,7 +48,7 @@ def start_fleet_autopilot_for_uid(
         vote=vote,
         candidate_id=candidate_id,
     )
-    return FleetAutopilotResult(province=province, repair=repair, mission=mission)
+    return FleetAutopilotResult(province=province, inbox=inbox, repair=repair, mission=mission)
 
 
 def enqueue_aod_missions_for_uid(

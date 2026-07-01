@@ -12,7 +12,7 @@ def format_fleet_help_html() -> str:
         f"<b>📋 Filo komuta rehberi</b> {get_version_label()}\n\n"
         f"<b>Hızlı başlangıç ({limit} hesap)</b>\n"
         "<code>/fleetinbox</code> — token_inbox'tan toplu bağla\n"
-        "<code>/fleetstart Hürmüz vote</code> — onar + kalıcı Hürmüz mission\n"
+        "<code>/fleetstart Hürmüz vote</code> — inbox + onar + kalıcı Hürmüz mission\n"
         "<code>/fleetaod</code> — bootstrap + fabrika + seyahat + ikamet\n"
         "<code>/fleetregion Hürmüz vote</code> — kalıcı bölge mission\n"
         "<code>/fleet audit</code> — otomasyon eksiklerini gör\n"

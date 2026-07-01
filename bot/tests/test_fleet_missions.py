@@ -179,9 +179,11 @@ class FleetMissionTests(unittest.TestCase):
     def test_start_fleet_autopilot_repairs_and_queues_region(self):
         from diplomacy_bot.fleet_mission_service import start_fleet_autopilot_for_uid
 
+        inbox = SimpleNamespace(ok=2, total=2)
         repair = SimpleNamespace(ok=20, total=20)
         mission = SimpleNamespace(fleet_id="region-1", batch=SimpleNamespace(ok=20, total=20, results=[]))
         with (
+            patch("diplomacy_bot.fleet_inbox_import.import_inbox_for_uid", return_value=inbox) as import_inbox,
             patch("diplomacy_bot.fleet_autonomy_repair.repair_fleet_autonomy_for_uid", return_value=repair) as repair_fn,
             patch(
                 "diplomacy_bot.fleet_mission_service.enqueue_region_missions_for_uid",
@@ -190,8 +192,10 @@ class FleetMissionTests(unittest.TestCase):
         ):
             result = start_fleet_autopilot_for_uid(42, province="Hürmüz", vote=True)
 
+        self.assertEqual(result.inbox, inbox)
         self.assertEqual(result.repair, repair)
         self.assertEqual(result.mission, mission)
+        import_inbox.assert_called_once_with(42)
         repair_fn.assert_called_once_with(42, role="hybrid")
         self.assertTrue(enqueue.call_args.kwargs["vote"])
         self.assertEqual(enqueue.call_args.kwargs["province"], "Hürmüz")

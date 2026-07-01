@@ -32,6 +32,7 @@ class FleetRegionMissionUiTests(unittest.TestCase):
     def test_format_autopilot_html_shows_repair_and_mission(self):
         result = SimpleNamespace(
             province="Hürmüz",
+            inbox=SimpleNamespace(ok=2, total=2, results=[]),
             repair=SimpleNamespace(ok=20, total=20),
             mission=SimpleNamespace(
                 fleet_id="region-1",
@@ -42,6 +43,7 @@ class FleetRegionMissionUiTests(unittest.TestCase):
         text = format_autopilot_html(result)
 
         self.assertIn("Filo autopilot", text)
+        self.assertIn("Inbox: 2/2", text)
         self.assertIn("20/20", text)
         self.assertIn("region-1", text)
 

@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.26.5 ✅ Faz 4.5–4.12
+**Sürüm:** 4.26.6 ✅ Faz 4.5–4.13
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -55,6 +55,7 @@
 | 4.10 | Kolay/program callback fresh panel | ✅ | `telegram_navigation.py`, `telegram_easy.py`, `telegram_mission.py` |
 | 4.11 | Training skip görünürlüğü | ✅ | `training_skip` action_log + `/fleet status` 24s bekleme metriği |
 | 4.12 | Tek tuş filo autopilot | ✅ | `/fleetstart`, `/fleet start`, panel `▶️ Başlat` |
+| 4.13 | Autopilot inbox import | ✅ | `/fleetstart` önce token_inbox import eder |
 
 ---
 
@@ -67,7 +68,7 @@ export MAX_ACCOUNTS_PER_USER=20
 # 2. Ana hesap fabrika UUID (coach veya fabrika panelinden)
 # 3. Alt hesaplar: token → data/token_inbox/u{uid}_01.jwt …
 # 4. Telegram:
-/fleetstart Hürmüz vote     # önerilen tek akış: onar + Hürmüz mission + oy opsiyonu
+/fleetstart Hürmüz vote     # önerilen tek akış: inbox + onar + Hürmüz mission + oy opsiyonu
 /fleetbootstrap hybrid      # işçi hesaplara rol + oto açık; ana hesabı atlar
 /fleetinbox                 # token_inbox'tan toplu bağla
 /fleetfactory main          # ana fabrikaya bağla
@@ -175,6 +176,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.26.6 | `/fleetstart` token_inbox import + repair + region mission zinciri |
 | 2026-07-01 | 4.26.5 | `/fleetstart` autopilot ve panel `▶️ Başlat` |
 | 2026-07-01 | 4.26.4 | Training skip action_log + fleet metrics bekleme sayacı |
 | 2026-07-01 | 4.26.3 | Kolay/program/onboarding eski callback'lerinde görünür yeni panel fallback |
