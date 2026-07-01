@@ -18,9 +18,33 @@ def get_my_training_war(token: str, *, _api: ApiFn = default_api) -> dict | None
     return data if isinstance(data, dict) else None
 
 
+def _cooldown_ms(data: Any) -> int:
+    if not isinstance(data, dict):
+        return 0
+    for key in ("remaining_ms", "free_attack_cooldown_ms", "cooldown_ms", "retry_after_ms"):
+        try:
+            value = int(data.get(key) or 0)
+        except (TypeError, ValueError):
+            value = 0
+        if value > 0:
+            return value
+    return 0
+
+
 def attack_training(token: str, war_id: str, *, _api: ApiFn = default_api) -> dict:
     st, data = _api("POST", f"/training-wars/{war_id}/attack", token, {}, delay=0.3)
-    return {"ok": st in (200, 201), "status": st, "data": data}
+    if st in (200, 201):
+        return {"ok": True, "status": st, "data": data}
+    wait_ms = _cooldown_ms(data)
+    if wait_ms or st == 429:
+        return {
+            "ok": False,
+            "skipped": "free_attack_cooldown",
+            "ms": wait_ms or 300_000,
+            "status": st,
+            "data": data,
+        }
+    return {"ok": False, "skipped": "training_attack_error", "status": st, "data": data}
 
 
 def try_free_attack(token: str, cfg: AccountConfig, *, _api: ApiFn = default_api) -> dict | None:

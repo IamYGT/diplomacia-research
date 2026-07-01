@@ -11,6 +11,7 @@ _STATE_KEY = "training_watch_last_attack"
 _NEXT_KEY = "training_watch_next_attempt"
 _DEFAULT_MIN_INTERVAL_SEC = 55 * 60
 _NO_WAR_RETRY_SEC = 10 * 60
+_ATTACK_ERROR_RETRY_SEC = 5 * 60
 
 
 def _load_last_attacks() -> dict[str, float]:
@@ -63,6 +64,8 @@ def _schedule_retry_from_result(name: str, result: dict | None, min_interval_sec
         _save_next_attempt_ts(name, time.time() + max(60.0, wait_ms / 1000.0))
     elif skipped in ("no_training_war", "no_training_war_id"):
         _save_next_attempt_ts(name, time.time() + min(_NO_WAR_RETRY_SEC, min_interval_sec))
+    elif skipped == "training_attack_error":
+        _save_next_attempt_ts(name, time.time() + min(_ATTACK_ERROR_RETRY_SEC, min_interval_sec))
 
 
 def run_training_tick(*, min_interval_sec: float = _DEFAULT_MIN_INTERVAL_SEC) -> tuple[int, int]:

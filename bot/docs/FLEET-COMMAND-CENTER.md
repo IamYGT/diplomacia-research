@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.12 ✅ Faz 4.5–4.39
+**Sürüm:** 4.28.13 ✅ Faz 4.5–4.40
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -82,6 +82,7 @@
 | 4.37 | Mission farm hap hazırlığı | ✅ | Region/AOD farm fazı work öncesi elmas→hap hazırlığını normal tick ile eşitler |
 | 4.38 | Token-aware inbox processed key | ✅ | Aynı `u{uid}_NN.jwt` slotuna yeni JWT konursa otomatik import yeniden çalışır |
 | 4.39 | Ana + 20 worker limiti | ✅ | Main hesap tanımlıysa 20 worker eklenebilir; 22. toplam hesap reddedilir |
+| 4.40 | Training attack retry normalizasyonu | ✅ | Attack endpoint cooldown/HTTP hata döndürürse worker retry zamanı yazar |
 
 ---
 
@@ -118,7 +119,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.28.12):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
+**Filo paneli (v4.28.13):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Training attack endpoint cooldown/429/HTTP hata döndürürse worker retry zamanı yazar, her tick spam denemez. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
 
 ---
 
@@ -173,7 +174,7 @@ python3 scripts/discover_frontend_api.py --show-missing
 | Token refresh tekrar tekrar deniyor | Kaynak yok / login başarısız | Worker hesap bazlı 30 dk backoff yazar; manuel force refresh backoff'u aşar |
 | 22. toplam hesap | Limit | `MAX_ACCOUNTS_PER_USER=20` → main varsa 1 ana + 20 worker |
 | Çalışma izni yok | API endpoint keşfedilmedi | `api_route_registry.py` güncellenmeden otomasyon ekleme |
-| Antrenman saldırmıyor | `/training-wars/my` boş veya cooldown | Worker next-attempt yazar; savaş oluşturma/join endpoint keşfi ayrı |
+| Antrenman saldırmıyor | `/training-wars/my` boş, cooldown veya attack HTTP hatası | Worker next-attempt yazar; savaş oluşturma/join endpoint keşfi ayrı |
 
 ## API keşif politikası
 
@@ -226,6 +227,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.13 | Training attack cooldown/HTTP hata cevapları retry planına bağlandı |
 | 2026-07-01 | 4.28.12 | `MAX_ACCOUNTS_PER_USER=20` ana hesap varsa 20 worker + 1 main kapasite verir |
 | 2026-07-01 | 4.28.11 | Inbox processed state dosya adı yerine token hash'i de içerir; aynı slotta yeni JWT retry edilir |
 | 2026-07-01 | 4.28.10 | Region/AOD mission farm fazı normal autofarm gibi work öncesi hap hazırlığı yapar |

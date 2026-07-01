@@ -30,6 +30,28 @@ class TrainingTests(unittest.TestCase):
         r = training.try_free_attack("tok", cfg, _api=api)
         self.assertTrue(r["ok"])
 
+    def test_attack_cooldown_response_is_retryable_skip(self):
+        def api(m, p, t, body=None, delay=0):
+            if p.endswith("/attack"):
+                return 429, {"remaining_ms": 180000}
+            return 404, {}
+
+        r = training.attack_training("tok", "tw-1", _api=api)
+        self.assertFalse(r["ok"])
+        self.assertEqual(r["skipped"], "free_attack_cooldown")
+        self.assertEqual(r["ms"], 180000)
+
+    def test_attack_http_error_is_named_skip(self):
+        def api(m, p, t, body=None, delay=0):
+            if p.endswith("/attack"):
+                return 500, {"error": "temporary"}
+            return 404, {}
+
+        r = training.attack_training("tok", "tw-1", _api=api)
+        self.assertFalse(r["ok"])
+        self.assertEqual(r["skipped"], "training_attack_error")
+        self.assertEqual(r["status"], 500)
+
 
 if __name__ == "__main__":
     unittest.main()
