@@ -97,6 +97,20 @@ def install_fleet_command_callbacks() -> None:
             if query and query.message:
                 await query.message.reply_text(format_fleet_ops_status(uid), parse_mode="HTML")
             return
+        if data == "fleet:cmd:repair":
+            from .fleet_autonomy_repair import repair_fleet_autonomy_for_uid
+
+            batch = repair_fleet_autonomy_for_uid(uid)
+            if query and query.message:
+                await query.message.reply_text(
+                    format_batch_html(
+                        "🛠 Filo otonomi onarım",
+                        batch,
+                        footer=format_next_steps_footer(uid),
+                    ),
+                    parse_mode="HTML",
+                )
+            return
         return await _orig(update, context, data, default, query, uid)
 
     cb.handle_callback = handle_callback_patched

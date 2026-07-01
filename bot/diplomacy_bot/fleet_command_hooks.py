@@ -158,6 +158,23 @@ async def cmd_fleetops(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await msg.reply_text(format_fleet_ops_status(uid), parse_mode="HTML")
 
 
+@user_required
+async def cmd_fleetrepair(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    from . import telegram_app as ta
+    from .fleet_autonomy_repair import repair_fleet_autonomy_for_uid
+
+    uid = ta._uid(update)
+    msg = update.effective_message
+    if not msg:
+        return
+    role = context.args[0] if context.args else "hybrid"
+    batch = repair_fleet_autonomy_for_uid(uid, role=role)
+    await msg.reply_text(
+        format_batch_html("🛠 Filo otonomi onarım", batch, footer=format_next_steps_footer(uid)),
+        parse_mode="HTML",
+    )
+
+
 def register_fleet_command_handlers(application: Application) -> None:
     global _REGISTERED
     if _REGISTERED:
@@ -168,6 +185,7 @@ def register_fleet_command_handlers(application: Application) -> None:
         ("fleetbootstrap", cmd_fleetbootstrap),
         ("fleetroles", cmd_fleetroles),
         ("fleetops", cmd_fleetops),
+        ("fleetrepair", cmd_fleetrepair),
         ("fleetinbox", cmd_fleetinbox),
         ("fleethelp", cmd_fleethelp),
     ):
@@ -204,6 +222,9 @@ def install_fleet_command_hooks() -> None:
 
     @user_required
     async def cmd_fleet_patched(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        if context.args and context.args[0].lower() in ("repair", "onar", "fix"):
+            await cmd_fleetrepair(update, context)
+            return
         if context.args and context.args[0].lower() in ("status", "ops", "komuta", "audit"):
             uid = ta._uid(update)
             msg = update.effective_message

@@ -15,6 +15,7 @@ def format_fleet_help_html() -> str:
         "<code>/fleetaod</code> — bootstrap + fabrika + seyahat + ikamet\n"
         "<code>/fleetregion Hürmüz vote</code> — kalıcı bölge mission\n"
         "<code>/fleet audit</code> — otomasyon eksiklerini gör\n"
+        "<code>/fleet repair</code> — eksik otomasyonları aç\n"
         "<code>/fleetvote</code> — aktif seçime oy\n"
         "<code>/fleet status</code> — detay tablo + 24s metrik\n\n"
         "<b>Token güvenliği</b>\n"

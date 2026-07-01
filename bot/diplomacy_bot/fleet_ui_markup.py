@@ -20,7 +20,10 @@ def fleet_more_inline_markup() -> InlineKeyboardMarkup:
                 InlineKeyboardButton("📥 Inbox", callback_data="fleet:cmd:inbox"),
                 InlineKeyboardButton("🏠 İkamet", callback_data="fleet:cmd:residence"),
             ],
-            [InlineKeyboardButton("🗳 Oy ver", callback_data="fleet:cmd:vote")],
+            [
+                InlineKeyboardButton("🛠 Onar", callback_data="fleet:cmd:repair"),
+                InlineKeyboardButton("🗳 Oy ver", callback_data="fleet:cmd:vote"),
+            ],
             [InlineKeyboardButton("◀️ Filo paneli", callback_data="fleet:menu:main")],
         ]
     )
