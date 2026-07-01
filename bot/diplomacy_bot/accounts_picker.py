@@ -12,6 +12,8 @@ from .account_balance import DisplayBalance, any_token_errors, resolve_display_b
 from .config import MAX_ACCOUNTS_PER_USER
 from .store import Account
 
+ACCOUNT_BUTTONS_PER_PAGE = 8
+
 
 def sort_accounts_for_display(
     accs: list[Account],
@@ -98,6 +100,7 @@ def accounts_inline_markup(
     accs: list[Account] | None = None,
     *,
     telegram_user_id: int | None = None,
+    page: int = 0,
 ) -> InlineKeyboardMarkup:
     accs = list(accs or [])
     if not accs:
@@ -111,10 +114,14 @@ def accounts_inline_markup(
     main = (get_main_account_name(uid) or "").strip().lower()
     active = (default_name or "").strip().lower()
     ordered = sort_accounts_for_display(accs, telegram_user_id=uid, active_name=active)
+    total_pages = max(1, (len(ordered) + ACCOUNT_BUTTONS_PER_PAGE - 1) // ACCOUNT_BUTTONS_PER_PAGE)
+    page = max(0, min(page, total_pages - 1))
+    start = page * ACCOUNT_BUTTONS_PER_PAGE
+    visible = ordered[start : start + ACCOUNT_BUTTONS_PER_PAGE]
 
     rows: list[list[InlineKeyboardButton]] = []
     row: list[InlineKeyboardButton] = []
-    for a in ordered[:12]:
+    for a in visible:
         label = _short_button_label(a, main=main, active=active)
         row.append(
             InlineKeyboardButton(label, callback_data=f"nav:account:{a.name}")
@@ -125,9 +132,19 @@ def accounts_inline_markup(
     if row:
         rows.append(row)
 
+    if total_pages > 1:
+        pager: list[InlineKeyboardButton] = []
+        if page > 0:
+            pager.append(InlineKeyboardButton("◀️", callback_data=f"menu:accounts:p:{page - 1}"))
+        pager.append(InlineKeyboardButton(f"{page + 1}/{total_pages}", callback_data="menu:accounts"))
+        if page < total_pages - 1:
+            pager.append(InlineKeyboardButton("▶️", callback_data=f"menu:accounts:p:{page + 1}"))
+        rows.append(pager)
+
     rows.append(
         [
             InlineKeyboardButton("➕ Yeni hesap", callback_data="menu:connect"),
+            InlineKeyboardButton("👥 Filo", callback_data="menu:fleet"),
             InlineKeyboardButton("🏠 Ana sayfa", callback_data="dash:home"),
         ]
     )

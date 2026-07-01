@@ -72,10 +72,10 @@ def patch_ui_safe_fallbacks() -> None:
     def settings_inline_markup_safe(acc, *, user_accs=None):
         return _orig_settings(acc, user_accs=user_accs if user_accs is not None else [])
 
-    def accounts_inline_markup_safe(default_name, accs=None):
+    def accounts_inline_markup_safe(default_name, accs=None, *, page=0):
         safe = accs if accs is not None else []
         uid = safe[0].telegram_user_id if safe else 0
-        return picker_accounts_markup(default_name, safe, telegram_user_id=uid or None)
+        return picker_accounts_markup(default_name, safe, telegram_user_id=uid or None, page=page)
 
     ui.settings_inline_markup = settings_inline_markup_safe  # type: ignore[assignment]
     ui.accounts_inline_markup = accounts_inline_markup_safe  # type: ignore[assignment]

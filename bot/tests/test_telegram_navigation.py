@@ -29,6 +29,7 @@ class TelegramNavigationTests(unittest.TestCase):
     def test_navigation_callbacks_are_screen_openers(self):
         self.assertTrue(is_navigation_callback("dash:home"))
         self.assertTrue(is_navigation_callback("menu:fleet"))
+        self.assertTrue(is_navigation_callback("menu:accounts:p:1"))
         self.assertTrue(is_navigation_callback("nav:account:farm01"))
         self.assertFalse(is_navigation_callback("dash:refresh"))
         self.assertFalse(is_navigation_callback("farm:work"))

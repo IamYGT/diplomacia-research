@@ -17,6 +17,7 @@ async def send_accounts_picker(
     context: ContextTypes.DEFAULT_TYPE,
     *,
     edit: bool = False,
+    page: int = 0,
 ) -> None:
     from .telegram_helpers import _default_account, _uid, _user_accounts
 
@@ -25,7 +26,7 @@ async def send_accounts_picker(
     accs = _user_accounts(uid)
     balances = await asyncio.to_thread(refresh_display_balances, accs)
     text = format_accounts_html(default, accs, telegram_user_id=uid, balances=balances)
-    markup = accounts_inline_markup(default, accs, telegram_user_id=uid)
+    markup = accounts_inline_markup(default, accs, telegram_user_id=uid, page=page)
     q = update.callback_query
     if edit and q and q.message:
         await edit_safe(

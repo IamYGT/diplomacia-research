@@ -306,12 +306,18 @@ async def _send_settings(update: Update, acc: Account, *, edit: bool = False, ui
         await msg.reply_text(text, parse_mode="HTML", reply_markup=markup)
 
 
-async def _send_accounts_picker(update: Update, context: ContextTypes.DEFAULT_TYPE, *, edit: bool = False):
+async def _send_accounts_picker(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    *,
+    edit: bool = False,
+    page: int = 0,
+):
     uid = _uid(update)
     default = _default_account(context, uid) or "?"
     accs = _user_accounts(uid)
     text = format_accounts_html(default, accs)
-    markup = accounts_inline_markup(default, accs)
+    markup = accounts_inline_markup(default, accs, page=page)
     q = update.callback_query
     if edit and q and q.message:
         await edit_safe(

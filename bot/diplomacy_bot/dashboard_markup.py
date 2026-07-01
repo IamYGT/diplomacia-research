@@ -35,6 +35,13 @@ def dashboard_inline_markup(
         [
             InlineKeyboardButton("▶️ Program", callback_data=f"easy:run:{acc.name.strip().lower()}"),
             InlineKeyboardButton("🎁 Günlük", callback_data="action:daily"),
+            InlineKeyboardButton("⋯ Daha", callback_data="menu:extras"),
+        ]
+    )
+    rows.append(
+        [
+            InlineKeyboardButton("👤 Hesaplar", callback_data="menu:accounts"),
+            InlineKeyboardButton("👥 Filo", callback_data="menu:fleet"),
             InlineKeyboardButton("⚙️ Ayarlar", callback_data="menu:settings"),
         ]
     )
@@ -42,9 +49,11 @@ def dashboard_inline_markup(
     accs = user_accs if user_accs is not None else []
     if len(accs) > 1:
         switch = []
-        for a in accs[:4]:
+        for a in accs[:3]:
             label = f"⭐{a.name}" if a.name == acc.name else a.name
             switch.append(InlineKeyboardButton(label, callback_data=f"nav:account:{a.name}"))
+        if len(accs) > 3:
+            switch.append(InlineKeyboardButton("👤 Tümü", callback_data="menu:accounts"))
         rows.append(switch)
 
     return InlineKeyboardMarkup(rows)

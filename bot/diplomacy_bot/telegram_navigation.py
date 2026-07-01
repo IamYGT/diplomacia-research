@@ -21,7 +21,11 @@ NAVIGATION_CALLBACKS = frozenset(
 
 def is_navigation_callback(data: str) -> bool:
     """Callbacks that open another screen instead of performing an action."""
-    return data in NAVIGATION_CALLBACKS or data.startswith("nav:account:")
+    return (
+        data in NAVIGATION_CALLBACKS
+        or data.startswith("menu:accounts:")
+        or data.startswith("nav:account:")
+    )
 
 
 def message_age_seconds(message_date: datetime | None, *, now: datetime | None = None) -> float | None:

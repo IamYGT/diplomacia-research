@@ -75,6 +75,19 @@ class AccountsPickerTests(unittest.TestCase):
         first_row = mk.inline_keyboard[0]
         self.assertEqual(len(first_row), 2)
 
+    def test_markup_paginates_twenty_accounts(self):
+        accs = [_acc(f"u1_{i:02d}", 1, f"U{i:02d}") for i in range(20)]
+        first = accounts_inline_markup("u1_00", accs, telegram_user_id=1)
+        second = accounts_inline_markup("u1_00", accs, telegram_user_id=1, page=1)
+
+        first_flat = [b.callback_data for row in first.inline_keyboard for b in row]
+        second_flat = [b.callback_data for row in second.inline_keyboard for b in row]
+
+        self.assertIn("menu:accounts:p:1", first_flat)
+        self.assertIn("menu:accounts:p:0", second_flat)
+        self.assertIn("nav:account:u1_08", second_flat)
+        self.assertIn("menu:fleet", second_flat)
+
 
 if __name__ == "__main__":
     unittest.main()

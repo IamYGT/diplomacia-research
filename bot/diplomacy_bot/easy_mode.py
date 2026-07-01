@@ -305,7 +305,7 @@ def main_reply_keyboard_easy() -> ReplyKeyboardMarkup:
                 KeyboardButton("💊 Can Doldur"),
                 KeyboardButton("🎁 Günlük Hediye"),
             ],
-            [KeyboardButton("❓ Yardım"), KeyboardButton("⚙️ Ayarlar")],
+            [KeyboardButton("👥 Filo"), KeyboardButton("⚙️ Ayarlar"), KeyboardButton("❓ Yardım")],
         ],
         resize_keyboard=True,
         is_persistent=True,

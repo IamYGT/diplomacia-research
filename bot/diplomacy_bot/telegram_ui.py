@@ -567,14 +567,31 @@ def settings_inline_markup(acc: Account, *, user_accs: list[Account] | None = No
     return InlineKeyboardMarkup(rows)
 
 
-def accounts_inline_markup(default_name: str, accs: list[Account] | None = None) -> InlineKeyboardMarkup:
+def accounts_inline_markup(
+    default_name: str,
+    accs: list[Account] | None = None,
+    *,
+    page: int = 0,
+) -> InlineKeyboardMarkup:
     accs = accs if accs is not None else list_accounts()
+    per_page = 8
+    total_pages = max(1, (len(accs) + per_page - 1) // per_page)
+    page = max(0, min(page, total_pages - 1))
+    visible = accs[page * per_page : page * per_page + per_page]
     rows: list[list[InlineKeyboardButton]] = []
-    for a in accs[:6]:
+    for a in visible:
         mark = "⭐ " if a.name == default_name else ""
         rows.append(
             [InlineKeyboardButton(f"{mark}{a.name}", callback_data=f"nav:account:{a.name}")]
         )
+    if total_pages > 1:
+        pager: list[InlineKeyboardButton] = []
+        if page > 0:
+            pager.append(InlineKeyboardButton("◀️", callback_data=f"menu:accounts:p:{page - 1}"))
+        pager.append(InlineKeyboardButton(f"{page + 1}/{total_pages}", callback_data="menu:accounts"))
+        if page < total_pages - 1:
+            pager.append(InlineKeyboardButton("▶️", callback_data=f"menu:accounts:p:{page + 1}"))
+        rows.append(pager)
     rows.append([back_home_button()])
     return InlineKeyboardMarkup(rows)
 

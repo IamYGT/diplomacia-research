@@ -108,11 +108,18 @@ async def handle_callback(
             )
         return
 
-    if data == "menu:accounts":
+    if data == "menu:accounts" or data.startswith("menu:accounts:p:"):
+        page = 0
+        if data.startswith("menu:accounts:p:"):
+            try:
+                page = int(data.rsplit(":", 1)[1])
+            except ValueError:
+                page = 0
         await _send_accounts_picker(
             update,
             context,
             edit=not callback_prefers_fresh_reply(data, query),
+            page=page,
         )
         return
 
@@ -1121,4 +1128,3 @@ async def handle_callback(
     extra = await _try_extra_feature_action(update, context, data, acc, query)
     if extra:
         return
-
