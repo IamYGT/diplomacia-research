@@ -6,6 +6,9 @@ from typing import Any
 
 
 class MissionPhase(str, Enum):
+    ASSIGN_CONFIG = "assign_config"
+    TRAVEL_TO_PROVINCE = "travel_to_province"
+    RESIDENCE_SET = "residence_set"
     WAR_TICK = "war_tick"
     FARM_TICK = "farm_tick"
     TRAIN_TICK = "train_tick"

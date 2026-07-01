@@ -24,15 +24,15 @@ class WorkerInboxSetupTests(unittest.TestCase):
         processed.mark_inbox_processed = MagicMock()
         inbox_import = ModuleType("diplomacy_bot.fleet_inbox_import")
         inbox_import.import_inbox_for_uid = MagicMock(return_value=batch)
-        residence = ModuleType("diplomacy_bot.fleet_residence")
-        residence.run_aod_setup = MagicMock()
+        mission_service = ModuleType("diplomacy_bot.fleet_mission_service")
+        mission_service.enqueue_aod_missions_for_uid = MagicMock()
         with patch.dict(
             sys.modules,
             {
                 "diplomacy_bot.token_watch": token_watch,
                 "diplomacy_bot.inbox_processed_state": processed,
                 "diplomacy_bot.fleet_inbox_import": inbox_import,
-                "diplomacy_bot.fleet_residence": residence,
+                "diplomacy_bot.fleet_mission_service": mission_service,
             },
         ):
             uids, imported = run_worker_inbox_setup_once()
@@ -42,7 +42,7 @@ class WorkerInboxSetupTests(unittest.TestCase):
         processed.mark_inbox_processed.assert_called_once()
         marked = processed.mark_inbox_processed.call_args.args[0]
         self.assertEqual(marked, {"42:w1", "42:w2"})
-        residence.run_aod_setup.assert_called_once_with(42)
+        mission_service.enqueue_aod_missions_for_uid.assert_called_once_with(42)
 
     def test_worker_main_runs_inbox_when_enabled_before_training(self):
         from diplomacy_bot.jobs import worker_main
@@ -57,6 +57,10 @@ class WorkerInboxSetupTests(unittest.TestCase):
                 "diplomacy_bot.jobs.worker_inbox_setup.run_worker_inbox_setup_once",
                 side_effect=lambda: calls.append("inbox"),
             ),
+            patch(
+                "diplomacy_bot.jobs.worker_missions.run_worker_missions_once",
+                side_effect=lambda: calls.append("missions"),
+            ),
             patch("diplomacy_bot.jobs.worker_training.run_training_tick", side_effect=lambda: calls.append("training")),
             patch(
                 "diplomacy_bot.jobs.worker_autofarm.run_autofarm_tick",
@@ -65,7 +69,7 @@ class WorkerInboxSetupTests(unittest.TestCase):
         ):
             worker_main._tick()
 
-        self.assertEqual(calls[:3], ["inbox", "training", "autofarm"])
+        self.assertEqual(calls[:4], ["inbox", "missions", "training", "autofarm"])
 
 
 if __name__ == "__main__":

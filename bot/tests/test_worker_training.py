@@ -79,6 +79,7 @@ class WorkerTrainingTests(unittest.TestCase):
         refresh_mod.run_refresh_cycle = lambda: []
         with (
             patch.dict(sys.modules, {"diplomacy_bot.token_refresh_service": refresh_mod}),
+            patch("diplomacy_bot.jobs.worker_missions.run_worker_missions_once", return_value=(0, 0)),
             patch("diplomacy_bot.jobs.worker_training.run_training_tick", side_effect=lambda: calls.append("training")),
             patch(
                 "diplomacy_bot.jobs.worker_autofarm.run_autofarm_tick",

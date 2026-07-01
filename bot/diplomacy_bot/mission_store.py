@@ -210,3 +210,30 @@ def enqueue_mission(
 
     set_runtime_state(plan.account_name, "mission_active")
     return rt
+
+
+def enqueue_phase_plan(
+    account_name: str,
+    phase_dicts: list[dict],
+    *,
+    source: str = "fleet",
+    mission_id: str | None = None,
+    war_label: str | None = None,
+) -> MissionRuntime:
+    now = time.time()
+    mid = mission_id or f"m-{uuid.uuid4().hex[:10]}"
+    name = account_name.strip().lower()
+    plan = MissionPlan(
+        mission_id=mid,
+        account_name=name,
+        phases=[_phase_from_dict(p) for p in phase_dicts],
+        source=source,
+        war_label=war_label,
+        created_at=now,
+    )
+    rt = MissionRuntime(mid, name, plan, updated_at=now)
+    save_mission_runtime(rt, status="active")
+    from .store import set_runtime_state
+
+    set_runtime_state(name, "mission_active")
+    return rt

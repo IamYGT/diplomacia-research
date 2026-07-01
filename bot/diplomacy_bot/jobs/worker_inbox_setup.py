@@ -17,7 +17,7 @@ def run_worker_inbox_setup_once() -> tuple[int, int]:
     Dönüş: (işlenen operator uid sayısı, başarılı import sayısı).
     """
     from diplomacy_bot.fleet_inbox_import import import_inbox_for_uid
-    from diplomacy_bot.fleet_residence import run_aod_setup
+    from diplomacy_bot.fleet_mission_service import enqueue_aod_missions_for_uid
     from diplomacy_bot.inbox_processed_state import is_inbox_processed, mark_inbox_processed
     from diplomacy_bot.token_watch import list_inbox_import_candidates, list_inbox_operator_uids
 
@@ -30,7 +30,7 @@ def run_worker_inbox_setup_once() -> tuple[int, int]:
             continue
         batch = import_inbox_for_uid(uid)
         mark_inbox_processed({_candidate_key(uid, n) for n, _ in fresh})
-        run_aod_setup(uid)
+        enqueue_aod_missions_for_uid(uid)
         uids += 1
         imported += batch.ok
         log.info("worker inbox setup uid=%s import=%s/%s", uid, batch.ok, batch.total)

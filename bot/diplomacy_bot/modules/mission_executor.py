@@ -76,6 +76,93 @@ def _phase_war(token: str, cfg: AccountConfig, rt: MissionRuntime, spec: PhaseSp
     )
 
 
+def _phase_assign_config(
+    token: str,
+    cfg: AccountConfig,
+    rt: MissionRuntime,
+    spec: PhaseSpec,
+    *,
+    _api: ApiFn,
+) -> MissionStepResult:
+    params = dict(spec.params or {})
+    role = str(params.get("role") or "hybrid")
+    factory_id = str(params.get("factory_id") or "").strip()
+    fields = {
+        "role": role,
+        "stat_auto_enabled": True,
+        "training_enabled": True,
+        "craft_pills_when_low": True,
+        "auto_travel_enabled": True,
+    }
+    if factory_id:
+        fields.update({"work_mode": "fixed", "preferred_factory_id": factory_id})
+    update_config_field(rt.account_name, **fields)
+    from ..store import set_autofarm
+
+    set_autofarm(rt.account_name, True)
+    return MissionStepResult(
+        rt.account_name,
+        rt.mission_id,
+        spec.phase,
+        PhaseStatus.DONE,
+        ok=True,
+        actions=[{"assign_config": {"role": role, "factory_id": factory_id}}],
+    )
+
+
+def _phase_travel_to_province(
+    token: str,
+    cfg: AccountConfig,
+    rt: MissionRuntime,
+    spec: PhaseSpec,
+    *,
+    _api: ApiFn,
+) -> MissionStepResult:
+    province = str((spec.params or {}).get("province") or "").strip()
+    if not province:
+        return MissionStepResult(rt.account_name, rt.mission_id, spec.phase, PhaseStatus.FAILED, error="province missing")
+    tr = travel.ensure_in_province(token, province, leave_factory_first=True, _api=_api)
+    if tr.get("ok") and not tr.get("traveling"):
+        return MissionStepResult(
+            rt.account_name, rt.mission_id, spec.phase, PhaseStatus.DONE, ok=True, actions=[{"travel": tr}]
+        )
+    if tr.get("ok") and tr.get("traveling"):
+        return _advance_waiting(rt, "travel", int(tr.get("remaining_ms") or 60_000))
+    return MissionStepResult(
+        rt.account_name, rt.mission_id, spec.phase, PhaseStatus.FAILED, error=str(tr.get("error") or "travel failed")
+    )
+
+
+def _phase_residence_set(
+    token: str,
+    cfg: AccountConfig,
+    rt: MissionRuntime,
+    spec: PhaseSpec,
+    *,
+    _api: ApiFn,
+) -> MissionStepResult:
+    province = str((spec.params or {}).get("province") or "").strip()
+    if not province:
+        return MissionStepResult(rt.account_name, rt.mission_id, spec.phase, PhaseStatus.FAILED, error="province missing")
+    if travel.is_traveling(token, _api=_api):
+        ts = travel.get_travel_status(token, _api=_api)
+        return _advance_waiting(rt, "travel", int(ts.remaining_ms if ts else 60_000))
+    from ..fleet_residence import set_residence
+
+    r = set_residence(token, province, _api=_api)
+    if r.get("ok"):
+        return MissionStepResult(
+            rt.account_name, rt.mission_id, spec.phase, PhaseStatus.DONE, ok=True, actions=[{"residence": r}]
+        )
+    return MissionStepResult(
+        rt.account_name,
+        rt.mission_id,
+        spec.phase,
+        PhaseStatus.FAILED,
+        error=str(r.get("error") or "residence failed"),
+    )
+
+
 def _phase_farm(token: str, cfg: AccountConfig, rt: MissionRuntime, spec: PhaseSpec, *, _api: ApiFn) -> MissionStepResult:
     if travel.is_traveling(token, _api=_api):
         ts = travel.get_travel_status(token, _api=_api)
@@ -139,6 +226,9 @@ def run_mission_step(
 
     spec = rt.plan.phases[rt.phase_index]
     handlers = {
+        MissionPhase.ASSIGN_CONFIG: _phase_assign_config,
+        MissionPhase.TRAVEL_TO_PROVINCE: _phase_travel_to_province,
+        MissionPhase.RESIDENCE_SET: _phase_residence_set,
         MissionPhase.WAR_TICK: _phase_war,
         MissionPhase.FARM_TICK: _phase_farm,
         MissionPhase.TRAIN_TICK: _phase_train,
