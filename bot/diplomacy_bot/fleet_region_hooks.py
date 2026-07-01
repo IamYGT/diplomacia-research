@@ -145,6 +145,21 @@ async def cmd_fleetaod(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await msg.reply_text(_format_aod_mission_html(result), parse_mode="HTML")
 
 
+@user_required
+async def cmd_fleetregion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    from . import telegram_app as ta
+    from .fleet_mission_service import enqueue_region_missions_for_uid
+    from .fleet_region_mission_ui import format_region_mission_html, parse_region_args
+
+    uid = ta._uid(update)
+    msg = update.effective_message
+    if not msg:
+        return
+    province, opts = parse_region_args(list(context.args or []))
+    result = enqueue_region_missions_for_uid(uid, province=province, **opts)
+    await msg.reply_text(format_region_mission_html(result, province), parse_mode="HTML")
+
+
 def register_fleet_region_handlers(application: Application) -> None:
     global _REGISTERED
     if _REGISTERED:
@@ -155,6 +170,7 @@ def register_fleet_region_handlers(application: Application) -> None:
         ("fleetcitizen", cmd_fleetcitizen),
         ("fleetvisa", cmd_fleetvisa),
         ("fleetaod", cmd_fleetaod),
+        ("fleetregion", cmd_fleetregion),
     ):
         application.add_handler(CommandHandler(name, handler))
     _REGISTERED = True

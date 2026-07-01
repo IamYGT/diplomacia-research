@@ -7,6 +7,7 @@ from ..mission_store import clear_mission, save_mission_runtime
 from ..war_ops import run_war_contribute
 from . import factory, training, travel
 from .economy import default_api
+from .mission_region import phase_citizenship_apply, phase_election_vote, phase_visa_apply
 from .mission_types import MissionPhase, MissionRuntime, MissionStepResult, PhaseSpec, PhaseStatus
 from .orchestrator import TickResult, tick_account
 
@@ -229,6 +230,9 @@ def run_mission_step(
         MissionPhase.ASSIGN_CONFIG: _phase_assign_config,
         MissionPhase.TRAVEL_TO_PROVINCE: _phase_travel_to_province,
         MissionPhase.RESIDENCE_SET: _phase_residence_set,
+        MissionPhase.CITIZENSHIP_APPLY: phase_citizenship_apply,
+        MissionPhase.VISA_APPLY: phase_visa_apply,
+        MissionPhase.ELECTION_VOTE: phase_election_vote,
         MissionPhase.WAR_TICK: _phase_war,
         MissionPhase.FARM_TICK: _phase_farm,
         MissionPhase.TRAIN_TICK: _phase_train,

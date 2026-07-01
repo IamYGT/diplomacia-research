@@ -13,6 +13,7 @@ def format_fleet_help_html() -> str:
         f"<b>Hızlı başlangıç ({limit} hesap)</b>\n"
         "<code>/fleetinbox</code> — token_inbox'tan toplu bağla\n"
         "<code>/fleetaod</code> — bootstrap + fabrika + seyahat + ikamet\n"
+        "<code>/fleetregion Hürmüz vote</code> — kalıcı bölge mission\n"
         "<code>/fleetvote</code> — aktif seçime oy\n"
         "<code>/fleet status</code> — detay tablo + 24s metrik\n\n"
         "<b>Token güvenliği</b>\n"

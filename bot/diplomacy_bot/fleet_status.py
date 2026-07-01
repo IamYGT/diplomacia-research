@@ -80,6 +80,7 @@ def format_post_aod_footer() -> str:
     """AOD kurulum sonrası kısa rehber."""
     return (
         "<b>Sonraki adım:</b>\n"
+        "→ <code>/fleetregion Hürmüz vote</code> — bölge mission + oy\n"
         "→ <code>/fleetvote</code> — seçim varsa oy ver\n"
         "→ <code>/fleet status</code> — filo doğrulama"
     )
@@ -214,6 +215,6 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
     if footer := format_next_steps_footer(telegram_user_id):
         head.append(f"\n{footer}")
     head.append(
-        "\n<i>/fleetaod · /fleetinbox · /fleetfactory main · /fleetresidence Hürmüz</i>"
+        "\n<i>/fleetaod · /fleetregion Hürmüz vote · /fleetinbox · /fleetfactory main</i>"
     )
     return "\n".join(head)
