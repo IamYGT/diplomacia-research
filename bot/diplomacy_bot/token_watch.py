@@ -145,27 +145,14 @@ def _inbox_key_to_account_name(key: str, telegram_user_id: int) -> str | None:
 
 def list_inbox_import_candidates(telegram_user_id: int) -> list[tuple[str, str]]:
     """Inbox'taki yeni tokenlar — (hesap_adı, jwt)."""
-    from .auth import scoped_list_accounts
-    from .store import get_account
-
     inbox = scan_token_inbox(force=True)
     if not inbox:
         return []
-    accs = scoped_list_accounts(telegram_user_id)
-    existing_pids = {str(a.player_id) for a in accs if a.player_id}
-    seen_names = {a.name for a in accs}
     out: list[tuple[str, str]] = []
     for key, tok in sorted(inbox.items()):
         name = _inbox_key_to_account_name(key, telegram_user_id)
         if not name or not tok:
             continue
-        pid = player_id_from_token(tok) or ""
-        if pid and pid in existing_pids:
-            continue
-        if name in seen_names:
-            existing = get_account(name)
-            if existing and existing.player_id and pid and existing.player_id == pid:
-                continue
         out.append((name, tok))
     return out
 

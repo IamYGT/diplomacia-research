@@ -213,6 +213,32 @@ class TokenInboxFleetTests(unittest.TestCase):
             got = list_inbox_import_candidates(77)
         self.assertEqual(got, [("u77_alt", tok)])
 
+    def test_same_slot_existing_player_remains_candidate_for_refresh(self):
+        from diplomacy_bot.token_watch import list_inbox_import_candidates
+
+        tok = "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6InAxIn0.sig"
+        with (
+            patch("diplomacy_bot.token_watch.scan_token_inbox", return_value={"u77_01": tok}),
+            patch("diplomacy_bot.auth.scoped_list_accounts", return_value=[_acc("u77_01", uid=77)]),
+            patch("diplomacy_bot.token_watch.player_id_from_token", return_value="p1"),
+        ):
+            got = list_inbox_import_candidates(77)
+
+        self.assertEqual(got, [("u77_01", tok)])
+
+    def test_duplicate_player_in_other_slot_remains_candidate_for_terminal_error(self):
+        from diplomacy_bot.token_watch import list_inbox_import_candidates
+
+        tok = "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6InAxIn0.sig"
+        with (
+            patch("diplomacy_bot.token_watch.scan_token_inbox", return_value={"u77_02": tok}),
+            patch("diplomacy_bot.auth.scoped_list_accounts", return_value=[_acc("u77_01", uid=77)]),
+            patch("diplomacy_bot.token_watch.player_id_from_token", return_value="p1"),
+        ):
+            got = list_inbox_import_candidates(77)
+
+        self.assertEqual(got, [("u77_02", tok)])
+
     def test_rejects_other_uid_inbox_files(self):
         from diplomacy_bot.token_watch import list_inbox_import_candidates
 
