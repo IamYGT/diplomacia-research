@@ -32,7 +32,11 @@ def run_auto_inbox_setup_for_uid(telegram_user_id: int):
         return None
 
     result = start_fleet_autopilot_for_uid(telegram_user_id)
-    mark_inbox_processed({_candidate_key(telegram_user_id, n) for n, _ in fresh})
+    from .fleet_inbox_import import successful_inbox_processed_keys
+
+    keys = successful_inbox_processed_keys(telegram_user_id, result.inbox, [n for n, _ in fresh])
+    if keys:
+        mark_inbox_processed(keys)
     return result
 
 

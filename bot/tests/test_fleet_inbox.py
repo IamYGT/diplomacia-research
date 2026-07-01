@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot.fleet_inbox_import import import_inbox_for_uid
 from diplomacy_bot.fleet_inbox_watch import run_auto_inbox_setup_for_uid
+from diplomacy_bot.fleet_command import FleetBatchResult, FleetOpResult
 from diplomacy_bot.fleet_ui_markup import fleet_more_inline_markup, patch_fleet_ui_buttons
 
 
@@ -42,7 +43,8 @@ class FleetInboxImportTests(unittest.TestCase):
 
     def test_auto_setup_runs_autopilot_for_fresh_candidate(self):
         result = MagicMock()
-        result.inbox.ok = 1
+        result.inbox = FleetBatchResult()
+        result.inbox.add(FleetOpResult("u42_w1", True, "bağlandı"))
         with (
             patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u42_w1", "tok")]),
             patch("diplomacy_bot.fleet_inbox_watch.is_inbox_processed", return_value=False),
@@ -57,6 +59,24 @@ class FleetInboxImportTests(unittest.TestCase):
         self.assertEqual(got, result)
         start.assert_called_once_with(42)
         mark.assert_called_once_with({"42:u42_w1"})
+
+    def test_auto_setup_does_not_mark_failed_import_processed(self):
+        result = MagicMock()
+        result.inbox = FleetBatchResult()
+        result.inbox.add(FleetOpResult("u42_w1", False, "token expired"))
+        with (
+            patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u42_w1", "tok")]),
+            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_processed", return_value=False),
+            patch("diplomacy_bot.fleet_inbox_watch.mark_inbox_processed") as mark,
+            patch(
+                "diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid",
+                return_value=result,
+            ),
+        ):
+            got = run_auto_inbox_setup_for_uid(42)
+
+        self.assertEqual(got, result)
+        mark.assert_not_called()
 
     def test_fleet_more_menu_has_back_button(self):
         rows = fleet_more_inline_markup().inline_keyboard

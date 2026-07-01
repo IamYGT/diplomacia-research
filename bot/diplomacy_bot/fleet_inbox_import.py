@@ -30,6 +30,21 @@ def connect_account_sync(name: str, token: str, *, telegram_user_id: int):
     return connect_core(name, token, telegram_user_id=telegram_user_id).account
 
 
+def successful_inbox_processed_keys(
+    telegram_user_id: int,
+    batch: FleetBatchResult,
+    candidate_names: list[str] | tuple[str, ...],
+) -> set[str]:
+    """Return processed-state keys only for successfully imported inbox candidates."""
+    candidates = {n.strip().lower() for n in candidate_names}
+    keys: set[str] = set()
+    for row in batch.results:
+        name = row.account_name.strip().lower()
+        if row.ok and name in candidates:
+            keys.add(f"{telegram_user_id}:{name}")
+    return keys
+
+
 def import_inbox_for_uid(telegram_user_id: int) -> FleetBatchResult:
     """Inbox'taki u{uid}_* tokenlarını headless bağla."""
     from .token_watch import list_inbox_import_candidates
