@@ -30,6 +30,12 @@ def connect_account_sync(name: str, token: str, *, telegram_user_id: int):
     return connect_core(name, token, telegram_user_id=telegram_user_id).account
 
 
+def is_terminal_inbox_import_error(message: str) -> bool:
+    """Same token should not be auto-retried until operator changes the file."""
+    msg = message.lower()
+    return "slot başka" in msg or ("diplomacia hesabı zaten" in msg and "slotuna bağlı" in msg)
+
+
 def successful_inbox_processed_keys(
     telegram_user_id: int,
     batch: FleetBatchResult,
@@ -47,8 +53,7 @@ def successful_inbox_processed_keys(
     keys: set[str] = set()
     for row in batch.results:
         name = row.account_name.strip().lower()
-        terminal_invalid = "slot başka" in row.message.lower()
-        if name in candidates and (row.ok or terminal_invalid):
+        if name in candidates and (row.ok or is_terminal_inbox_import_error(row.message)):
             token = candidates[name]
             keys.add(candidate_processed_key(telegram_user_id, name, token) if token else f"{telegram_user_id}:{name}")
     return keys

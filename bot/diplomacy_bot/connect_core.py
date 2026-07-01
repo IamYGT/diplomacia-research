@@ -24,7 +24,7 @@ def connect_core(name: str, token: str, *, telegram_user_id: int) -> ConnectCore
     from .auto_defaults import apply_auto_defaults_for_new_account
     from .config import MAX_ACCOUNTS_PER_USER
     from .game_api import get_profile
-    from .store import add_account, count_accounts_for_user, proxy_assignments
+    from .store import add_account, count_accounts_for_user, find_account_by_player_id, proxy_assignments
     from .token_meta_store import record_token_saved
 
     existing = resolve_account(name, telegram_user_id)
@@ -43,6 +43,12 @@ def connect_core(name: str, token: str, *, telegram_user_id: int) -> ConnectCore
         raise ValueError(
             "Bu slot başka bir Diplomacia hesabına ait; "
             f"yeni Google hesabı için boş bir u{telegram_user_id}_NN dosya adı kullan."
+        )
+    other = find_account_by_player_id(profile_pid) if profile_pid else None
+    if other and other.name != name.strip().lower():
+        raise ValueError(
+            f"Bu Diplomacia hesabı zaten {other.name} slotuna bağlı; "
+            "aynı tokenı ikinci işçi olarak ekleme."
         )
 
     acc = add_account(

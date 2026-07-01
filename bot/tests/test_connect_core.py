@@ -63,6 +63,7 @@ class ConnectCoreTests(unittest.TestCase):
         from diplomacy_bot.connect_core import connect_core
 
         existing = MagicMock(name="w1")
+        existing.name = "w1"
         existing.player_id = "p1"
         profile = SimpleNamespace(player_id="p1", username="W1")
         acc = MagicMock(name="w1")
@@ -75,6 +76,7 @@ class ConnectCoreTests(unittest.TestCase):
             patch("diplomacy_bot.store.proxy_assignments", return_value={}),
             patch("diplomacy_bot.account_runtime.account_context"),
             patch("diplomacy_bot.game_api.get_profile", return_value=profile),
+            patch("diplomacy_bot.store.find_account_by_player_id", return_value=existing),
             patch("diplomacy_bot.store.add_account", return_value=acc),
             patch("diplomacy_bot.auto_defaults.apply_auto_defaults_for_new_account") as defaults,
             patch("diplomacy_bot.token_meta_store.record_token_saved"),
@@ -106,6 +108,33 @@ class ConnectCoreTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, "boş bir u42_NN"):
                 connect_core("u42_01", "tok-new", telegram_user_id=42)
+
+        add_account.assert_not_called()
+        defaults.assert_not_called()
+        token_saved.assert_not_called()
+
+    def test_rejects_duplicate_player_id_in_another_slot(self):
+        from diplomacy_bot.connect_core import connect_core
+
+        other = MagicMock(name="u42_01")
+        other.name = "u42_01"
+        profile = SimpleNamespace(player_id="p-existing", username="Same")
+        with (
+            patch("diplomacy_bot.auth.resolve_account", return_value=None),
+            patch("diplomacy_bot.account_main.get_main_account_name", return_value="main"),
+            patch("diplomacy_bot.store.count_accounts_for_user", return_value=20),
+            patch("diplomacy_bot.config.MAX_ACCOUNTS_PER_USER", 20),
+            patch("diplomacy_bot.account_pool.suggest_proxy", return_value=SimpleNamespace(id="direct", url="")),
+            patch("diplomacy_bot.store.proxy_assignments", return_value={}),
+            patch("diplomacy_bot.account_runtime.account_context"),
+            patch("diplomacy_bot.game_api.get_profile", return_value=profile),
+            patch("diplomacy_bot.store.find_account_by_player_id", return_value=other),
+            patch("diplomacy_bot.store.add_account") as add_account,
+            patch("diplomacy_bot.auto_defaults.apply_auto_defaults_for_new_account") as defaults,
+            patch("diplomacy_bot.token_meta_store.record_token_saved") as token_saved,
+        ):
+            with self.assertRaisesRegex(ValueError, "zaten u42_01"):
+                connect_core("u42_02", "tok-dup", telegram_user_id=42)
 
         add_account.assert_not_called()
         defaults.assert_not_called()
