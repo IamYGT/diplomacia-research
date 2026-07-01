@@ -43,6 +43,7 @@ class WorkerTrainingTests(unittest.TestCase):
             patch("diplomacy_bot.account_runtime.account_context", return_value=nullcontext()),
             patch("diplomacy_bot.modules.training.try_free_attack", return_value={"ok": True}) as attack,
             patch("diplomacy_bot.jobs.worker_training._load_last_attacks", return_value={}),
+            patch("diplomacy_bot.jobs.worker_training._load_next_attempts", return_value={}),
             patch("diplomacy_bot.jobs.worker_training._save_attack_ts") as save_ts,
             patch("diplomacy_bot.store.log_action") as log_action,
         ):
@@ -65,11 +66,58 @@ class WorkerTrainingTests(unittest.TestCase):
             patch("diplomacy_bot.account_config.normalize_role", return_value="hybrid"),
             patch("diplomacy_bot.modules.training.try_free_attack") as attack,
             patch("diplomacy_bot.jobs.worker_training._load_last_attacks", return_value={"w1": time.time()}),
+            patch("diplomacy_bot.jobs.worker_training._load_next_attempts", return_value={}),
         ):
             ok, checked = run_training_tick(min_interval_sec=3300)
 
         self.assertEqual((ok, checked), (0, 0))
         attack.assert_not_called()
+
+    def test_training_tick_skips_until_next_attempt_due(self):
+        import time
+
+        from diplomacy_bot.jobs.worker_training import run_training_tick
+
+        cfg = SimpleNamespace(role="hybrid", training_enabled=True)
+        with (
+            patch("diplomacy_bot.store.list_accounts", return_value=[_acc()]),
+            patch("diplomacy_bot.account_config.get_config", return_value=cfg),
+            patch("diplomacy_bot.account_config.normalize_role", return_value="hybrid"),
+            patch("diplomacy_bot.modules.training.try_free_attack") as attack,
+            patch("diplomacy_bot.jobs.worker_training._load_last_attacks", return_value={}),
+            patch("diplomacy_bot.jobs.worker_training._load_next_attempts", return_value={"w1": time.time() + 300}),
+        ):
+            ok, checked = run_training_tick()
+
+        self.assertEqual((ok, checked), (0, 0))
+        attack.assert_not_called()
+
+    def test_training_tick_schedules_cooldown_retry_without_counting_success(self):
+        from diplomacy_bot.jobs.worker_training import run_training_tick
+
+        cfg = SimpleNamespace(role="hybrid", training_enabled=True)
+        with (
+            patch("diplomacy_bot.store.list_accounts", return_value=[_acc()]),
+            patch("diplomacy_bot.account_config.get_config", return_value=cfg),
+            patch("diplomacy_bot.account_config.normalize_role", return_value="hybrid"),
+            patch("diplomacy_bot.account_runtime.account_context", return_value=nullcontext()),
+            patch(
+                "diplomacy_bot.modules.training.try_free_attack",
+                return_value={"skipped": "free_attack_cooldown", "ms": 120000},
+            ),
+            patch("diplomacy_bot.jobs.worker_training._load_last_attacks", return_value={}),
+            patch("diplomacy_bot.jobs.worker_training._load_next_attempts", return_value={}),
+            patch("diplomacy_bot.jobs.worker_training._save_next_attempt_ts") as save_next,
+            patch("diplomacy_bot.jobs.worker_training._save_attack_ts") as save_attack,
+            patch("diplomacy_bot.store.log_action") as log_action,
+        ):
+            ok, checked = run_training_tick()
+
+        self.assertEqual((ok, checked), (0, 1))
+        save_next.assert_called_once()
+        self.assertEqual(save_next.call_args.args[0], "w1")
+        save_attack.assert_not_called()
+        log_action.assert_not_called()
 
     def test_worker_main_runs_training_sidecar_before_autofarm(self):
         from diplomacy_bot.jobs import worker_main
