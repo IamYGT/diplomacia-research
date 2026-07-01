@@ -21,6 +21,7 @@ from diplomacy_bot.fleet_status import (
     format_fleet_ops_status,
     format_next_steps_footer,
 )
+from diplomacy_bot.fleet_capabilities import format_fleet_capability_line
 from diplomacy_bot.store import Account
 
 
@@ -92,6 +93,12 @@ class FleetStatusTests(unittest.TestCase):
             html = format_fleet_ops_status(99)
         self.assertIn("travel_to_province:waiting", html)
         self.assertIn("Otonomi audit", html)
+        self.assertIn("Gelişmiş kabiliyet", html)
+
+    def test_capability_line_surfaces_unknown_advanced_routes(self):
+        line = format_fleet_capability_line()
+        self.assertIn("çalışma izni", line)
+        self.assertIn("endpoint keşfi bekliyor", line)
 
 
 class TokenInboxFleetTests(unittest.TestCase):

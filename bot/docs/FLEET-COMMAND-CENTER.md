@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.26.7 ✅ Faz 4.5–4.14
+**Sürüm:** 4.26.8 ✅ Faz 4.5–4.15
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -57,6 +57,7 @@
 | 4.12 | Tek tuş filo autopilot | ✅ | `/fleetstart`, `/fleet start`, panel `▶️ Başlat` |
 | 4.13 | Autopilot inbox import | ✅ | `/fleetstart` önce token_inbox import eder |
 | 4.14 | Inbox watcher autopilot | ✅ | `FLEET_INBOX_AUTO_SETUP=1` yeni token → autopilot |
+| 4.15 | Frontend API keşfi + capability satırı | ✅ | `scripts/discover_frontend_api.py`, `/fleet status` |
 
 ---
 
@@ -87,6 +88,9 @@ export MAX_ACCOUNTS_PER_USER=20
 
 # Opsiyonel otomasyon (varsayılan kapalı):
 export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram özeti
+
+# API keşfi (non-mutating frontend bundle taraması):
+python3 scripts/discover_frontend_api.py --show-missing
 ```
 
 **Filo paneli (v4.26.5):** üst satır `▶️ Başlat | 🇦🇴 AOD | 📋 Durum` → alt menüde fabrika, seyahat, bootstrap, inbox, ikamet, oy.
@@ -121,6 +125,8 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 - [x] `worker_training` no-war/cooldown skip nedenini action_log'a yazar
 - [x] İkamet `province_id` fallback (`test_fleet_residence`)
 - [x] Durable mission: `citizenship_apply`, `visa_apply`, `election_vote`
+- [x] Frontend bundle API keşfi: `factories.move`, `players.independent-citizenship`,
+      `military-ops join/leave`, `provinces/election/vote` registry'ye alındı
 - [x] 20 worker dry-run: main skip, repair, audit, AOD/region enqueue, training tick
 - [x] Token refresh kaynak yoksa 30 dk backoff; Telegram paketi sistem+venv import OK
 - [x] `fleet_ui_markup` + `fleet_callbacks` 350 satır altında
@@ -140,6 +146,19 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 | 21. hesap | Limit | `MAX_ACCOUNTS_PER_USER=20` env |
 | Çalışma izni yok | API endpoint keşfedilmedi | `api_route_registry.py` güncellenmeden otomasyon ekleme |
 | Antrenman saldırmıyor | `/training-wars/my` boş veya cooldown | Worker next-attempt yazar; savaş oluşturma/join endpoint keşfi ayrı |
+
+## API keşif politikası
+
+Operatör Diplomacia domaininde API keşfine izin verdi. Rutin akış:
+
+1. `python3 scripts/discover_frontend_api.py --show-missing`
+2. Safe GET route'ları contract/probe ile doğrula.
+3. State değiştiren route'ları önce `api_route_registry.py` + replay cassette'e ekle.
+4. Endpoint bulunmadan bot ekranında kabiliyeti "hazır" gösterme.
+
+2026-07-01 bundle teyidi: ayrı `work permit/employment` endpointi ve
+`training-wars create` endpointi görünmedi; `/fleet status` bunları bekleyen
+gelişmiş kabiliyet olarak gösterir.
 
 ---
 
@@ -177,6 +196,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.26.8 | Frontend API keşif script'i, registry genişletme ve fleet capability satırı |
 | 2026-07-01 | 4.26.7 | Inbox watcher ve worker setup artık autopilot zincirini çağırır |
 | 2026-07-01 | 4.26.6 | `/fleetstart` token_inbox import + repair + region mission zinciri |
 | 2026-07-01 | 4.26.5 | `/fleetstart` autopilot ve panel `▶️ Başlat` |

@@ -8,7 +8,8 @@
     "factory_id": "fab-1",
     "quest_key": "daily_login",
     "training_war_id": "tw-9",
-    "market_id": "6915"
+    "market_id": "6915",
+    "operation_id": "op-1"
   },
   "replays": [
     {"route_id": "players.profile", "status": 200, "data": {"player": {"username": "test", "level": 5}, "username": "test"}},
@@ -80,6 +81,11 @@
     {"route_id": "military.train", "status": 400, "data": {"error": "Yetersiz kaynak"}},
     {"route_id": "military_ops.my", "status": 404, "data": {"error": "not found"}},
     {"route_id": "online.count", "status": 200, "data": {"online": 42}},
-    {"route_id": "online.players", "status": 200, "data": {"players": []}}
+    {"route_id": "online.players", "status": 200, "data": {"players": []}},
+    {"route_id": "players.independent_citizenship", "status": 400, "data": {"error": "Bağımsız vatandaşlık uygun değil"}},
+    {"route_id": "factories.move", "status": 400, "data": {"error": "Fabrika taşınamaz"}},
+    {"route_id": "provinces.election_vote", "status": 400, "data": {"error": "Eyalet seçimi yok"}},
+    {"route_id": "military_ops.join", "status": 404, "data": {"error": "Operasyon yok"}},
+    {"route_id": "military_ops.leave", "status": 404, "data": {"error": "Operasyon yok"}}
   ]
 }

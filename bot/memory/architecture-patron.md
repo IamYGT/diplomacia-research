@@ -38,3 +38,20 @@
 
 Yeni kod önerirken ARCHITECTURE-PATRON'a aykırı diff **reddet/ düzelt**.
 Bootstrap `hooks/` veya `domain_registry` kullan — monkey-patch yasak.
+
+## Operatör API keşif izni
+
+**Kayıt:** 2026-07-01
+
+Operatör Diplomacia domaininde API keşfine izin verdi. Yeni fleet/worker davranışı
+tasarlarken sık sık `https://diplomacia.com.tr/` frontend bundle'ı, wiki snapshot ve
+`https://diplomacia.com.tr/api` safe GET/contract probe kaynaklarını kontrol et.
+
+Güvenli çizgi:
+
+- Statik HTML/JS bundle ve wiki keşfi serbest.
+- Safe GET endpointleri düşük rate ile probelenebilir.
+- State değiştiren endpointler önce `api_route_registry.py` + replay/contract'a
+  eklenir; canlı mutating probe yalnız kontrollü token ve açık amaçla yapılır.
+- Endpoint keşfedilmeden çalışma izni/antrenman savaşı oluşturma gibi kabiliyetleri
+  botta hazır göstermeyeceksin.

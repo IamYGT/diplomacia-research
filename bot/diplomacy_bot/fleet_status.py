@@ -6,6 +6,7 @@ from .account_balance import resolve_display_balance
 from .account_config import get_config
 from .account_main import get_main_account_name
 from .auth import scoped_list_accounts
+from .fleet_capabilities import format_fleet_capability_line
 from .game_api import api as game_api
 from .store import get_account
 
@@ -199,6 +200,7 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
 
     if metrics := format_fleet_metrics_line(telegram_user_id):
         head.append(metrics)
+    head.append(format_fleet_capability_line())
     head.append("")
     if detailed:
         head.append("<b>Hesap</b>  af  rol  mod  fabrika  bakiye  mission")

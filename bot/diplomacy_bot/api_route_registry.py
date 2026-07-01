@@ -83,6 +83,7 @@ BOT_API_ROUTES: tuple[ApiRouteSpec, ...] = (
     _r("players.passive_spend", "POST", "/players/passive-skills/spend", "stats", body={"skill": "strength", "points": 0}),
     _r("players.ping", "POST", "/players/ping", "players", safe=True, accept=(200, 201, 204)),
     _r("players.daily_claim", "POST", "/players/daily-claim", "players"),
+    _r("players.independent_citizenship", "POST", "/players/independent-citizenship", "citizenship", body={"province_name": "x"}),
     # --- auto / economy ---
     _r("auto.status", "GET", "/auto/status", "economy", safe=True),
     _r("auto.use_pills", "POST", "/auto/use-pills", "economy"),
@@ -110,6 +111,7 @@ BOT_API_ROUTES: tuple[ApiRouteSpec, ...] = (
     _r("factories.rename", "POST", "/factories/rename", "factory", body={"factory_id": "", "name": "x"}, path_params_from="factory_id"),
     _r("factories.fire", "POST", "/factories/fire", "factory", body={"factory_id": "", "worker_id": ""}, path_params_from="factory_id"),
     _r("factories.reset_labor", "POST", "/factories/reset-labor", "factory", body={"factory_id": ""}, path_params_from="factory_id"),
+    _r("factories.move", "POST", "/factories/move", "factory", body={"factory_id": ""}, path_params_from="factory_id"),
     _r("factories.world", "GET", "/factories/world", "factory", safe=True, any_keys=("factories",)),
     # --- market ---
     _r("market.page", "GET", "/market", "market", safe=True, any_keys=("listings",)),
@@ -128,6 +130,7 @@ BOT_API_ROUTES: tuple[ApiRouteSpec, ...] = (
     _r("players.residence", "GET", "/players/residence", "citizenship", safe=True, optional=True),
     _r("players.residence_set", "PUT", "/players/residence", "citizenship", body={"province_name": "x"}),
     _r("elections.vote", "POST", "/elections/vote", "politics", body={"candidate_id": ""}),
+    _r("provinces.election_vote", "POST", "/provinces/election/vote", "politics", body={"candidate_id": ""}),
     _r("citizenship.apply", "POST", "/citizenship/apply", "citizenship", body={"to_country_id": "", "reason": "x"}),
     _r("visas.my", "GET", "/visas/my", "visas", safe=True, optional=True),
     _r("visas.apply", "POST", "/visas/apply", "visas", body={"to_country_id": "", "reason": "x"}),
@@ -158,6 +161,8 @@ BOT_API_ROUTES: tuple[ApiRouteSpec, ...] = (
     _r("military.me", "GET", "/military/me", "military", safe=True, optional=True),
     _r("military.train", "POST", "/military/train", "military", body={}),
     _r("military_ops.my", "GET", "/military-ops/my", "military", safe=True, optional=True),
+    _r("military_ops.join", "POST", "/military-ops/{id}/join", "military", path_params_from="operation_id"),
+    _r("military_ops.leave", "POST", "/military-ops/{id}/leave", "military", path_params_from="operation_id"),
     # --- online ---
     _r("online.count", "GET", "/online", "online", safe=True),
     _r("online.players", "GET", "/online/players", "online", safe=True),
