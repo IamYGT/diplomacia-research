@@ -5,7 +5,7 @@ import sys
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -108,7 +108,8 @@ class TelegramCallbackReplyOrEditTests(unittest.IsolatedAsyncioTestCase):
         query.message.reply_text = AsyncMock()
         query.edit_message_text = AsyncMock()
 
-        await open_fleet_more_menu(query, "fleet:menu:more")
+        with patch("diplomacy_bot.fleet_callbacks.fleet_more_inline_markup", return_value=None):
+            await open_fleet_more_menu(query, "fleet:menu:more")
 
         query.edit_message_text.assert_awaited_once()
         query.message.reply_text.assert_not_awaited()
@@ -121,7 +122,8 @@ class TelegramCallbackReplyOrEditTests(unittest.IsolatedAsyncioTestCase):
         query.message.reply_text = AsyncMock()
         query.edit_message_text = AsyncMock()
 
-        await open_fleet_more_menu(query, "fleet:menu:more")
+        with patch("diplomacy_bot.fleet_callbacks.fleet_more_inline_markup", return_value=None):
+            await open_fleet_more_menu(query, "fleet:menu:more")
 
         query.message.reply_text.assert_awaited_once()
         query.edit_message_text.assert_not_awaited()

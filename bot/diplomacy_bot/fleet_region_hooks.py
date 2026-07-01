@@ -205,15 +205,12 @@ def register_fleet_region_handlers(application: Application) -> None:
     global _REGISTERED
     if _REGISTERED:
         return
-    for name, handler in (
-        ("fleetresidence", cmd_fleetresidence),
-        ("fleetvote", cmd_fleetvote),
-        ("fleetcitizen", cmd_fleetcitizen),
-        ("fleetvisa", cmd_fleetvisa),
-        ("fleetaod", cmd_fleetaod),
-        ("fleetregion", cmd_fleetregion),
-        ("fleetstart", cmd_fleetstart),
-    ):
+    commands = (
+        ("fleetresidence", cmd_fleetresidence), ("fleetvote", cmd_fleetvote),
+        ("fleetcitizen", cmd_fleetcitizen), ("fleetvisa", cmd_fleetvisa),
+        ("fleetaod", cmd_fleetaod), ("fleetregion", cmd_fleetregion), ("fleetstart", cmd_fleetstart),
+    )
+    for name, handler in commands:
         application.add_handler(CommandHandler(name, handler))
     _REGISTERED = True
     log.info("Filo bölge komutları kayıtlı")
@@ -229,9 +226,11 @@ def patch_fleet_region_callbacks() -> None:
 
     async def handle_callback_patched(update, context, data, default, query, uid):
         if data == "fleet:cmd:start":
+            from .fleet_action_guard import reject_stale_fleet_action
             from .fleet_mission_service import start_fleet_autopilot_for_uid
             from .fleet_region_mission_ui import format_autopilot_html
 
+            if await reject_stale_fleet_action(query, "Başlat"): return
             result = start_fleet_autopilot_for_uid(uid)
             if query and query.message:
                 await query.message.reply_text(
@@ -241,8 +240,10 @@ def patch_fleet_region_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:aod":
+            from .fleet_action_guard import reject_stale_fleet_action
             from .fleet_mission_service import enqueue_aod_missions_for_uid
 
+            if await reject_stale_fleet_action(query, "AOD"): return
             result = enqueue_aod_missions_for_uid(uid)
             if query and query.message:
                 await query.message.reply_text(
