@@ -83,6 +83,44 @@ class FleetAutopilotPolicyTests(unittest.TestCase):
 
 
 class FleetStartCommandPolicyTests(unittest.IsolatedAsyncioTestCase):
+    async def test_fleetregion_command_uses_text_planner(self):
+        from diplomacy_bot.domain.fleet_llm_decision import normalize_llm_decision
+        from diplomacy_bot.fleet_region_hooks import cmd_fleetregion
+
+        msg = SimpleNamespace(reply_text=AsyncMock())
+        update = SimpleNamespace(effective_user=SimpleNamespace(id=42), effective_message=msg, message=msg)
+        context = SimpleNamespace(args=["20", "hesabı", "Hürmüz'e", "çek", "oy", "ver"])
+        mission = SimpleNamespace(
+            fleet_id="region-1",
+            phases=["assign_config", "travel_to_province", "election_vote", "farm_tick"],
+            warnings=[],
+            batch=SimpleNamespace(ok=1, total=1, results=[]),
+        )
+
+        def fake_planner(uid, args):
+            decision = normalize_llm_decision({"province": "Hürmüz", "vote": True})
+            return SimpleNamespace(province=decision.target.province, opts={"vote": decision.target.vote})
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "fleet_autopilot_policy.json"
+            with (
+                patch("diplomacy_bot.fleet_autopilot_policy._STATE_PATH", path),
+                patch("diplomacy_bot.telegram_helpers.bot_allows_user", return_value=True),
+                patch("diplomacy_bot.telegram_app._uid", return_value=42),
+                patch("diplomacy_bot.fleet_region_hooks.fleet_nav_inline_markup", return_value=None),
+                patch("diplomacy_bot.fleet_region_hooks.resolve_fleet_start_plan", side_effect=fake_planner),
+                patch("diplomacy_bot.fleet_mission_service.enqueue_region_missions_for_uid", return_value=mission) as enqueue,
+            ):
+                await cmd_fleetregion(update, context)
+                policy = load_fleet_autopilot_policy(42)
+
+        self.assertEqual(policy.province, "Hürmüz")
+        self.assertTrue(policy.vote)
+        enqueue.assert_called_once()
+        self.assertEqual(enqueue.call_args.kwargs["province"], "Hürmüz")
+        self.assertTrue(enqueue.call_args.kwargs["vote"])
+        update.effective_message.reply_text.assert_awaited_once()
+
     async def test_fleetstart_command_saves_target_policy_and_replies(self):
         from diplomacy_bot.fleet_region_hooks import cmd_fleetstart
 

@@ -166,12 +166,12 @@ async def cmd_fleetregion(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     if not msg:
         return
     args = list(context.args or [])
-    province, opts = parse_region_args(args)
+    plan = resolve_fleet_start_plan(uid, args)
     if args:
-        save_fleet_autopilot_policy(uid, policy_from_region_args(province, opts))
-    result = enqueue_region_missions_for_uid(uid, province=province, **opts)
+        save_fleet_autopilot_policy(uid, policy_from_region_args(plan.province, plan.opts))
+    result = enqueue_region_missions_for_uid(uid, province=plan.province, **plan.opts)
     await msg.reply_text(
-        format_region_mission_html(result, province),
+        format_region_mission_html(result, plan.province),
         parse_mode="HTML",
         reply_markup=fleet_nav_inline_markup(),
     )
