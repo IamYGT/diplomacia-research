@@ -13,6 +13,7 @@ from .fleet_command import FleetBatchResult, FleetOpResult, resolve_operator_fac
 class FleetMissionEnqueueResult:
     fleet_id: str
     batch: FleetBatchResult = field(default_factory=FleetBatchResult)
+    phases: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -85,6 +86,7 @@ def enqueue_aod_missions_for_uid(
             continue
         try:
             phases = build_aod_phase_dicts(target)
+            result.phases = [str(p.get("phase") or "") for p in phases]
             enqueue_phase_plan(
                 acc.name,
                 phases,
@@ -132,6 +134,7 @@ def enqueue_region_missions_for_uid(
         farm_cycles=1,
     )
     phases = build_region_phase_dicts(target)
+    result.phases = [str(p.get("phase") or "") for p in phases]
     main = (get_main_account_name(telegram_user_id) or "").strip().lower()
     for acc in scoped_list_accounts(telegram_user_id):
         if main and acc.name == main:

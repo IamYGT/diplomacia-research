@@ -5,6 +5,23 @@ from __future__ import annotations
 from .fleet_residence import DEFAULT_RESIDENCE_PROVINCE
 
 
+_PHASE_LABELS = {
+    "assign_config": "hazırla",
+    "travel_to_province": "seyahat",
+    "residence_set": "ikamet",
+    "citizenship_apply": "vatandaşlık",
+    "independent_citizenship": "bağımsız vatandaşlık",
+    "visa_apply": "vize",
+    "election_vote": "oy",
+    "farm_tick": "farm",
+}
+
+
+def format_phase_plan(phases: list[str] | tuple[str, ...]) -> str:
+    labels = [_PHASE_LABELS.get(str(p), str(p)) for p in phases if str(p)]
+    return " → ".join(labels)
+
+
 def parse_region_args(args: list[str]) -> tuple[str, dict]:
     province_parts: list[str] = []
     opts = {
@@ -67,10 +84,12 @@ def format_region_mission_html(result, province: str) -> str:
         f"<code>{html.escape(result.fleet_id)}</code>",
         f"{result.batch.ok}/{result.batch.total} hesap kalıcı plana alındı\n",
     ]
+    if plan := format_phase_plan(getattr(result, "phases", [])):
+        lines.append(f"🧩 Plan: {html.escape(plan)}\n")
     for r in result.batch.results[:20]:
         icon = "✅" if r.ok else "❌"
         lines.append(f"{icon} <code>{html.escape(r.account_name)}</code> — {html.escape(r.message)}")
-    lines.append("\n<i>Worker seyahat, ikamet, vize/vatandaşlık/oy ve farm adımlarını sürdürecek.</i>")
+    lines.append("\n<i>Worker listedeki plan fazlarını kaldığı yerden sürdürecek.</i>")
     lines.append("\n<code>/fleet status</code> ile mission fazlarını izle.")
     return "\n".join(lines)
 
@@ -89,11 +108,11 @@ def format_autopilot_html(result) -> str:
         f"🧭 Mission: {result.mission.batch.ok}/{result.mission.batch.total} hesap kuyruğa alındı",
         f"<code>{html.escape(result.mission.fleet_id)}</code>\n",
     ]
+    if plan := format_phase_plan(getattr(result.mission, "phases", [])):
+        lines.append(f"🧩 Plan: {html.escape(plan)}\n")
     for row in result.mission.batch.results[:20]:
         icon = "✅" if row.ok else "❌"
         lines.append(f"{icon} <code>{html.escape(row.account_name)}</code> — {html.escape(row.message)}")
-    lines.append(
-        "\n<i>Worker artık seyahat, ikamet, vize/oy, farm, stat, hap ve antrenmanı sürdürecek.</i>"
-    )
+    lines.append("\n<i>Worker artık plan fazlarını, farm, stat, hap ve antrenmanı sürdürecek.</i>")
     lines.append("\n<code>/fleet status</code> ile izle · <code>/fleet audit</code> ile eksik kontrol et.")
     return "\n".join(lines)

@@ -8,7 +8,11 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from diplomacy_bot.fleet_region_mission_ui import format_autopilot_html, parse_region_args
+from diplomacy_bot.fleet_region_mission_ui import (
+    format_autopilot_html,
+    format_phase_plan,
+    parse_region_args,
+)
 
 
 class FleetRegionMissionUiTests(unittest.TestCase):
@@ -47,6 +51,7 @@ class FleetRegionMissionUiTests(unittest.TestCase):
             repair=SimpleNamespace(ok=20, total=20),
             mission=SimpleNamespace(
                 fleet_id="region-1",
+                phases=["assign_config", "travel_to_province", "residence_set", "election_vote", "farm_tick"],
                 batch=SimpleNamespace(ok=20, total=20, results=[]),
             ),
         )
@@ -57,6 +62,11 @@ class FleetRegionMissionUiTests(unittest.TestCase):
         self.assertIn("Inbox: 2/2", text)
         self.assertIn("20/20", text)
         self.assertIn("region-1", text)
+        self.assertIn("hazırla → seyahat → ikamet → oy → farm", text)
+
+    def test_format_phase_plan_uses_short_labels(self):
+        plan = format_phase_plan(["travel_to_province", "residence_set", "farm_tick"])
+        self.assertEqual(plan, "seyahat → ikamet → farm")
 
 
 if __name__ == "__main__":

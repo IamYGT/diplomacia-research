@@ -214,6 +214,10 @@ class FleetMissionTests(unittest.TestCase):
         self.assertEqual(result.batch.ok, 1)
         enqueue.assert_called_once()
         self.assertEqual(enqueue.call_args.args[0], "w1")
+        self.assertEqual(
+            result.phases,
+            ["assign_config", "travel_to_province", "residence_set", "farm_tick"],
+        )
 
     def test_enqueue_region_missions_writes_optional_phase_plan(self):
         from diplomacy_bot.fleet_mission_service import enqueue_region_missions_for_uid
@@ -237,6 +241,7 @@ class FleetMissionTests(unittest.TestCase):
         phases = enqueue.call_args.args[1]
         self.assertIn("citizenship_apply", [p["phase"] for p in phases])
         self.assertIn("election_vote", [p["phase"] for p in phases])
+        self.assertEqual(result.phases, [p["phase"] for p in phases])
 
     def test_start_fleet_autopilot_repairs_and_queues_region(self):
         from diplomacy_bot.fleet_mission_service import start_fleet_autopilot_for_uid
