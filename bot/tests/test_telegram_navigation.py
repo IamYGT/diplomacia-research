@@ -100,6 +100,32 @@ class TelegramCallbackReplyOrEditTests(unittest.IsolatedAsyncioTestCase):
         query.edit_message_text.assert_awaited_once_with("Durdu")
         query.message.reply_text.assert_not_awaited()
 
+    async def test_fleet_more_menu_edits_recent_message(self):
+        from diplomacy_bot.fleet_callbacks import open_fleet_more_menu
+
+        now = datetime.now(timezone.utc)
+        query = _Query(now - timedelta(seconds=30))
+        query.message.reply_text = AsyncMock()
+        query.edit_message_text = AsyncMock()
+
+        await open_fleet_more_menu(query, "fleet:menu:more")
+
+        query.edit_message_text.assert_awaited_once()
+        query.message.reply_text.assert_not_awaited()
+
+    async def test_fleet_more_menu_replies_for_old_message(self):
+        from diplomacy_bot.fleet_callbacks import open_fleet_more_menu
+
+        now = datetime.now(timezone.utc)
+        query = _Query(now - timedelta(minutes=10))
+        query.message.reply_text = AsyncMock()
+        query.edit_message_text = AsyncMock()
+
+        await open_fleet_more_menu(query, "fleet:menu:more")
+
+        query.message.reply_text.assert_awaited_once()
+        query.edit_message_text.assert_not_awaited()
+
 
 if __name__ == "__main__":
     unittest.main()

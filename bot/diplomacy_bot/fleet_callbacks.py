@@ -11,6 +11,22 @@ from .fleet_command import (
     travel_fleet,
 )
 from .fleet_ui_markup import fleet_more_inline_markup, fleet_nav_inline_markup
+from .telegram_navigation import callback_prefers_fresh_reply
+
+
+def fleet_menu_should_edit(data: str, query) -> bool:
+    return not callback_prefers_fresh_reply(data, query)
+
+
+async def open_fleet_more_menu(query, data: str) -> None:
+    if not query or not query.message:
+        return
+    text = "⚙️ <b>Filo işlemleri</b> — birini seç:"
+    kwargs = {"parse_mode": "HTML", "reply_markup": fleet_more_inline_markup()}
+    if fleet_menu_should_edit(data, query):
+        await query.edit_message_text(text, **kwargs)
+    else:
+        await query.message.reply_text(text, **kwargs)
 
 
 def install_fleet_command_callbacks() -> None:
@@ -25,15 +41,10 @@ def install_fleet_command_callbacks() -> None:
         if data == "fleet:menu:main":
             from .telegram_helpers import _send_fleet
 
-            await _send_fleet(update, context)
+            await _send_fleet(update, context, edit=fleet_menu_should_edit(data, query))
             return
         if data == "fleet:menu:more":
-            if query and query.message:
-                await query.message.reply_text(
-                    "⚙️ <b>Filo işlemleri</b> — birini seç:",
-                    parse_mode="HTML",
-                    reply_markup=fleet_more_inline_markup(),
-                )
+            await open_fleet_more_menu(query, data)
             return
         if data == "fleet:af:on:hybrid":
             batch = bootstrap_fleet(uid, role="hybrid")
