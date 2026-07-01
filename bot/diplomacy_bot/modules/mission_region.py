@@ -10,14 +10,23 @@ ApiFn = type(default_api)
 
 
 def _done(rt: MissionRuntime, spec: PhaseSpec, action: dict, *, ok: bool = True) -> MissionStepResult:
+    phase_status = PhaseStatus.DONE if ok else PhaseStatus.FAILED
     return MissionStepResult(
         rt.account_name,
         rt.mission_id,
         spec.phase,
-        PhaseStatus.DONE,
+        phase_status,
         ok=ok,
         actions=[action],
+        error=None if ok else _action_error(action),
     )
+
+
+def _action_error(action: dict) -> str:
+    for value in action.values():
+        if isinstance(value, dict) and value.get("error"):
+            return str(value["error"])
+    return "mission phase failed"
 
 
 def phase_citizenship_apply(
