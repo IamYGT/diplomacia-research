@@ -31,7 +31,7 @@ def format_fleet_help_html() -> str:
         "• JWT süresi → <code>/loginkaydet</code> veya yeni token inbox\n"
         f"• {limit + 1}. hesap → limit <code>MAX_ACCOUNTS_PER_USER={limit}</code>\n\n"
         "<b>Otomasyon (opsiyonel)</b>\n"
-        "<code>FLEET_INBOX_AUTO_SETUP=1</code> — yeni jwt → otomatik import+AOD\n\n"
+        "<code>FLEET_INBOX_AUTO_SETUP=1</code> — yeni jwt → otomatik autopilot\n\n"
         "<i>Detay: bot/docs/FLEET-COMMAND-CENTER.md</i>"
     )
 

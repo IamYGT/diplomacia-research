@@ -12,37 +12,35 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 class WorkerInboxSetupTests(unittest.TestCase):
-    def test_worker_inbox_setup_imports_fresh_candidates_and_runs_aod(self):
+    def test_worker_inbox_setup_runs_autopilot_for_fresh_candidates(self):
         from diplomacy_bot.jobs.worker_inbox_setup import run_worker_inbox_setup_once
 
-        batch = MagicMock(ok=2, total=2)
+        result = MagicMock()
+        result.inbox.ok = 2
+        result.inbox.total = 2
         token_watch = ModuleType("diplomacy_bot.token_watch")
         token_watch.list_inbox_operator_uids = MagicMock(return_value=[42])
         token_watch.list_inbox_import_candidates = MagicMock(return_value=[("w1", "tok1"), ("w2", "tok2")])
         processed = ModuleType("diplomacy_bot.inbox_processed_state")
         processed.is_inbox_processed = MagicMock(return_value=False)
         processed.mark_inbox_processed = MagicMock()
-        inbox_import = ModuleType("diplomacy_bot.fleet_inbox_import")
-        inbox_import.import_inbox_for_uid = MagicMock(return_value=batch)
         mission_service = ModuleType("diplomacy_bot.fleet_mission_service")
-        mission_service.enqueue_aod_missions_for_uid = MagicMock()
+        mission_service.start_fleet_autopilot_for_uid = MagicMock(return_value=result)
         with patch.dict(
             sys.modules,
             {
                 "diplomacy_bot.token_watch": token_watch,
                 "diplomacy_bot.inbox_processed_state": processed,
-                "diplomacy_bot.fleet_inbox_import": inbox_import,
                 "diplomacy_bot.fleet_mission_service": mission_service,
             },
         ):
             uids, imported = run_worker_inbox_setup_once()
 
         self.assertEqual((uids, imported), (1, 2))
-        inbox_import.import_inbox_for_uid.assert_called_once_with(42)
+        mission_service.start_fleet_autopilot_for_uid.assert_called_once_with(42)
         processed.mark_inbox_processed.assert_called_once()
         marked = processed.mark_inbox_processed.call_args.args[0]
         self.assertEqual(marked, {"42:w1", "42:w2"})
-        mission_service.enqueue_aod_missions_for_uid.assert_called_once_with(42)
 
     def test_worker_main_runs_inbox_when_enabled_before_training(self):
         from diplomacy_bot.jobs import worker_main

@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.26.6 ✅ Faz 4.5–4.13
+**Sürüm:** 4.26.7 ✅ Faz 4.5–4.14
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -43,7 +43,7 @@
 
 | # | Epic | Durum | Not |
 |---|------|--------|-----|
-| 4.1 | Zamanlanmış `run_aod_setup` job (yeni hesap gelince) | ✅ | `fleet_inbox_watch.py`, `FLEET_INBOX_AUTO_SETUP` |
+| 4.1 | Zamanlanmış autopilot job (yeni hesap gelince) | ✅ | `fleet_inbox_watch.py`, `FLEET_INBOX_AUTO_SETUP` |
 | 4.2 | Filo hata runbook (JWT süresi, kapasite dolu, seyahat CD) | ✅ | `/fleethelp`, `/help filo` |
 | 4.3 | Canlı UAT — 5→20 hesap kademeli | 🟡 | U1/U2/U4 headless teyit |
 | 4.4 | Filo metrik özeti (günlük farm/attack sayacı) | ✅ | `fleet_metrics.py`, `/fleet status` |
@@ -56,6 +56,7 @@
 | 4.11 | Training skip görünürlüğü | ✅ | `training_skip` action_log + `/fleet status` 24s bekleme metriği |
 | 4.12 | Tek tuş filo autopilot | ✅ | `/fleetstart`, `/fleet start`, panel `▶️ Başlat` |
 | 4.13 | Autopilot inbox import | ✅ | `/fleetstart` önce token_inbox import eder |
+| 4.14 | Inbox watcher autopilot | ✅ | `FLEET_INBOX_AUTO_SETUP=1` yeni token → autopilot |
 
 ---
 
@@ -85,7 +86,7 @@ export MAX_ACCOUNTS_PER_USER=20
 /autofarm on all
 
 # Opsiyonel otomasyon (varsayılan kapalı):
-export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik import+AOD+Telegram özeti
+export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram özeti
 ```
 
 **Filo paneli (v4.26.5):** üst satır `▶️ Başlat | 🇦🇴 AOD | 📋 Durum` → alt menüde fabrika, seyahat, bootstrap, inbox, ikamet, oy.
@@ -176,6 +177,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.26.7 | Inbox watcher ve worker setup artık autopilot zincirini çağırır |
 | 2026-07-01 | 4.26.6 | `/fleetstart` token_inbox import + repair + region mission zinciri |
 | 2026-07-01 | 4.26.5 | `/fleetstart` autopilot ve panel `▶️ Başlat` |
 | 2026-07-01 | 4.26.4 | Training skip action_log + fleet metrics bekleme sayacı |

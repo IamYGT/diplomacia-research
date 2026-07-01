@@ -1,4 +1,4 @@
-"""Worker inbox setup — token_inbox'tan otomatik import + AOD."""
+"""Worker inbox setup — token_inbox'tan otomatik import + autopilot."""
 
 from __future__ import annotations
 
@@ -12,12 +12,11 @@ def _candidate_key(uid: int, name: str) -> str:
 
 
 def run_worker_inbox_setup_once() -> tuple[int, int]:
-    """Yeni inbox adaylarını import eder ve AOD zincirini çalıştırır.
+    """Yeni inbox adaylarını import eder ve autopilot zincirini çalıştırır.
 
     Dönüş: (işlenen operator uid sayısı, başarılı import sayısı).
     """
-    from diplomacy_bot.fleet_inbox_import import import_inbox_for_uid
-    from diplomacy_bot.fleet_mission_service import enqueue_aod_missions_for_uid
+    from diplomacy_bot.fleet_mission_service import start_fleet_autopilot_for_uid
     from diplomacy_bot.inbox_processed_state import is_inbox_processed, mark_inbox_processed
     from diplomacy_bot.token_watch import list_inbox_import_candidates, list_inbox_operator_uids
 
@@ -28,10 +27,9 @@ def run_worker_inbox_setup_once() -> tuple[int, int]:
         fresh = [(n, t) for n, t in candidates if not is_inbox_processed(_candidate_key(uid, n))]
         if not fresh:
             continue
-        batch = import_inbox_for_uid(uid)
+        result = start_fleet_autopilot_for_uid(uid)
         mark_inbox_processed({_candidate_key(uid, n) for n, _ in fresh})
-        enqueue_aod_missions_for_uid(uid)
         uids += 1
-        imported += batch.ok
-        log.info("worker inbox setup uid=%s import=%s/%s", uid, batch.ok, batch.total)
+        imported += result.inbox.ok
+        log.info("worker inbox autopilot uid=%s import=%s/%s", uid, result.inbox.ok, result.inbox.total)
     return uids, imported

@@ -40,6 +40,24 @@ class FleetInboxImportTests(unittest.TestCase):
         with patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[]):
             self.assertIsNone(run_auto_inbox_setup_for_uid(99))
 
+    def test_auto_setup_runs_autopilot_for_fresh_candidate(self):
+        result = MagicMock()
+        result.inbox.ok = 1
+        with (
+            patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u42_w1", "tok")]),
+            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_processed", return_value=False),
+            patch("diplomacy_bot.fleet_inbox_watch.mark_inbox_processed") as mark,
+            patch(
+                "diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid",
+                return_value=result,
+            ) as start,
+        ):
+            got = run_auto_inbox_setup_for_uid(42)
+
+        self.assertEqual(got, result)
+        start.assert_called_once_with(42)
+        mark.assert_called_once_with({"42:u42_w1"})
+
     def test_fleet_more_menu_has_back_button(self):
         rows = fleet_more_inline_markup().inline_keyboard
         back = rows[-1][0]
