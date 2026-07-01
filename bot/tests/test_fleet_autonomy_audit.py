@@ -41,6 +41,7 @@ class FleetAutonomyAuditTests(unittest.TestCase):
             training_enabled=True,
             craft_pills_when_low=True,
             auto_travel_enabled=True,
+            auto_token_refresh=True,
             preferred_factory_id="fid",
             work_mode="fixed",
         )
@@ -58,6 +59,7 @@ class FleetAutonomyAuditTests(unittest.TestCase):
             training_enabled=False,
             craft_pills_when_low=False,
             auto_travel_enabled=False,
+            auto_token_refresh=True,
             preferred_factory_id="",
             work_mode="own",
         )
@@ -68,6 +70,26 @@ class FleetAutonomyAuditTests(unittest.TestCase):
         text = format_fleet_audit_blockers(audit)
         self.assertIn("autofarm kapalı", text)
         self.assertIn("rol off", text)
+
+    def test_audit_reports_missing_token_refresh_source(self):
+        cfg = MagicMock(
+            role="hybrid",
+            stat_auto_enabled=True,
+            training_enabled=True,
+            craft_pills_when_low=True,
+            auto_travel_enabled=True,
+            auto_token_refresh=True,
+            preferred_factory_id="fid",
+            work_mode="fixed",
+        )
+        with (
+            patch("diplomacy_bot.fleet_autonomy_audit.get_config", return_value=cfg),
+            patch("diplomacy_bot.fleet_autonomy_audit._has_token_refresh_source", return_value=False),
+        ):
+            audit = audit_fleet_autonomy([_acc("w1")], factory_id="fid")
+
+        self.assertEqual((audit.ready, audit.total), (0, 1))
+        self.assertIn("token refresh kaynağı yok", audit.rows[0].blockers)
 
 
 if __name__ == "__main__":

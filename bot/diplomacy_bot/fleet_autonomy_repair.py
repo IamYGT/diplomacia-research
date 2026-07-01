@@ -39,6 +39,7 @@ def repair_fleet_autonomy_for_uid(
                 training_enabled=True,
                 craft_pills_when_low=True,
                 auto_travel_enabled=True,
+                auto_token_refresh=True,
             )
             batch.add(FleetOpResult(name, True, f"ready role={want_role} factory={fid[:8]}…"))
         except Exception as e:

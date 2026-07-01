@@ -37,6 +37,7 @@ class FleetAutonomyRepairTests(unittest.TestCase):
         self.assertTrue(kwargs["training_enabled"])
         self.assertTrue(kwargs["craft_pills_when_low"])
         self.assertTrue(kwargs["auto_travel_enabled"])
+        self.assertTrue(kwargs["auto_token_refresh"])
 
     def test_repair_reports_missing_factory(self):
         with patch("diplomacy_bot.fleet_autonomy_repair.resolve_operator_factory", return_value=(None, None, "fabrika yok")):

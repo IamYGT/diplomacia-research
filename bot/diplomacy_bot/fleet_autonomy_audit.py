@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 from .account_config import get_config, normalize_role
+from .jwt_meta import token_exp_unix
 from .store import Account
 
 
@@ -44,6 +45,28 @@ def _mission_label(account_name: str) -> str:
         return ""
 
 
+def _has_token_refresh_source(acc: Account) -> bool:
+    if token_exp_unix(acc.token or "") is None:
+        return True
+    try:
+        from .account_credentials import has_login
+
+        if has_login(acc.name):
+            return True
+    except Exception:
+        pass
+    try:
+        from .token_watch import pick_inbox_token, read_legacy_auth_token, scan_token_inbox, token_matches_account
+
+        legacy = read_legacy_auth_token(force=True)
+        if legacy and token_matches_account(legacy, player_id=acc.player_id or "", account_name=acc.name):
+            return True
+        inbox = scan_token_inbox(force=True)
+        return pick_inbox_token(acc.name, acc.player_id or "", inbox) is not None
+    except Exception:
+        return False
+
+
 def audit_fleet_autonomy(
     accounts: Iterable[Account],
     *,
@@ -75,6 +98,10 @@ def audit_fleet_autonomy(
             blockers.append("hap craft kapalı")
         if not cfg.auto_travel_enabled:
             blockers.append("oto seyahat kapalı")
+        if not cfg.auto_token_refresh:
+            blockers.append("token auto kapalı")
+        elif not _has_token_refresh_source(acc):
+            blockers.append("token refresh kaynağı yok")
         if fid and ((cfg.preferred_factory_id or "").strip() != fid or cfg.work_mode != "fixed"):
             blockers.append("ana fabrikaya sabit değil")
         mission = _mission_label(name)
