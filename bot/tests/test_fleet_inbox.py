@@ -13,6 +13,7 @@ from diplomacy_bot.fleet_inbox_import import import_inbox_for_uid
 from diplomacy_bot.fleet_inbox_watch import run_auto_inbox_setup_for_uid
 from diplomacy_bot.fleet_command import FleetBatchResult, FleetOpResult
 from diplomacy_bot.fleet_ui_markup import fleet_more_inline_markup, patch_fleet_ui_buttons
+from diplomacy_bot.inbox_processed_state import candidate_processed_key
 
 
 class FleetInboxImportTests(unittest.TestCase):
@@ -47,7 +48,7 @@ class FleetInboxImportTests(unittest.TestCase):
         result.inbox.add(FleetOpResult("u42_w1", True, "bağlandı"))
         with (
             patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u42_w1", "tok")]),
-            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_processed", return_value=False),
+            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_candidate_processed", return_value=False),
             patch("diplomacy_bot.fleet_inbox_watch.mark_inbox_processed") as mark,
             patch(
                 "diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid",
@@ -58,7 +59,26 @@ class FleetInboxImportTests(unittest.TestCase):
 
         self.assertEqual(got, result)
         start.assert_called_once_with(42)
-        mark.assert_called_once_with({"42:u42_w1"})
+        mark.assert_called_once_with({candidate_processed_key(42, "u42_w1", "tok")})
+
+    def test_auto_setup_same_slot_new_token_is_fresh(self):
+        result = MagicMock()
+        result.inbox = FleetBatchResult()
+        result.inbox.add(FleetOpResult("u42_01", True, "bağlandı"))
+
+        def processed(uid, name, token):
+            return token == "old-token"
+
+        with (
+            patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u42_01", "new-token")]),
+            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_candidate_processed", side_effect=processed),
+            patch("diplomacy_bot.fleet_inbox_watch.mark_inbox_processed"),
+            patch("diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid", return_value=result) as start,
+        ):
+            got = run_auto_inbox_setup_for_uid(42)
+
+        self.assertEqual(got, result)
+        start.assert_called_once_with(42)
 
     def test_auto_setup_does_not_mark_failed_import_processed(self):
         result = MagicMock()
@@ -66,7 +86,7 @@ class FleetInboxImportTests(unittest.TestCase):
         result.inbox.add(FleetOpResult("u42_w1", False, "token expired"))
         with (
             patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u42_w1", "tok")]),
-            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_processed", return_value=False),
+            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_candidate_processed", return_value=False),
             patch("diplomacy_bot.fleet_inbox_watch.mark_inbox_processed") as mark,
             patch(
                 "diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid",

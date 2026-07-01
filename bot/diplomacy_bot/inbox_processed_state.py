@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+from hashlib import sha256
 from pathlib import Path
 
 from .config import DATA_DIR
@@ -40,6 +41,15 @@ def load_processed_keys() -> set[str]:
 
 def is_inbox_processed(key: str) -> bool:
     return key in load_processed_keys()
+
+
+def candidate_processed_key(telegram_user_id: int, name: str, token: str) -> str:
+    digest = sha256(token.strip().encode("utf-8")).hexdigest()[:16]
+    return f"{int(telegram_user_id)}:{name.strip().lower()}:{digest}"
+
+
+def is_inbox_candidate_processed(telegram_user_id: int, name: str, token: str) -> bool:
+    return is_inbox_processed(candidate_processed_key(telegram_user_id, name, token))
 
 
 def mark_inbox_processed(keys: set[str] | list[str]) -> None:

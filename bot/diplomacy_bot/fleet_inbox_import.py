@@ -33,15 +33,23 @@ def connect_account_sync(name: str, token: str, *, telegram_user_id: int):
 def successful_inbox_processed_keys(
     telegram_user_id: int,
     batch: FleetBatchResult,
-    candidate_names: list[str] | tuple[str, ...],
+    candidate_names: list[str] | tuple[str, ...] | list[tuple[str, str]] | tuple[tuple[str, str], ...],
 ) -> set[str]:
     """Return processed-state keys only for successfully imported inbox candidates."""
-    candidates = {n.strip().lower() for n in candidate_names}
+    from .inbox_processed_state import candidate_processed_key
+
+    candidates: dict[str, str | None] = {}
+    for item in candidate_names:
+        if isinstance(item, tuple):
+            candidates[item[0].strip().lower()] = item[1]
+        else:
+            candidates[item.strip().lower()] = None
     keys: set[str] = set()
     for row in batch.results:
         name = row.account_name.strip().lower()
         if row.ok and name in candidates:
-            keys.add(f"{telegram_user_id}:{name}")
+            token = candidates[name]
+            keys.add(candidate_processed_key(telegram_user_id, name, token) if token else f"{telegram_user_id}:{name}")
     return keys
 
 

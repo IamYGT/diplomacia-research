@@ -8,13 +8,9 @@ import logging
 from telegram.ext import ContextTypes
 
 from .config import FLEET_INBOX_AUTO_SETUP
-from .inbox_processed_state import is_inbox_processed, mark_inbox_processed
+from .inbox_processed_state import is_inbox_candidate_processed, mark_inbox_processed
 
 log = logging.getLogger(__name__)
-
-
-def _candidate_key(uid: int, name: str) -> str:
-    return f"{uid}:{name.strip().lower()}"
 
 
 def run_auto_inbox_setup_for_uid(telegram_user_id: int):
@@ -26,7 +22,7 @@ def run_auto_inbox_setup_for_uid(telegram_user_id: int):
     fresh = [
         (n, t)
         for n, t in candidates
-        if not is_inbox_processed(_candidate_key(telegram_user_id, n))
+        if not is_inbox_candidate_processed(telegram_user_id, n, t)
     ]
     if not fresh:
         return None
@@ -34,7 +30,7 @@ def run_auto_inbox_setup_for_uid(telegram_user_id: int):
     result = start_fleet_autopilot_for_uid(telegram_user_id)
     from .fleet_inbox_import import successful_inbox_processed_keys
 
-    keys = successful_inbox_processed_keys(telegram_user_id, result.inbox, [n for n, _ in fresh])
+    keys = successful_inbox_processed_keys(telegram_user_id, result.inbox, fresh)
     if keys:
         mark_inbox_processed(keys)
     return result
