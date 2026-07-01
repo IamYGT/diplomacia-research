@@ -114,6 +114,21 @@ class FleetInboxImportTests(unittest.TestCase):
         self.assertEqual(got, result)
         mark.assert_not_called()
 
+    def test_auto_setup_marks_terminal_slot_conflict_processed(self):
+        result = MagicMock()
+        result.inbox = FleetBatchResult()
+        result.inbox.add(FleetOpResult("u42_01", False, "Bu slot başka bir Diplomacia hesabına ait"))
+        with (
+            patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u42_01", "bad-token")]),
+            patch("diplomacy_bot.fleet_inbox_watch.is_inbox_candidate_processed", return_value=False),
+            patch("diplomacy_bot.fleet_inbox_watch.mark_inbox_processed") as mark,
+            patch("diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid", return_value=result),
+        ):
+            got = run_auto_inbox_setup_for_uid(42)
+
+        self.assertEqual(got, result)
+        mark.assert_called_once_with({candidate_processed_key(42, "u42_01", "bad-token")})
+
     def test_fleet_more_menu_has_back_button(self):
         rows = fleet_more_inline_markup().inline_keyboard
         back = rows[-1][0]

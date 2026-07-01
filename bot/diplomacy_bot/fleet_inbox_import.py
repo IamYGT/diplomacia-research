@@ -35,7 +35,7 @@ def successful_inbox_processed_keys(
     batch: FleetBatchResult,
     candidate_names: list[str] | tuple[str, ...] | list[tuple[str, str]] | tuple[tuple[str, str], ...],
 ) -> set[str]:
-    """Return processed-state keys only for successfully imported inbox candidates."""
+    """Return processed-state keys for imported or terminally invalid inbox candidates."""
     from .inbox_processed_state import candidate_processed_key
 
     candidates: dict[str, str | None] = {}
@@ -47,7 +47,8 @@ def successful_inbox_processed_keys(
     keys: set[str] = set()
     for row in batch.results:
         name = row.account_name.strip().lower()
-        if row.ok and name in candidates:
+        terminal_invalid = "slot başka" in row.message.lower()
+        if name in candidates and (row.ok or terminal_invalid):
             token = candidates[name]
             keys.add(candidate_processed_key(telegram_user_id, name, token) if token else f"{telegram_user_id}:{name}")
     return keys

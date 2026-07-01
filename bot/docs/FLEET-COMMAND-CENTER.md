@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.20 ✅ Faz 4.5–4.47
+**Sürüm:** 4.28.21 ✅ Faz 4.5–4.48
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -90,6 +90,7 @@
 | 4.45 | 20 token inbox autopilot kanıtı | ✅ | `u{uid}_01.jwt`…`u{uid}_20.jwt` tek autopilot çağrısında import+onarım+mission |
 | 4.46 | Inbox tarama fail-open | ✅ | Tek bozuk/okunamayan token dosyası sağlam token batch'ini durdurmaz |
 | 4.47 | Slot player_id çakışma koruması | ✅ | Aynı `u{uid}_NN` adı farklı Diplomacia hesabını sessizce ezemez |
+| 4.48 | Slot çakışması auto-spam önleme | ✅ | Terminal slot hatası aynı token için processed olur; yeni token hash'i retry açar |
 
 ---
 
@@ -127,7 +128,7 @@ python3 scripts/discover_frontend_api.py --show-missing
 python3 scripts/discover_frontend_api.py --keyword-context
 ```
 
-**Filo paneli (v4.28.20):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var; pending inbox token varsa başlat butonu `▶️ N tokeni başlat` diye görünür. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Alt menüdeki `Token inbox` artık yalnız import değil, kaydedilmiş hedef politikayla import+onarım+mission autopilot sonucunu gösterir. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Training attack endpoint cooldown/429/HTTP hata döndürürse worker retry zamanı yazar, her tick spam denemez. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir ama mevcut slot farklı `player_id` taşıyorsa eski worker sessizce ezilmez. Telegram watcher ve worker aynı UID için dosya lock kullandığından aynı inbox batch'i için çift autopilot/mission enqueue azaltılır. Tek bozuk/okunamayan inbox dosyası artık sağlam tokenları durdurmaz; dosya atlanır ve kalan batch ilerler. `u{uid}_01.jwt`…`u{uid}_20.jwt` dosyalarının tek autopilot çağrısında 20 import, 20 onarım ve 20 mission enqueue ürettiği unit testle kanıtlandı. API discovery `--keyword-context` ile permit/employment/training create kelimelerinin statik bundle bağlamı mutating probe yapmadan incelenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
+**Filo paneli (v4.28.21):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var; pending inbox token varsa başlat butonu `▶️ N tokeni başlat` diye görünür. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Alt menüdeki `Token inbox` artık yalnız import değil, kaydedilmiş hedef politikayla import+onarım+mission autopilot sonucunu gösterir. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Training attack endpoint cooldown/429/HTTP hata döndürürse worker retry zamanı yazar, her tick spam denemez. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir ama mevcut slot farklı `player_id` taşıyorsa eski worker sessizce ezilmez. Bu terminal slot çakışması aynı token için processed sayılır, böylece watcher/worker aynı hatayı tekrar tekrar Telegram'a basmaz; dosyaya farklı token konduğunda hash değiştiği için retry açılır. Telegram watcher ve worker aynı UID için dosya lock kullandığından aynı inbox batch'i için çift autopilot/mission enqueue azaltılır. Tek bozuk/okunamayan inbox dosyası artık sağlam tokenları durdurmaz; dosya atlanır ve kalan batch ilerler. `u{uid}_01.jwt`…`u{uid}_20.jwt` dosyalarının tek autopilot çağrısında 20 import, 20 onarım ve 20 mission enqueue ürettiği unit testle kanıtlandı. API discovery `--keyword-context` ile permit/employment/training create kelimelerinin statik bundle bağlamı mutating probe yapmadan incelenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
 
 ---
 
@@ -167,6 +168,7 @@ python3 scripts/discover_frontend_api.py --keyword-context
 - [x] 20 token inbox autopilot: `u{uid}_01.jwt`…`u{uid}_20.jwt` tek çağrıda mission kuyruğuna gider
 - [x] Token inbox fail-open: bozuk/okunamayan tek dosya sağlam batch'i düşürmez
 - [x] Slot güvenliği: mevcut `u{uid}_NN` farklı `player_id` ile overwrite edilmez
+- [x] Slot çakışması auto-spam önleme: terminal hata aynı token için processed olur
 - [x] Token refresh kaynak yoksa 30 dk backoff; Telegram paketi sistem+venv import OK
 - [x] Region/AOD mission farm fazı work öncesi elmas→hap hazırlığı çalıştırır
 - [x] `fleet_ui_markup` + `fleet_callbacks` 350 satır altında
@@ -243,6 +245,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.21 | Slot çakışması terminal hata sayılır; aynı token auto-watch/worker spam'i üretmez |
 | 2026-07-01 | 4.28.20 | Mevcut inbox slotu farklı player_id taşıyan tokenla sessizce overwrite edilmez |
 | 2026-07-01 | 4.28.19 | Token inbox taraması tek bozuk dosyayı atlayıp sağlam token batch'ini korur |
 | 2026-07-01 | 4.28.18 | 20 `u{uid}_NN.jwt` inbox tokenı tek autopilot çağrısında import+onarım+mission kuyruğuna kanıtlandı |
