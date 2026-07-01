@@ -49,9 +49,9 @@ def _pending_inbox_count(accounts: list) -> int:
     if not uid:
         return 0
     try:
-        from .token_watch import list_inbox_import_candidates
+        from .token_watch import list_fresh_inbox_import_candidates
 
-        return len(list_inbox_import_candidates(uid))
+        return len(list_fresh_inbox_import_candidates(uid))
     except Exception:
         return 0
 

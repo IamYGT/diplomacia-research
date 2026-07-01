@@ -108,7 +108,7 @@ class FleetStatusTests(unittest.TestCase):
             patch("diplomacy_bot.fleet_status.scoped_list_accounts", return_value=[acc]),
             patch("diplomacy_bot.fleet_command.resolve_operator_factory", return_value=("fid-1", "Hürmüz", "")),
             patch("diplomacy_bot.fleet_status.get_config", return_value=cfg),
-            patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[]),
+            patch("diplomacy_bot.token_watch.list_fresh_inbox_import_candidates", return_value=[]),
         ):
             steps = compute_fleet_next_steps(99)
         self.assertTrue(any("fleetfactory" in s for s in steps))
@@ -135,7 +135,7 @@ class FleetStatusTests(unittest.TestCase):
         policy = FleetAutopilotPolicy(province="Hürmüz", role="hybrid", vote=True)
         with (
             patch("diplomacy_bot.fleet_autopilot_policy.load_fleet_autopilot_policy", return_value=policy),
-            patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u99_01", "tok")]),
+            patch("diplomacy_bot.token_watch.list_fresh_inbox_import_candidates", return_value=[("u99_01", "tok")]),
         ):
             line = format_autopilot_target_line(99)
         self.assertIn("Başlat hedefi", line)

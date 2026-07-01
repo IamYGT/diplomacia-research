@@ -190,7 +190,7 @@ class FleetInboxImportTests(unittest.TestCase):
         )
         patch_fleet_ui_buttons()
         with patch(
-            "diplomacy_bot.token_watch.list_inbox_import_candidates",
+            "diplomacy_bot.token_watch.list_fresh_inbox_import_candidates",
             return_value=[("u42_01", "tok1"), ("u42_02", "tok2")],
         ):
             rows = ui.fleet_inline_markup("w1", [acc]).inline_keyboard

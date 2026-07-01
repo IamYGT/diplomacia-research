@@ -157,6 +157,17 @@ def list_inbox_import_candidates(telegram_user_id: int) -> list[tuple[str, str]]
     return out
 
 
+def list_fresh_inbox_import_candidates(telegram_user_id: int) -> list[tuple[str, str]]:
+    """Auto-setup için henüz processed olmayan inbox adayları."""
+    from .inbox_processed_state import is_inbox_candidate_processed
+
+    return [
+        (name, token)
+        for name, token in list_inbox_import_candidates(telegram_user_id)
+        if not is_inbox_candidate_processed(telegram_user_id, name, token)
+    ]
+
+
 def list_inbox_operator_uids() -> list[int]:
     """token_inbox'taki u{uid}_* dosyalarından operatör Telegram id listesi."""
     import re

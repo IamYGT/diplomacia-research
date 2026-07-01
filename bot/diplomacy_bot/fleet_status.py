@@ -50,7 +50,7 @@ def count_fleet_on_factory(telegram_user_id: int, factory_id: str) -> int:
 
 def compute_fleet_next_steps(telegram_user_id: int) -> list[str]:
     from .fleet_command import resolve_operator_factory
-    from .token_watch import list_inbox_import_candidates
+    from .token_watch import list_fresh_inbox_import_candidates
 
     accs = scoped_list_accounts(telegram_user_id)
     if not accs:
@@ -59,7 +59,7 @@ def compute_fleet_next_steps(telegram_user_id: int) -> list[str]:
     fid, _, err = resolve_operator_factory(telegram_user_id)
     if err or not fid:
         steps.append("Ana hesapta fabrika panelinden 🎯 ana fabrika işaretle")
-    inbox_pending = len(list_inbox_import_candidates(telegram_user_id))
+    inbox_pending = len(list_fresh_inbox_import_candidates(telegram_user_id))
     if inbox_pending:
         steps.append(f"<code>/fleetinbox</code> — {inbox_pending} token bekliyor")
     if sum(1 for a in accs if not a.autofarm) > len(accs) // 2:
@@ -115,10 +115,10 @@ def format_autopilot_target_line(telegram_user_id: int) -> str:
 
     try:
         from .fleet_autopilot_policy import load_fleet_autopilot_policy
-        from .token_watch import list_inbox_import_candidates
+        from .token_watch import list_fresh_inbox_import_candidates
 
         policy = load_fleet_autopilot_policy(telegram_user_id)
-        pending = len(list_inbox_import_candidates(telegram_user_id))
+        pending = len(list_fresh_inbox_import_candidates(telegram_user_id))
     except Exception:
         return ""
     opts: list[str] = []

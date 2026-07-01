@@ -37,6 +37,23 @@ class TokenInboxScannerTests(unittest.TestCase):
 
         self.assertEqual(found, {"u42_01": "eyJgood.token.sig"})
 
+    def test_fresh_candidates_skip_processed_token_hashes(self):
+        from diplomacy_bot.token_watch import list_fresh_inbox_import_candidates
+
+        with (
+            patch(
+                "diplomacy_bot.token_watch.list_inbox_import_candidates",
+                return_value=[("u42_01", "tok-old"), ("u42_02", "tok-new")],
+            ),
+            patch(
+                "diplomacy_bot.inbox_processed_state.is_inbox_candidate_processed",
+                side_effect=lambda uid, name, token: token == "tok-old",
+            ),
+        ):
+            fresh = list_fresh_inbox_import_candidates(42)
+
+        self.assertEqual(fresh, [("u42_02", "tok-new")])
+
 
 if __name__ == "__main__":
     unittest.main()
