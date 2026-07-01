@@ -116,6 +116,14 @@ def run_training_tick(*, min_interval_sec: float = _DEFAULT_MIN_INTERVAL_SEC) ->
                 )
         except Exception as e:
             log.debug("worker_training %s: %s", name, e)
+            _save_next_attempt_ts(name, time.time() + min(_ATTACK_ERROR_RETRY_SEC, min_interval_sec))
+            log_action(
+                "training_skip",
+                account_name=name,
+                telegram_user_id=acc.telegram_user_id or 0,
+                result="training_exception",
+                success=False,
+            )
     if checked:
         log.info("worker: training %s/%s attack ok", ok, checked)
     return ok, checked
