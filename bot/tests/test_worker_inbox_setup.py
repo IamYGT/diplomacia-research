@@ -61,6 +61,10 @@ class WorkerInboxSetupTests(unittest.TestCase):
                 "diplomacy_bot.jobs.worker_missions.run_worker_missions_once",
                 side_effect=lambda: calls.append("missions"),
             ),
+            patch(
+                "diplomacy_bot.jobs.worker_stat_queue.run_worker_stat_queue_once",
+                side_effect=lambda: calls.append("stat"),
+            ),
             patch("diplomacy_bot.jobs.worker_training.run_training_tick", side_effect=lambda: calls.append("training")),
             patch(
                 "diplomacy_bot.jobs.worker_autofarm.run_autofarm_tick",
@@ -69,7 +73,7 @@ class WorkerInboxSetupTests(unittest.TestCase):
         ):
             worker_main._tick()
 
-        self.assertEqual(calls[:4], ["inbox", "missions", "training", "autofarm"])
+        self.assertEqual(calls[:5], ["inbox", "missions", "stat", "training", "autofarm"])
 
 
 if __name__ == "__main__":
