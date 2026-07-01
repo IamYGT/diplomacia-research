@@ -240,9 +240,10 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
         head.append(target_line)
     head.append(format_fleet_capability_line())
     head.append("")
+    detailed_limit = min(len(accs), total_limit)
     if detailed:
         head.append("<b>Hesap</b>  af  rol  mod  fabrika  bakiye  mission")
-        for acc in accs[:20]:
+        for acc in accs[:detailed_limit]:
             cfg = get_config(acc.name)
             af = "🟢" if acc.autofarm else "⚪"
             pref = (cfg.preferred_factory_id or "")[:6]
@@ -263,8 +264,8 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
                 f"{af} <code>{html.escape(acc.name)}</code> · {html.escape(cfg.role)} · "
                 f"{html.escape(cfg.work_mode)}" + (f" `{html.escape(pref)}…`" if pref else "")
             )
-    if len(accs) > 20:
-        head.append(f"<i>… +{len(accs) - 20} hesap</i>")
+    if len(accs) > detailed_limit:
+        head.append(f"<i>… +{len(accs) - detailed_limit} hesap</i>")
     if audit_block := format_fleet_audit_blockers(audit):
         head.append(f"\n{audit_block}")
     if footer := format_next_steps_footer(telegram_user_id):

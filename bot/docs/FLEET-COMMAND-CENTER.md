@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.29 ✅ Faz 4.5–4.56
+**Sürüm:** 4.28.31 ✅ Faz 4.5–4.58
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -99,6 +99,8 @@
 | 4.54 | Mission exception görünürlüğü | ✅ | Worker mission exception action_log'a düşer, hesap sessizce kaybolmaz |
 | 4.55 | Darboğaz exception özeti | ✅ | `/fleet status` training/mission exception sayılarını görünür özetler |
 | 4.56 | Eski buton görünür status | ✅ | Stale yan etkili Telegram butonları kompakt güncel filo status'u ile yönlendirir |
+| 4.57 | Capability hazır/bekliyor ayrımı | ✅ | `/fleet status` fabrika çalışma + antrenman saldırı hazır, izin/create bekliyor bilgisini ayırır |
+| 4.58 | 21 hesap detay görünürlüğü | ✅ | Ana hesap + 20 worker detay tablosunda kesilmeden görünür |
 
 ---
 
@@ -136,7 +138,7 @@ python3 scripts/discover_frontend_api.py --show-missing
 python3 scripts/discover_frontend_api.py --keyword-context
 ```
 
-**Filo paneli (v4.28.29):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var; pending inbox token varsa başlat butonu `▶️ N tokeni başlat` diye görünür. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Alt menüdeki `Token inbox` artık yalnız import değil, kaydedilmiş hedef politikayla import+onarım+mission autopilot sonucunu gösterir. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Autopilot sonucunda slot/duplicate import hatası ilgili `u{uid}_NN` adıyla ve dosyayı boş slota taşıma/kaldırma aksiyonuyla görünür. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden kompakt güncel status + yeni navigasyonla yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, mission/training exception sayılarını, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Pending inbox sayaçları yalnız processed olmayan tokenları sayar, böylece terminal duplicate/slot dosyaları Başlat butonunu kirletmez. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Worker mission exception artık `worker_mission_exception` action_log kaydı üretir; kalıcı plan sessizce takılı kalmaz. Training attack endpoint cooldown/429/HTTP hata döndürürse worker retry zamanı yazar, her tick spam denemez; beklenmeyen training exception da 5 dk retry planlar ve `training_exception` action_log kaydı üretir. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir ama mevcut slot farklı `player_id` taşıyorsa eski worker sessizce ezilmez. Refresh ve duplicate token dosyaları candidate filtresinde sessizce düşmez; karar `connect_core`da verilir. Aynı Diplomacia `player_id` başka worker slotuna tekrar eklenemez; duplicate token terminal hata sayılır ve aynı token için auto-watch/worker spam'i üretmez. Bu terminal slot çakışması aynı token için processed sayılır, böylece watcher/worker aynı hatayı tekrar tekrar Telegram'a basmaz; dosyaya farklı token konduğunda hash değiştiği için retry açılır. Telegram watcher ve worker aynı UID için dosya lock kullandığından aynı inbox batch'i için çift autopilot/mission enqueue azaltılır. Tek bozuk/okunamayan inbox dosyası artık sağlam tokenları durdurmaz; dosya atlanır ve kalan batch ilerler. `u{uid}_01.jwt`…`u{uid}_20.jwt` dosyalarının tek autopilot çağrısında 20 import, 20 onarım ve 20 mission enqueue ürettiği unit testle kanıtlandı. API discovery `--keyword-context` ile permit/employment/training create kelimelerinin statik bundle bağlamı mutating probe yapmadan incelenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
+**Filo paneli (v4.28.31):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var; pending inbox token varsa başlat butonu `▶️ N tokeni başlat` diye görünür. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Alt menüdeki `Token inbox` artık yalnız import değil, kaydedilmiş hedef politikayla import+onarım+mission autopilot sonucunu gösterir. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Autopilot sonucunda slot/duplicate import hatası ilgili `u{uid}_NN` adıyla ve dosyayı boş slota taşıma/kaldırma aksiyonuyla görünür. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden kompakt güncel status + yeni navigasyonla yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, mission/training exception sayılarını, kayıtlı `▶️ Başlat` hedefini, hazır fabrika çalışma/antrenman saldırı kabiliyetlerini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite ve detay tablo `21/21` olarak 1 main + 20 worker senaryosunu kesmeden gösterir. Pending inbox sayaçları yalnız processed olmayan tokenları sayar, böylece terminal duplicate/slot dosyaları Başlat butonunu kirletmez. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Worker mission exception artık `worker_mission_exception` action_log kaydı üretir; kalıcı plan sessizce takılı kalmaz. Training attack endpoint cooldown/429/HTTP hata döndürürse worker retry zamanı yazar, her tick spam denemez; beklenmeyen training exception da 5 dk retry planlar ve `training_exception` action_log kaydı üretir. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir ama mevcut slot farklı `player_id` taşıyorsa eski worker sessizce ezilmez. Refresh ve duplicate token dosyaları candidate filtresinde sessizce düşmez; karar `connect_core`da verilir. Aynı Diplomacia `player_id` başka worker slotuna tekrar eklenemez; duplicate token terminal hata sayılır ve aynı token için auto-watch/worker spam'i üretmez. Bu terminal slot çakışması aynı token için processed sayılır, böylece watcher/worker aynı hatayı tekrar tekrar Telegram'a basmaz; dosyaya farklı token konduğunda hash değiştiği için retry açılır. Telegram watcher ve worker aynı UID için dosya lock kullandığından aynı inbox batch'i için çift autopilot/mission enqueue azaltılır. Tek bozuk/okunamayan inbox dosyası artık sağlam tokenları durdurmaz; dosya atlanır ve kalan batch ilerler. `u{uid}_01.jwt`…`u{uid}_20.jwt` dosyalarının tek autopilot çağrısında 20 import, 20 onarım ve 20 mission enqueue ürettiği unit testle kanıtlandı. API discovery `--keyword-context` ile permit/employment/training create kelimelerinin statik bundle bağlamı mutating probe yapmadan incelenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
 
 ---
 
@@ -185,6 +187,8 @@ python3 scripts/discover_frontend_api.py --keyword-context
 - [x] Mission exception görünürlüğü: worker_mission_exception action_log yazar
 - [x] Darboğaz özeti: training/mission exception sayılarını gösterir
 - [x] Eski buton yönlendirmesi: yan etkili stale buton kompakt status gösterir
+- [x] Capability satırı: fabrika çalışma + antrenman saldırı hazır, izin/create bekliyor ayrımı
+- [x] 21 hesap detay görünürlüğü: main + 20 worker tabloda kesilmez
 - [x] Token refresh kaynak yoksa 30 dk backoff; Telegram paketi sistem+venv import OK
 - [x] Region/AOD mission farm fazı work öncesi elmas→hap hazırlığı çalıştırır
 - [x] `fleet_ui_markup` + `fleet_callbacks` 350 satır altında
@@ -261,6 +265,8 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.31 | `/fleet status` main + 20 worker detay tablosunu kesmeden gösterir |
+| 2026-07-01 | 4.28.30 | `/fleet status` hazır fabrika çalışma/antrenman saldırı ve bekleyen izin/create ayrımını gösterir |
 | 2026-07-01 | 4.28.29 | Eski yan etkili Telegram butonları kompakt güncel status ile yönlendirir |
 | 2026-07-01 | 4.28.28 | `/fleet status` darboğaz özeti training/mission exception sayılarını gösterir |
 | 2026-07-01 | 4.28.27 | Worker mission exception action_log görünürlüğüne bağlandı |

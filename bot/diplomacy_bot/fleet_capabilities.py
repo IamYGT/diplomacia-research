@@ -23,6 +23,18 @@ def advanced_fleet_capabilities() -> tuple[FleetCapability, ...]:
     """Expose what the fleet can automate without pretending unknown APIs exist."""
     return (
         FleetCapability(
+            "factory_work",
+            "fabrika çalışma",
+            _has_all("factories.join", "factories.work_status", "factories.work"),
+            "join/work route hazır",
+        ),
+        FleetCapability(
+            "training_attack",
+            "saatlik antrenman saldırı",
+            _has_all("training.my", "training.attack"),
+            "mevcut savaşa saldırı hazır",
+        ),
+        FleetCapability(
             "travel_residence",
             "seyahat+ikamet",
             _has_all("provinces.travel_start", "players.residence_set"),

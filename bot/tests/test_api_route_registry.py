@@ -16,6 +16,7 @@ from diplomacy_bot.api_route_registry import (
     safe_probe_routes,
     scan_codebase_routes,
 )
+from diplomacy_bot.fleet_capabilities import advanced_fleet_capabilities
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "api_contracts.json"
 
@@ -45,6 +46,16 @@ def test_registry_has_safe_routes_for_dashboard_modules():
     safe_keys = {(r.method, r.path) for r in safe_probe_routes()}
     missing = required_safe - safe_keys
     assert not missing, f"safe_probe eksik: {missing}"
+
+
+def test_fleet_capability_contract_matrix():
+    caps = {cap.key: cap for cap in advanced_fleet_capabilities()}
+
+    assert caps["factory_work"].ready is True
+    assert caps["travel_residence"].ready is True
+    assert caps["training_attack"].ready is True
+    assert caps["work_permit"].ready is False
+    assert caps["training_create"].ready is False
 
 
 def test_every_route_has_unique_id():

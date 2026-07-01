@@ -184,9 +184,13 @@ class FleetStatusTests(unittest.TestCase):
             html = format_fleet_ops_status(99)
 
         self.assertIn("21/21 hesap", html)
+        self.assertIn("<code>w19</code>", html)
+        self.assertNotIn("+1 hesap", html)
 
     def test_capability_line_surfaces_unknown_advanced_routes(self):
         line = format_fleet_capability_line()
+        self.assertIn("fabrika çalışma", line)
+        self.assertIn("saatlik antrenman saldırı", line)
         self.assertIn("çalışma izni", line)
         self.assertIn("endpoint keşfi bekliyor", line)
 
