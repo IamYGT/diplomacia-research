@@ -67,6 +67,7 @@ export MAX_ACCOUNTS_PER_USER=20
 /fleetfactory main          # ana fabrikaya bağla
 /fleettravel Hürmüz         # toplu seyahat
 /fleet status               # detaylı komuta tablosu
+/fleet audit                # otonomi eksik listesi
 /fleetaod                   # tek komut: bootstrap+fabrika+seyahat+ikamet
 /fleetregion Hürmüz vote    # kalıcı mission: seyahat+ikamet+oy+farm
 /fleetresidence Hürmüz      # toplu ikamet

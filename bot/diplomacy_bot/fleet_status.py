@@ -182,6 +182,19 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
             head.append(cap_line)
     elif err:
         head.append(f"⚠️ {html.escape(err)}")
+    from .account_main import get_main_account_name as _main_name
+    from .fleet_autonomy_audit import (
+        audit_fleet_autonomy,
+        format_fleet_audit_blockers,
+        format_fleet_audit_line,
+    )
+
+    audit = audit_fleet_autonomy(
+        accs,
+        factory_id=fid or "",
+        main_account_name=_main_name(telegram_user_id) or "",
+    )
+    head.append(format_fleet_audit_line(audit))
     from .fleet_metrics import format_fleet_metrics_line
 
     if metrics := format_fleet_metrics_line(telegram_user_id):
@@ -212,6 +225,8 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
             )
     if len(accs) > 20:
         head.append(f"<i>… +{len(accs) - 20} hesap</i>")
+    if audit_block := format_fleet_audit_blockers(audit):
+        head.append(f"\n{audit_block}")
     if footer := format_next_steps_footer(telegram_user_id):
         head.append(f"\n{footer}")
     head.append(

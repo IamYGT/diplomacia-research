@@ -91,6 +91,7 @@ class FleetStatusTests(unittest.TestCase):
         ):
             html = format_fleet_ops_status(99)
         self.assertIn("travel_to_province:waiting", html)
+        self.assertIn("Otonomi audit", html)
 
 
 class TokenInboxFleetTests(unittest.TestCase):

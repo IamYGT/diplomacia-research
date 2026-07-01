@@ -204,7 +204,7 @@ def install_fleet_command_hooks() -> None:
 
     @user_required
     async def cmd_fleet_patched(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        if context.args and context.args[0].lower() in ("status", "ops", "komuta"):
+        if context.args and context.args[0].lower() in ("status", "ops", "komuta", "audit"):
             uid = ta._uid(update)
             msg = update.effective_message
             if msg:
