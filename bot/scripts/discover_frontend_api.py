@@ -47,6 +47,15 @@ CAPABILITY_KEYWORDS = {
     "work": ("work", "employment", "permit"),
     "training": ("training-wars",),
 }
+CONTEXT_KEYWORDS = (
+    "employment",
+    "work-permits",
+    "permit",
+    "training-wars",
+    "training",
+    "create",
+    "declare",
+)
 
 
 def _fetch(url: str, *, timeout: int = 30) -> str:
@@ -97,6 +106,45 @@ def discover_paths(base_url: str = HOME) -> dict:
     return {"home": base_url, "bundles": bundles, "routes": paths}
 
 
+def _snippet(text: str, pos: int, *, radius: int = 90) -> str:
+    start = max(0, pos - radius)
+    end = min(len(text), pos + radius)
+    return re.sub(r"\s+", " ", text[start:end]).strip()
+
+
+def discover_keyword_contexts(
+    base_url: str = HOME,
+    *,
+    keywords: tuple[str, ...] = CONTEXT_KEYWORDS,
+    limit_per_keyword: int = 3,
+) -> list[dict]:
+    home = _fetch(base_url)
+    bundles = _bundle_urls(home, base_url)
+    rows: list[dict] = []
+    for bundle_url in bundles:
+        text = _fetch(bundle_url)
+        lowered = text.lower()
+        for keyword in keywords:
+            offset = 0
+            hits = 0
+            needle = keyword.lower()
+            while hits < limit_per_keyword:
+                pos = lowered.find(needle, offset)
+                if pos < 0:
+                    break
+                rows.append(
+                    {
+                        "keyword": keyword,
+                        "bundle": bundle_url,
+                        "position": pos,
+                        "snippet": _snippet(text, pos),
+                    }
+                )
+                hits += 1
+                offset = pos + len(needle)
+    return rows
+
+
 def summarize_capability_candidates(report: dict) -> list[dict]:
     routes = list(report.get("routes") or [])
     summary: list[dict] = []
@@ -121,6 +169,7 @@ def main() -> int:
     ap.add_argument("--base-url", default=HOME)
     ap.add_argument("--out", type=Path, default=ROOT / "data" / "frontend_api_discovery.json")
     ap.add_argument("--show-missing", action="store_true")
+    ap.add_argument("--keyword-context", action="store_true")
     args = ap.parse_args()
 
     report = discover_paths(args.base_url)
@@ -135,6 +184,9 @@ def main() -> int:
     if args.show_missing:
         for r in missing:
             print(f"{r['method']:6} {r['path']}")
+    if args.keyword_context:
+        for row in discover_keyword_contexts(args.base_url):
+            print(f"context:{row['keyword']} {row['snippet']}")
     print(args.out)
     return 0
 

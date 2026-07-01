@@ -50,3 +50,19 @@ def test_summarize_capability_candidates_groups_goal_routes():
 
     assert summary["work"]["count"] == 1
     assert summary["training"]["count"] == 1
+
+
+def test_keyword_contexts_surface_non_route_mentions(monkeypatch):
+    html = '<script src="/_expo/static/js/web/index.js" defer></script>'
+    bundle = "const permitPanel='Work permit unavailable';function createTrainingWar(){return null}"
+
+    def fake_fetch(url: str, *, timeout: int = 30) -> str:
+        return html if url == "https://diplomacia.com.tr/" else bundle
+
+    monkeypatch.setattr(disc, "_fetch", fake_fetch)
+
+    rows = disc.discover_keyword_contexts(keywords=("permit", "create"), limit_per_keyword=2)
+
+    assert {r["keyword"] for r in rows} == {"permit", "create"}
+    assert any("permitPanel" in r["snippet"] for r in rows)
+    assert any("createTrainingWar" in r["snippet"] for r in rows)

@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.16 ✅ Faz 4.5–4.43
+**Sürüm:** 4.28.17 ✅ Faz 4.5–4.44
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -86,6 +86,7 @@
 | 4.41 | Ana panel inbox sayacı | ✅ | Bekleyen token varsa `▶️ Başlat` butonu `▶️ N tokeni başlat` olur |
 | 4.42 | Inbox autopilot lock | ✅ | Telegram watcher ve worker aynı UID için aynı anda autopilot başlatamaz |
 | 4.43 | Token inbox callback autopilot | ✅ | Alt menü `Token inbox` artık import+onarım+mission sonucunu gösterir |
+| 4.44 | API keyword context keşfi | ✅ | Discovery route bulamayan permit/training create kelimeleri için bundle snippet basar |
 
 ---
 
@@ -120,9 +121,10 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 
 # API keşfi (non-mutating frontend bundle taraması):
 python3 scripts/discover_frontend_api.py --show-missing
+python3 scripts/discover_frontend_api.py --keyword-context
 ```
 
-**Filo paneli (v4.28.16):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var; pending inbox token varsa başlat butonu `▶️ N tokeni başlat` diye görünür. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Alt menüdeki `Token inbox` artık yalnız import değil, kaydedilmiş hedef politikayla import+onarım+mission autopilot sonucunu gösterir. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Training attack endpoint cooldown/429/HTTP hata döndürürse worker retry zamanı yazar, her tick spam denemez. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir. Telegram watcher ve worker aynı UID için dosya lock kullandığından aynı inbox batch'i için çift autopilot/mission enqueue azaltılır. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
+**Filo paneli (v4.28.17):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var; pending inbox token varsa başlat butonu `▶️ N tokeni başlat` diye görünür. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Alt menüdeki `Token inbox` artık yalnız import değil, kaydedilmiş hedef politikayla import+onarım+mission autopilot sonucunu gösterir. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Training attack endpoint cooldown/429/HTTP hata döndürürse worker retry zamanı yazar, her tick spam denemez. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir. Telegram watcher ve worker aynı UID için dosya lock kullandığından aynı inbox batch'i için çift autopilot/mission enqueue azaltılır. API discovery `--keyword-context` ile permit/employment/training create kelimelerinin statik bundle bağlamı mutating probe yapmadan incelenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
 
 ---
 
@@ -184,15 +186,19 @@ python3 scripts/discover_frontend_api.py --show-missing
 Operatör Diplomacia domaininde API keşfine izin verdi. Rutin akış:
 
 1. `python3 scripts/discover_frontend_api.py --show-missing`
-2. Safe GET route'ları contract/probe ile doğrula.
-3. State değiştiren route'ları önce `api_route_registry.py` + replay cassette'e ekle.
-4. Endpoint bulunmadan bot ekranında kabiliyeti "hazır" gösterme.
+2. `python3 scripts/discover_frontend_api.py --keyword-context`
+3. Safe GET route'ları contract/probe ile doğrula.
+4. State değiştiren route'ları önce `api_route_registry.py` + replay cassette'e ekle.
+5. Endpoint bulunmadan bot ekranında kabiliyeti "hazır" gösterme.
 
 2026-07-01 bundle teyidi: keşif çıktısı `capability:work` ve
 `capability:training` aday sayılarını yazdırır. Discovery `/employment` ve
 `/work-permits` prefix'lerini de tarar. Ayrı `work permit/employment` endpointi ve
 `training-wars create` endpointi canlı bundle'da görünmedi; `/fleet status`
 bunları bekleyen gelişmiş kabiliyet olarak gösterir.
+`--keyword-context` canlı statik bağlamında `trainingWarAPI` sadece `getMy` ve
+`attack` gösterdi; `create` framework kodu, `permit` ise yasal/askeri metin
+bağlamında geçti.
 
 ---
 
@@ -230,6 +236,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.17 | API discovery `--keyword-context` ile route dışı permit/training create bağlamı basar |
 | 2026-07-01 | 4.28.16 | Alt menü `Token inbox` callback'i import yerine tam autopilot sonucunu gösterir |
 | 2026-07-01 | 4.28.15 | Inbox watcher ve worker aynı UID için ortak lock kullanır |
 | 2026-07-01 | 4.28.14 | Ana filo paneli bekleyen inbox token sayısını Başlat butonunda gösterir |
