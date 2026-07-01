@@ -110,6 +110,37 @@ def format_next_steps_footer(telegram_user_id: int) -> str:
     return "<b>Sonraki adım:</b>\n" + "\n".join(f"→ {s}" for s in steps)
 
 
+def format_autopilot_target_line(telegram_user_id: int) -> str:
+    import html
+
+    try:
+        from .fleet_autopilot_policy import load_fleet_autopilot_policy
+        from .token_watch import list_inbox_import_candidates
+
+        policy = load_fleet_autopilot_policy(telegram_user_id)
+        pending = len(list_inbox_import_candidates(telegram_user_id))
+    except Exception:
+        return ""
+    opts: list[str] = []
+    if policy.vote:
+        opts.append("oy")
+    if policy.province_vote:
+        opts.append("eyalet oy")
+    if policy.independent_citizenship:
+        opts.append("bağımsız vatandaşlık")
+    if policy.citizenship_country_id:
+        opts.append("vatandaşlık")
+    if policy.visa_country_id:
+        opts.append("vize")
+    if policy.candidate_id:
+        opts.append(f"aday:{policy.candidate_id[:8]}")
+    detail = " · ".join([f"rol {policy.role}", *opts])
+    line = f"🎯 Başlat hedefi: <b>{html.escape(policy.province)}</b> · {html.escape(detail)}"
+    if pending:
+        line += f" · 📥 {pending} token bekliyor"
+    return line
+
+
 def format_factory_capacity_line(telegram_user_id: int, factory_id: str) -> str:
     import html
 
@@ -204,6 +235,8 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
 
     if metrics := format_fleet_metrics_line(telegram_user_id):
         head.append(metrics)
+    if target_line := format_autopilot_target_line(telegram_user_id):
+        head.append(target_line)
     head.append(format_fleet_capability_line())
     head.append("")
     if detailed:

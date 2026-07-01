@@ -9,6 +9,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 
 from .fleet_autopilot_policy import policy_from_region_args, save_fleet_autopilot_policy
 from .fleet_command import format_batch_html, format_next_steps_footer
+from .fleet_action_guard import reject_stale_fleet_action
 from .fleet_region_mission_ui import format_region_mission_html, parse_region_args
 from .fleet_status import format_post_aod_footer
 from .fleet_residence import (
@@ -23,7 +24,6 @@ from .fleet_ui_markup import fleet_nav_inline_markup
 
 log = logging.getLogger(__name__)
 _REGISTERED = False
-
 
 def _format_aod_html(steps: dict, telegram_user_id: int) -> str:
     from .account_config import get_config
@@ -226,7 +226,6 @@ def patch_fleet_region_callbacks() -> None:
 
     async def handle_callback_patched(update, context, data, default, query, uid):
         if data == "fleet:cmd:start":
-            from .fleet_action_guard import reject_stale_fleet_action
             from .fleet_mission_service import start_fleet_autopilot_for_uid
             from .fleet_region_mission_ui import format_autopilot_html
 
@@ -240,7 +239,6 @@ def patch_fleet_region_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:aod":
-            from .fleet_action_guard import reject_stale_fleet_action
             from .fleet_mission_service import enqueue_aod_missions_for_uid
 
             if await reject_stale_fleet_action(query, "AOD"): return
@@ -253,6 +251,7 @@ def patch_fleet_region_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:residence":
+            if await reject_stale_fleet_action(query, "İkamet"): return
             batch = set_fleet_residence(uid, DEFAULT_RESIDENCE_PROVINCE)
             if query and query.message:
                 await query.message.reply_text(
@@ -262,6 +261,7 @@ def patch_fleet_region_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:vote":
+            if await reject_stale_fleet_action(query, "Oy ver"): return
             batch = fleet_vote(uid)
             if query and query.message:
                 await query.message.reply_text(

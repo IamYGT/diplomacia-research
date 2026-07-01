@@ -5,7 +5,7 @@ import time
 from ..account_config import AccountConfig, get_config, update_config_field
 from ..mission_store import clear_mission, save_mission_runtime
 from ..war_ops import run_war_contribute
-from . import factory, training, travel
+from . import economy, factory, training, travel
 from .economy import default_api
 from .mission_region import (
     phase_citizenship_apply,
@@ -173,15 +173,20 @@ def _phase_farm(token: str, cfg: AccountConfig, rt: MissionRuntime, spec: PhaseS
     if travel.is_traveling(token, _api=_api):
         ts = travel.get_travel_status(token, _api=_api)
         return _advance_waiting(rt, "travel", int(ts.remaining_ms if ts else 60_000))
+    actions: list[dict] = []
+    craft = economy.ensure_pills(token, cfg, _api=_api)
+    if craft:
+        actions.append({"economy": craft})
     work = factory.run_work_cycle(token, cfg, _api=_api)
+    actions.append({"farm": work})
     if work.get("ok"):
         rt.farm_cycles_done += 1
         if rt.farm_cycles_done >= spec.farm_cycles:
             return MissionStepResult(
-                rt.account_name, rt.mission_id, spec.phase, PhaseStatus.DONE, ok=True, actions=[{"farm": work}]
+                rt.account_name, rt.mission_id, spec.phase, PhaseStatus.DONE, ok=True, actions=actions
             )
         return MissionStepResult(
-            rt.account_name, rt.mission_id, spec.phase, PhaseStatus.IN_PROGRESS, ok=True, actions=[{"farm": work}]
+            rt.account_name, rt.mission_id, spec.phase, PhaseStatus.IN_PROGRESS, ok=True, actions=actions
         )
     if work.get("cooldown_ms"):
         return _advance_waiting(rt, "work_cooldown", int(work["cooldown_ms"]))

@@ -9,22 +9,68 @@ from types import ModuleType
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+
+class _TgObj:
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+
+class _TgButton:
+    def __init__(self, text, callback_data=None, **kwargs):
+        self.text = text
+        self.callback_data = callback_data
+        self.kwargs = kwargs
+
+
+class _TgMarkup:
+    def __init__(self, inline_keyboard):
+        self.inline_keyboard = inline_keyboard
+
+
 if "telegram" not in sys.modules:
     telegram_stub = ModuleType("telegram")
-    telegram_stub.BotCommand = MagicMock
-    telegram_stub.InlineKeyboardButton = MagicMock
-    telegram_stub.InlineKeyboardMarkup = MagicMock
-    telegram_stub.KeyboardButton = MagicMock
-    telegram_stub.MenuButtonCommands = MagicMock
-    telegram_stub.ReplyKeyboardMarkup = MagicMock
     sys.modules["telegram"] = telegram_stub
+telegram_stub = sys.modules["telegram"]
+telegram_stub.Bot = getattr(telegram_stub, "Bot", _TgObj)
+telegram_stub.BotCommand = getattr(telegram_stub, "BotCommand", _TgObj)
+telegram_stub.InlineKeyboardButton = getattr(telegram_stub, "InlineKeyboardButton", _TgButton)
+telegram_stub.InlineKeyboardMarkup = getattr(telegram_stub, "InlineKeyboardMarkup", _TgMarkup)
+telegram_stub.KeyboardButton = getattr(telegram_stub, "KeyboardButton", _TgObj)
+telegram_stub.MenuButtonCommands = getattr(telegram_stub, "MenuButtonCommands", _TgObj)
+telegram_stub.ReplyKeyboardMarkup = getattr(telegram_stub, "ReplyKeyboardMarkup", _TgObj)
+telegram_stub.Update = getattr(telegram_stub, "Update", _TgObj)
+if "telegram.ext" not in sys.modules:
+    ext_stub = ModuleType("telegram.ext")
+    sys.modules["telegram.ext"] = ext_stub
+ext_stub = sys.modules["telegram.ext"]
+ext_stub.Application = getattr(ext_stub, "Application", MagicMock)
+ext_stub.CallbackQueryHandler = getattr(ext_stub, "CallbackQueryHandler", MagicMock)
+ext_stub.CommandHandler = getattr(ext_stub, "CommandHandler", MagicMock)
+ext_stub.ContextTypes = getattr(ext_stub, "ContextTypes", MagicMock)
+ext_stub.MessageHandler = getattr(ext_stub, "MessageHandler", MagicMock)
+ext_stub.filters = getattr(ext_stub, "filters", MagicMock)
+if "telegram.constants" not in sys.modules:
+    constants_stub = ModuleType("telegram.constants")
+    sys.modules["telegram.constants"] = constants_stub
+constants_stub = sys.modules["telegram.constants"]
+constants_stub.ChatAction = getattr(constants_stub, "ChatAction", MagicMock)
+if "telegram.error" not in sys.modules:
+    error_stub = ModuleType("telegram.error")
+    sys.modules["telegram.error"] = error_stub
+error_stub = sys.modules["telegram.error"]
+error_stub.BadRequest = getattr(error_stub, "BadRequest", Exception)
+error_stub.Conflict = getattr(error_stub, "Conflict", Exception)
 
 from diplomacy_bot.fleet_status import (
     compute_fleet_next_steps,
+    format_autopilot_target_line,
     format_factory_capacity_line,
     format_fleet_ops_status,
     format_next_steps_footer,
 )
+from diplomacy_bot.fleet_autopilot_policy import FleetAutopilotPolicy
 from diplomacy_bot.fleet_capabilities import format_fleet_capability_line
 from diplomacy_bot.telegram_ui import format_fleet_html
 from diplomacy_bot.store import Account
@@ -85,6 +131,18 @@ class FleetStatusTests(unittest.TestCase):
             footer = format_next_steps_footer(1)
         self.assertIn("Sonraki adım", footer)
 
+    def test_autopilot_target_line_shows_policy_and_pending_tokens(self):
+        policy = FleetAutopilotPolicy(province="Hürmüz", role="hybrid", vote=True)
+        with (
+            patch("diplomacy_bot.fleet_autopilot_policy.load_fleet_autopilot_policy", return_value=policy),
+            patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[("u99_01", "tok")]),
+        ):
+            line = format_autopilot_target_line(99)
+        self.assertIn("Başlat hedefi", line)
+        self.assertIn("Hürmüz", line)
+        self.assertIn("oy", line)
+        self.assertIn("1 token bekliyor", line)
+
     def test_status_includes_active_mission_phase(self):
         acc = _acc()
         cfg = MagicMock(role="hybrid", work_mode="fixed", preferred_factory_id="factory-uuid")
@@ -100,6 +158,7 @@ class FleetStatusTests(unittest.TestCase):
             patch("diplomacy_bot.fleet_status.format_factory_capacity_line", return_value=""),
             patch("diplomacy_bot.fleet_blocker_summary.format_fleet_blocker_summary", return_value="🧯 Darboğaz: 1 cooldown"),
             patch("diplomacy_bot.fleet_metrics.format_fleet_metrics_line", return_value=""),
+            patch("diplomacy_bot.fleet_status.format_autopilot_target_line", return_value="🎯 Başlat hedefi: Hürmüz"),
             patch("diplomacy_bot.fleet_status.format_next_steps_footer", return_value=""),
             patch("diplomacy_bot.mission_store.get_active_mission", return_value=rt),
         ):
@@ -107,6 +166,7 @@ class FleetStatusTests(unittest.TestCase):
         self.assertIn("travel_to_province:waiting", html)
         self.assertIn("Otonomi audit", html)
         self.assertIn("Darboğaz", html)
+        self.assertIn("Başlat hedefi", html)
         self.assertIn("Gelişmiş kabiliyet", html)
 
     def test_capability_line_surfaces_unknown_advanced_routes(self):

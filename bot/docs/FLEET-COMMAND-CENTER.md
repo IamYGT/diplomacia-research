@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.7 ✅ Faz 4.5–4.34
+**Sürüm:** 4.28.10 ✅ Faz 4.5–4.37
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -77,6 +77,9 @@
 | 4.32 | Eski işlem butonu koruması | ✅ | Eski `Başlat/AOD` result butonları yan etkili işlem üretmeden güncel panele yönlendirir |
 | 4.33 | Fleetstart command UAT | ✅ | `/fleetstart Hürmüz vote` handler policy kaydı + cevap üretimi testli |
 | 4.34 | Eski alt-menü işlem koruması | ✅ | Eski `Fabrika/Hürmüz/Inbox/Hazırla/Onar` butonları işlem çalıştırmadan güncel panele yönlendirir |
+| 4.35 | Başlat hedefi görünürlüğü | ✅ | `/fleet status` kayıtlı autopilot hedefini ve bekleyen inbox token sayısını gösterir |
+| 4.36 | Eski bölge işlem koruması | ✅ | Eski `İkamet/Oy ver` butonları işlem çalıştırmadan güncel panele yönlendirir |
+| 4.37 | Mission farm hap hazırlığı | ✅ | Region/AOD farm fazı work öncesi elmas→hap hazırlığını normal tick ile eşitler |
 
 ---
 
@@ -113,7 +116,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.28.7):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result ve alt-menü işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları ve worker darboğaz özetini sayar. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
+**Filo paneli (v4.28.10):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
 
 ---
 
@@ -150,6 +153,7 @@ python3 scripts/discover_frontend_api.py --show-missing
       `military-ops join/leave`, `provinces/election/vote` registry'ye alındı
 - [x] 20 worker dry-run: main skip, repair, audit, AOD/region enqueue, training tick
 - [x] Token refresh kaynak yoksa 30 dk backoff; Telegram paketi sistem+venv import OK
+- [x] Region/AOD mission farm fazı work öncesi elmas→hap hazırlığı çalıştırır
 - [x] `fleet_ui_markup` + `fleet_callbacks` 350 satır altında
 - [x] Targeted tests: fleet missions, region UI, worker training, orchestrator, arch_check
 
@@ -219,6 +223,9 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.10 | Region/AOD mission farm fazı normal autofarm gibi work öncesi hap hazırlığı yapar |
+| 2026-07-01 | 4.28.9 | Eski `İkamet/Oy ver` callback'leri stale ise işlem çalıştırmadan güncel nav mesajı açar |
+| 2026-07-01 | 4.28.8 | `/fleet status` kayıtlı autopilot hedefini ve bekleyen inbox token sayısını gösterir |
 | 2026-07-01 | 4.28.7 | Eski alt-menü yan etkili filo komutları stale ise işlem çalıştırmadan güncel nav mesajı açar |
 | 2026-07-01 | 4.28.6 | `/fleetstart Hürmüz vote` command handler policy kaydı ve Telegram cevap üretimi testli |
 | 2026-07-01 | 4.28.5 | Eski `Başlat/AOD` result butonları stale ise işlem çalıştırmadan güncel nav mesajı açar |
