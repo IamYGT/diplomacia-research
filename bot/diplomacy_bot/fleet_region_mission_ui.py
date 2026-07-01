@@ -37,6 +37,24 @@ def _empty_autopilot_hint(result) -> str:
     )
 
 
+def _format_inbox_issue_lines(result, *, limit: int = 3) -> list[str]:
+    import html
+
+    lines: list[str] = []
+    inbox = getattr(result, "inbox", None)
+    if not inbox or not getattr(inbox, "results", None):
+        return lines
+    for row in [r for r in inbox.results if not getattr(r, "ok", False)][:limit]:
+        message = str(getattr(row, "message", "") or "")
+        if "inbox boş" in message.lower():
+            continue
+        name = str(getattr(row, "account_name", "") or "-")
+        lines.append(f"❌ <code>{html.escape(name)}</code> — {html.escape(message)}")
+    if lines and any("slot" in line.lower() or "zaten" in line.lower() for line in lines):
+        lines.append("↳ Dosya adını boş bir slota taşı veya hatalı token dosyasını kaldır.")
+    return lines
+
+
 def parse_region_args(args: list[str]) -> tuple[str, dict]:
     province_parts: list[str] = []
     opts = {
@@ -135,6 +153,9 @@ def format_autopilot_html(result) -> str:
     if empty_hint:
         lines.append("\n<code>/fleet status</code> ile hesaplar bağlanınca izle.")
         return "\n".join(lines)
+    if inbox_issues := _format_inbox_issue_lines(result):
+        lines.append("📥 Inbox uyarısı:")
+        lines.extend(inbox_issues)
     for row in result.mission.batch.results[:20]:
         icon = "✅" if row.ok else "❌"
         lines.append(f"{icon} <code>{html.escape(row.account_name)}</code> — {html.escape(row.message)}")

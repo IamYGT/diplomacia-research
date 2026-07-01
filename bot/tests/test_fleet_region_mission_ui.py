@@ -94,6 +94,37 @@ class FleetRegionMissionUiTests(unittest.TestCase):
         self.assertIn("▶️ Başlat", text)
         self.assertNotIn("Worker artık plan fazlarını", text)
 
+    def test_format_autopilot_html_shows_inbox_terminal_action(self):
+        result = SimpleNamespace(
+            telegram_user_id=42,
+            province="Hürmüz",
+            inbox=SimpleNamespace(
+                ok=0,
+                total=1,
+                results=[
+                    SimpleNamespace(
+                        ok=False,
+                        account_name="u42_02",
+                        message="Bu Diplomacia hesabı zaten u42_01 slotuna bağlı",
+                    )
+                ],
+            ),
+            repair=SimpleNamespace(ok=1, total=1),
+            mission=SimpleNamespace(
+                fleet_id="region-dup",
+                phases=["farm_tick"],
+                warnings=[],
+                batch=SimpleNamespace(ok=1, total=1, results=[]),
+            ),
+        )
+
+        text = format_autopilot_html(result)
+
+        self.assertIn("Inbox uyarısı", text)
+        self.assertIn("u42_02", text)
+        self.assertIn("zaten u42_01", text)
+        self.assertIn("boş bir slota", text)
+
 
 if __name__ == "__main__":
     unittest.main()
