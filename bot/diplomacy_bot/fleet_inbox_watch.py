@@ -16,24 +16,28 @@ log = logging.getLogger(__name__)
 def run_auto_inbox_setup_for_uid(telegram_user_id: int):
     """Import + autopilot — kalıcı state ile yeni aday varsa çalıştır."""
     from .fleet_mission_service import start_fleet_autopilot_for_uid
+    from .inbox_setup_lock import acquire_inbox_setup_lock
     from .token_watch import list_inbox_import_candidates
 
-    candidates = list_inbox_import_candidates(telegram_user_id)
-    fresh = [
-        (n, t)
-        for n, t in candidates
-        if not is_inbox_candidate_processed(telegram_user_id, n, t)
-    ]
-    if not fresh:
-        return None
+    with acquire_inbox_setup_lock(telegram_user_id) as locked:
+        if not locked:
+            return None
+        candidates = list_inbox_import_candidates(telegram_user_id)
+        fresh = [
+            (n, t)
+            for n, t in candidates
+            if not is_inbox_candidate_processed(telegram_user_id, n, t)
+        ]
+        if not fresh:
+            return None
 
-    result = start_fleet_autopilot_for_uid(telegram_user_id)
-    from .fleet_inbox_import import successful_inbox_processed_keys
+        result = start_fleet_autopilot_for_uid(telegram_user_id)
+        from .fleet_inbox_import import successful_inbox_processed_keys
 
-    keys = successful_inbox_processed_keys(telegram_user_id, result.inbox, fresh)
-    if keys:
-        mark_inbox_processed(keys)
-    return result
+        keys = successful_inbox_processed_keys(telegram_user_id, result.inbox, fresh)
+        if keys:
+            mark_inbox_processed(keys)
+        return result
 
 
 async def fleet_inbox_watch_job(context: ContextTypes.DEFAULT_TYPE) -> None:

@@ -4,11 +4,17 @@ from __future__ import annotations
 
 import sys
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+
+@contextmanager
+def _open_lock(uid):
+    yield True
 
 
 class WorkerInboxSetupTests(unittest.TestCase):
@@ -28,6 +34,8 @@ class WorkerInboxSetupTests(unittest.TestCase):
         processed.is_inbox_candidate_processed = MagicMock(return_value=False)
         processed.candidate_processed_key = candidate_processed_key
         processed.mark_inbox_processed = MagicMock()
+        lock_mod = ModuleType("diplomacy_bot.inbox_setup_lock")
+        lock_mod.acquire_inbox_setup_lock = _open_lock
         mission_service = ModuleType("diplomacy_bot.fleet_mission_service")
         mission_service.start_fleet_autopilot_for_uid = MagicMock(return_value=result)
         with patch.dict(
@@ -35,6 +43,7 @@ class WorkerInboxSetupTests(unittest.TestCase):
             {
                 "diplomacy_bot.token_watch": token_watch,
                 "diplomacy_bot.inbox_processed_state": processed,
+                "diplomacy_bot.inbox_setup_lock": lock_mod,
                 "diplomacy_bot.fleet_mission_service": mission_service,
             },
         ):
@@ -61,6 +70,8 @@ class WorkerInboxSetupTests(unittest.TestCase):
         processed.is_inbox_candidate_processed = MagicMock(return_value=False)
         processed.candidate_processed_key = candidate_processed_key
         processed.mark_inbox_processed = MagicMock()
+        lock_mod = ModuleType("diplomacy_bot.inbox_setup_lock")
+        lock_mod.acquire_inbox_setup_lock = _open_lock
         mission_service = ModuleType("diplomacy_bot.fleet_mission_service")
         mission_service.start_fleet_autopilot_for_uid = MagicMock(return_value=result)
         with patch.dict(
@@ -68,6 +79,7 @@ class WorkerInboxSetupTests(unittest.TestCase):
             {
                 "diplomacy_bot.token_watch": token_watch,
                 "diplomacy_bot.inbox_processed_state": processed,
+                "diplomacy_bot.inbox_setup_lock": lock_mod,
                 "diplomacy_bot.fleet_mission_service": mission_service,
             },
         ):
@@ -91,6 +103,8 @@ class WorkerInboxSetupTests(unittest.TestCase):
         processed.is_inbox_candidate_processed = MagicMock(side_effect=lambda uid, name, tok: tok == "old-token")
         processed.candidate_processed_key = candidate_processed_key
         processed.mark_inbox_processed = MagicMock()
+        lock_mod = ModuleType("diplomacy_bot.inbox_setup_lock")
+        lock_mod.acquire_inbox_setup_lock = _open_lock
         mission_service = ModuleType("diplomacy_bot.fleet_mission_service")
         mission_service.start_fleet_autopilot_for_uid = MagicMock(return_value=result)
         with patch.dict(
@@ -98,6 +112,7 @@ class WorkerInboxSetupTests(unittest.TestCase):
             {
                 "diplomacy_bot.token_watch": token_watch,
                 "diplomacy_bot.inbox_processed_state": processed,
+                "diplomacy_bot.inbox_setup_lock": lock_mod,
                 "diplomacy_bot.fleet_mission_service": mission_service,
             },
         ):
@@ -105,6 +120,34 @@ class WorkerInboxSetupTests(unittest.TestCase):
 
         self.assertEqual((uids, imported), (1, 1))
         mission_service.start_fleet_autopilot_for_uid.assert_called_once_with(42)
+
+    def test_worker_inbox_setup_skips_when_uid_lock_busy(self):
+        from diplomacy_bot.jobs.worker_inbox_setup import run_worker_inbox_setup_once
+
+        @contextmanager
+        def busy_lock(uid):
+            yield False
+
+        token_watch = ModuleType("diplomacy_bot.token_watch")
+        token_watch.list_inbox_operator_uids = MagicMock(return_value=[42])
+        token_watch.list_inbox_import_candidates = MagicMock(return_value=[("w1", "tok")])
+        lock_mod = ModuleType("diplomacy_bot.inbox_setup_lock")
+        lock_mod.acquire_inbox_setup_lock = busy_lock
+        mission_service = ModuleType("diplomacy_bot.fleet_mission_service")
+        mission_service.start_fleet_autopilot_for_uid = MagicMock()
+        with patch.dict(
+            sys.modules,
+            {
+                "diplomacy_bot.token_watch": token_watch,
+                "diplomacy_bot.inbox_setup_lock": lock_mod,
+                "diplomacy_bot.fleet_mission_service": mission_service,
+            },
+        ):
+            uids, imported = run_worker_inbox_setup_once()
+
+        self.assertEqual((uids, imported), (0, 0))
+        token_watch.list_inbox_import_candidates.assert_not_called()
+        mission_service.start_fleet_autopilot_for_uid.assert_not_called()
 
     def test_worker_main_runs_inbox_when_enabled_before_training(self):
         from diplomacy_bot.jobs import worker_main

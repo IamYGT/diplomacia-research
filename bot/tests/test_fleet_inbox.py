@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -41,6 +42,21 @@ class FleetInboxImportTests(unittest.TestCase):
     def test_auto_setup_skips_without_fresh(self):
         with patch("diplomacy_bot.token_watch.list_inbox_import_candidates", return_value=[]):
             self.assertIsNone(run_auto_inbox_setup_for_uid(99))
+
+    def test_auto_setup_skips_when_uid_lock_busy(self):
+        @contextmanager
+        def busy_lock(uid):
+            yield False
+
+        with (
+            patch("diplomacy_bot.inbox_setup_lock.acquire_inbox_setup_lock", busy_lock),
+            patch("diplomacy_bot.token_watch.list_inbox_import_candidates") as candidates,
+            patch("diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid") as start,
+        ):
+            self.assertIsNone(run_auto_inbox_setup_for_uid(42))
+
+        candidates.assert_not_called()
+        start.assert_not_called()
 
     def test_auto_setup_runs_autopilot_for_fresh_candidate(self):
         result = MagicMock()
