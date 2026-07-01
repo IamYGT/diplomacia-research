@@ -262,6 +262,7 @@ class FleetMissionTests(unittest.TestCase):
         self.assertEqual(result.inbox, inbox)
         self.assertEqual(result.repair, repair)
         self.assertEqual(result.mission, mission)
+        self.assertEqual(result.telegram_user_id, 42)
         import_inbox.assert_called_once_with(42)
         repair_fn.assert_called_once_with(42, role="hybrid")
         self.assertTrue(enqueue.call_args.kwargs["vote"])

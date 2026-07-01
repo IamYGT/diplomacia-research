@@ -18,6 +18,7 @@ class FleetMissionEnqueueResult:
 
 @dataclass
 class FleetAutopilotResult:
+    telegram_user_id: int
     province: str
     inbox: FleetBatchResult
     repair: FleetBatchResult
@@ -53,7 +54,13 @@ def start_fleet_autopilot_for_uid(
         province_vote=province_vote,
         candidate_id=candidate_id,
     )
-    return FleetAutopilotResult(province=province, inbox=inbox, repair=repair, mission=mission)
+    return FleetAutopilotResult(
+        telegram_user_id=telegram_user_id,
+        province=province,
+        inbox=inbox,
+        repair=repair,
+        mission=mission,
+    )
 
 
 def enqueue_aod_missions_for_uid(

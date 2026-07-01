@@ -22,6 +22,21 @@ def format_phase_plan(phases: list[str] | tuple[str, ...]) -> str:
     return " → ".join(labels)
 
 
+def _empty_autopilot_hint(result) -> str:
+    if getattr(result.repair, "total", 0) or getattr(result.mission.batch, "total", 0):
+        return ""
+    inbox = getattr(result, "inbox", None)
+    if not inbox or getattr(inbox, "ok", 0):
+        return ""
+    uid = int(getattr(result, "telegram_user_id", 0) or 0)
+    name = f"u{uid}_01.jwt" if uid else "u<telegram_id>_01.jwt"
+    return (
+        "🟡 Henüz worker yok.\n"
+        f"Token dosyasını <code>data/token_inbox/{name}</code> olarak bırak "
+        "ve tekrar <b>▶️ Başlat</b>."
+    )
+
+
 def parse_region_args(args: list[str]) -> tuple[str, dict]:
     province_parts: list[str] = []
     opts = {
@@ -110,6 +125,12 @@ def format_autopilot_html(result) -> str:
     ]
     if plan := format_phase_plan(getattr(result.mission, "phases", [])):
         lines.append(f"🧩 Plan: {html.escape(plan)}\n")
+    empty_hint = _empty_autopilot_hint(result)
+    if empty_hint:
+        lines.append(empty_hint)
+    if empty_hint:
+        lines.append("\n<code>/fleet status</code> ile hesaplar bağlanınca izle.")
+        return "\n".join(lines)
     for row in result.mission.batch.results[:20]:
         icon = "✅" if row.ok else "❌"
         lines.append(f"{icon} <code>{html.escape(row.account_name)}</code> — {html.escape(row.message)}")

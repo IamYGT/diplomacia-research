@@ -68,6 +68,30 @@ class FleetRegionMissionUiTests(unittest.TestCase):
         plan = format_phase_plan(["travel_to_province", "residence_set", "farm_tick"])
         self.assertEqual(plan, "seyahat → ikamet → farm")
 
+    def test_format_autopilot_html_guides_empty_fleet(self):
+        result = SimpleNamespace(
+            telegram_user_id=42,
+            province="Hürmüz",
+            inbox=SimpleNamespace(
+                ok=0,
+                total=1,
+                results=[SimpleNamespace(ok=False, message="inbox boş")],
+            ),
+            repair=SimpleNamespace(ok=0, total=0),
+            mission=SimpleNamespace(
+                fleet_id="region-empty",
+                phases=[],
+                batch=SimpleNamespace(ok=0, total=0, results=[]),
+            ),
+        )
+
+        text = format_autopilot_html(result)
+
+        self.assertIn("Henüz worker yok", text)
+        self.assertIn("data/token_inbox/u42_01.jwt", text)
+        self.assertIn("▶️ Başlat", text)
+        self.assertNotIn("Worker artık plan fazlarını", text)
+
 
 if __name__ == "__main__":
     unittest.main()
