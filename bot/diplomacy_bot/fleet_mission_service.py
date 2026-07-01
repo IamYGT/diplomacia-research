@@ -14,6 +14,7 @@ class FleetMissionEnqueueResult:
     fleet_id: str
     batch: FleetBatchResult = field(default_factory=FleetBatchResult)
     phases: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -126,7 +127,9 @@ def enqueue_region_missions_for_uid(
 
     fleet_id = f"region-{uuid.uuid4().hex[:8]}"
     result = FleetMissionEnqueueResult(fleet_id=fleet_id)
-    fid, auto_prov, _err = resolve_operator_factory(telegram_user_id)
+    fid, auto_prov, err = resolve_operator_factory(telegram_user_id)
+    if err or not fid:
+        result.warnings.append(err or "Ana fabrika UUID yok — /fleetfactory main")
     target = FleetMissionTarget(
         role=role,
         factory_id=fid or "",

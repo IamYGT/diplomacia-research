@@ -101,6 +101,8 @@ def format_region_mission_html(result, province: str) -> str:
     ]
     if plan := format_phase_plan(getattr(result, "phases", [])):
         lines.append(f"🧩 Plan: {html.escape(plan)}\n")
+    for warning in getattr(result, "warnings", [])[:3]:
+        lines.append(f"⚠️ {html.escape(str(warning))}")
     for r in result.batch.results[:20]:
         icon = "✅" if r.ok else "❌"
         lines.append(f"{icon} <code>{html.escape(r.account_name)}</code> — {html.escape(r.message)}")
@@ -125,6 +127,8 @@ def format_autopilot_html(result) -> str:
     ]
     if plan := format_phase_plan(getattr(result.mission, "phases", [])):
         lines.append(f"🧩 Plan: {html.escape(plan)}\n")
+    for warning in getattr(result.mission, "warnings", [])[:3]:
+        lines.append(f"⚠️ {html.escape(str(warning))}")
     empty_hint = _empty_autopilot_hint(result)
     if empty_hint:
         lines.append(empty_hint)

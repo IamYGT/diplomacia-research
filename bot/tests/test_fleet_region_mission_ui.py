@@ -52,6 +52,7 @@ class FleetRegionMissionUiTests(unittest.TestCase):
             mission=SimpleNamespace(
                 fleet_id="region-1",
                 phases=["assign_config", "travel_to_province", "residence_set", "election_vote", "farm_tick"],
+                warnings=["Ana hesapta fabrika UUID bulunamadı"],
                 batch=SimpleNamespace(ok=20, total=20, results=[]),
             ),
         )
@@ -63,6 +64,7 @@ class FleetRegionMissionUiTests(unittest.TestCase):
         self.assertIn("20/20", text)
         self.assertIn("region-1", text)
         self.assertIn("hazırla → seyahat → ikamet → oy → farm", text)
+        self.assertIn("⚠️ Ana hesapta fabrika UUID", text)
 
     def test_format_phase_plan_uses_short_labels(self):
         plan = format_phase_plan(["travel_to_province", "residence_set", "farm_tick"])
