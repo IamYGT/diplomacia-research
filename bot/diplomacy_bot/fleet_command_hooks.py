@@ -222,6 +222,12 @@ def install_fleet_command_hooks() -> None:
 
     @user_required
     async def cmd_fleet_patched(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        if context.args and context.args[0].lower() in ("start", "baslat", "başlat", "go"):
+            from .fleet_region_hooks import cmd_fleetstart
+
+            context.args = context.args[1:]
+            await cmd_fleetstart(update, context)
+            return
         if context.args and context.args[0].lower() in ("repair", "onar", "fix"):
             await cmd_fleetrepair(update, context)
             return

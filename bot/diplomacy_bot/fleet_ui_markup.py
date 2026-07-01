@@ -43,8 +43,14 @@ def patch_fleet_ui_buttons() -> None:
         rows.insert(
             0,
             [
+                InlineKeyboardButton("▶️ Başlat", callback_data="fleet:cmd:start"),
                 InlineKeyboardButton("🇦🇴 AOD kurulum", callback_data="fleet:cmd:aod"),
                 InlineKeyboardButton("📋 Durum", callback_data="fleet:cmd:ops"),
+            ],
+        )
+        rows.insert(
+            1,
+            [
                 InlineKeyboardButton("⚙️ İşlemler", callback_data="fleet:menu:more"),
             ],
         )

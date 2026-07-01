@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.26.4 ✅ Faz 4.5–4.11
+**Sürüm:** 4.26.5 ✅ Faz 4.5–4.12
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -54,6 +54,7 @@
 | 4.9 | Token refresh backoff + Telegram deps | ✅ | `token_refresh_service.py`, `requirements.txt` kurulum teyidi |
 | 4.10 | Kolay/program callback fresh panel | ✅ | `telegram_navigation.py`, `telegram_easy.py`, `telegram_mission.py` |
 | 4.11 | Training skip görünürlüğü | ✅ | `training_skip` action_log + `/fleet status` 24s bekleme metriği |
+| 4.12 | Tek tuş filo autopilot | ✅ | `/fleetstart`, `/fleet start`, panel `▶️ Başlat` |
 
 ---
 
@@ -66,6 +67,7 @@ export MAX_ACCOUNTS_PER_USER=20
 # 2. Ana hesap fabrika UUID (coach veya fabrika panelinden)
 # 3. Alt hesaplar: token → data/token_inbox/u{uid}_01.jwt …
 # 4. Telegram:
+/fleetstart Hürmüz vote     # önerilen tek akış: onar + Hürmüz mission + oy opsiyonu
 /fleetbootstrap hybrid      # işçi hesaplara rol + oto açık; ana hesabı atlar
 /fleetinbox                 # token_inbox'tan toplu bağla
 /fleetfactory main          # ana fabrikaya bağla
@@ -85,7 +87,7 @@ export MAX_ACCOUNTS_PER_USER=20
 export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik import+AOD+Telegram özeti
 ```
 
-**Filo paneli (v4.20.1):** üst satır `🇦🇴 AOD | 📋 Durum | ⚙️ İşlemler` → alt menüde fabrika, seyahat, bootstrap, inbox, ikamet, oy.
+**Filo paneli (v4.26.5):** üst satır `▶️ Başlat | 🇦🇴 AOD | 📋 Durum` → alt menüde fabrika, seyahat, bootstrap, inbox, ikamet, oy.
 
 ---
 
@@ -102,6 +104,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik import+AOD+Telegram ö
 | U7 | `worker_training` | cooldown bitince free attack denemesi | ✅ unit, 🔲 canlı |
 | U8 | `/fleetregion Hürmüz vote` | kalıcı region mission kuyruğu | ✅ unit, 🔲 canlı |
 | U9 | 1 ana + 20 worker dry-run | repair + audit + AOD/region + training | ✅ `test_fleet_goal_dryrun.py` |
+| U10 | `/fleetstart Hürmüz vote` | repair + kalıcı region mission tek cevap | ✅ unit, 🔲 canlı |
 
 ---
 
@@ -172,6 +175,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.26.5 | `/fleetstart` autopilot ve panel `▶️ Başlat` |
 | 2026-07-01 | 4.26.4 | Training skip action_log + fleet metrics bekleme sayacı |
 | 2026-07-01 | 4.26.3 | Kolay/program/onboarding eski callback'lerinde görünür yeni panel fallback |
 | 2026-07-01 | 4.26.2 | Telegram paketleri kuruldu, token refresh backoff, token_extract domain helper |

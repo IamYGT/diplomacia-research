@@ -4,10 +4,11 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from diplomacy_bot.fleet_region_mission_ui import parse_region_args
+from diplomacy_bot.fleet_region_mission_ui import format_autopilot_html, parse_region_args
 
 
 class FleetRegionMissionUiTests(unittest.TestCase):
@@ -27,6 +28,22 @@ class FleetRegionMissionUiTests(unittest.TestCase):
         self.assertEqual(opts["candidate_id"], "c1")
         self.assertEqual(opts["citizenship_country_id"], "country-1")
         self.assertEqual(opts["visa_country_id"], "country-2")
+
+    def test_format_autopilot_html_shows_repair_and_mission(self):
+        result = SimpleNamespace(
+            province="Hürmüz",
+            repair=SimpleNamespace(ok=20, total=20),
+            mission=SimpleNamespace(
+                fleet_id="region-1",
+                batch=SimpleNamespace(ok=20, total=20, results=[]),
+            ),
+        )
+
+        text = format_autopilot_html(result)
+
+        self.assertIn("Filo autopilot", text)
+        self.assertIn("20/20", text)
+        self.assertIn("region-1", text)
 
 
 if __name__ == "__main__":

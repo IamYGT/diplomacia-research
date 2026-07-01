@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot.fleet_command import FleetBatchResult, FleetOpResult
 from diplomacy_bot.fleet_help import format_fleet_help_html
@@ -56,6 +59,7 @@ class InboxProcessedStateTests(unittest.TestCase):
 class FleetHelpTests(unittest.TestCase):
     def test_fleet_help_has_troubleshooting(self):
         html = format_fleet_help_html()
+        self.assertIn("/fleetstart Hürmüz vote", html)
         self.assertIn("/loginkaydet", html)
         self.assertIn("Sorun giderme", html)
         self.assertIn("FLEET_INBOX_AUTO_SETUP", html)

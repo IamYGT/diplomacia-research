@@ -176,6 +176,26 @@ class FleetMissionTests(unittest.TestCase):
         self.assertIn("citizenship_apply", [p["phase"] for p in phases])
         self.assertIn("election_vote", [p["phase"] for p in phases])
 
+    def test_start_fleet_autopilot_repairs_and_queues_region(self):
+        from diplomacy_bot.fleet_mission_service import start_fleet_autopilot_for_uid
+
+        repair = SimpleNamespace(ok=20, total=20)
+        mission = SimpleNamespace(fleet_id="region-1", batch=SimpleNamespace(ok=20, total=20, results=[]))
+        with (
+            patch("diplomacy_bot.fleet_autonomy_repair.repair_fleet_autonomy_for_uid", return_value=repair) as repair_fn,
+            patch(
+                "diplomacy_bot.fleet_mission_service.enqueue_region_missions_for_uid",
+                return_value=mission,
+            ) as enqueue,
+        ):
+            result = start_fleet_autopilot_for_uid(42, province="Hürmüz", vote=True)
+
+        self.assertEqual(result.repair, repair)
+        self.assertEqual(result.mission, mission)
+        repair_fn.assert_called_once_with(42, role="hybrid")
+        self.assertTrue(enqueue.call_args.kwargs["vote"])
+        self.assertEqual(enqueue.call_args.kwargs["province"], "Hürmüz")
+
 
 if __name__ == "__main__":
     unittest.main()

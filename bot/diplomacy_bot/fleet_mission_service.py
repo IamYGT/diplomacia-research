@@ -15,6 +15,39 @@ class FleetMissionEnqueueResult:
     batch: FleetBatchResult = field(default_factory=FleetBatchResult)
 
 
+@dataclass
+class FleetAutopilotResult:
+    province: str
+    repair: FleetBatchResult
+    mission: FleetMissionEnqueueResult
+
+
+def start_fleet_autopilot_for_uid(
+    telegram_user_id: int,
+    *,
+    province: str = "Hürmüz",
+    role: str = "hybrid",
+    citizenship_country_id: str = "",
+    visa_country_id: str = "",
+    vote: bool = False,
+    candidate_id: str = "",
+) -> FleetAutopilotResult:
+    """Tek operatör aksiyonu: otonomi ayarlarını onar ve kalıcı bölge mission'ı yaz."""
+    from .fleet_autonomy_repair import repair_fleet_autonomy_for_uid
+
+    repair = repair_fleet_autonomy_for_uid(telegram_user_id, role=role)
+    mission = enqueue_region_missions_for_uid(
+        telegram_user_id,
+        province=province,
+        role=role,
+        citizenship_country_id=citizenship_country_id,
+        visa_country_id=visa_country_id,
+        vote=vote,
+        candidate_id=candidate_id,
+    )
+    return FleetAutopilotResult(province=province, repair=repair, mission=mission)
+
+
 def enqueue_aod_missions_for_uid(
     telegram_user_id: int,
     *,

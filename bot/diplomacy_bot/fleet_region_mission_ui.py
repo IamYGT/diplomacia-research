@@ -65,3 +65,20 @@ def format_region_mission_html(result, province: str) -> str:
     lines.append("\n<i>Worker seyahat, ikamet, izin/oy ve farm adımlarını sürdürecek.</i>")
     lines.append("\n<code>/fleet status</code> ile mission fazlarını izle.")
     return "\n".join(lines)
+
+
+def format_autopilot_html(result) -> str:
+    import html
+
+    lines = [
+        f"<b>▶️ Filo autopilot</b> → <b>{html.escape(result.province)}</b>",
+        f"🛠 Otonomi: {result.repair.ok}/{result.repair.total} hesap hazır",
+        f"🧭 Mission: {result.mission.batch.ok}/{result.mission.batch.total} hesap kuyruğa alındı",
+        f"<code>{html.escape(result.mission.fleet_id)}</code>\n",
+    ]
+    for row in result.mission.batch.results[:20]:
+        icon = "✅" if row.ok else "❌"
+        lines.append(f"{icon} <code>{html.escape(row.account_name)}</code> — {html.escape(row.message)}")
+    lines.append("\n<i>Worker artık seyahat, ikamet, farm, stat, hap ve antrenmanı sürdürecek.</i>")
+    lines.append("\n<code>/fleet status</code> ile izle · <code>/fleet audit</code> ile eksik kontrol et.")
+    return "\n".join(lines)

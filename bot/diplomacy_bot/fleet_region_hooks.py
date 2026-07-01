@@ -160,6 +160,21 @@ async def cmd_fleetregion(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await msg.reply_text(format_region_mission_html(result, province), parse_mode="HTML")
 
 
+@user_required
+async def cmd_fleetstart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    from . import telegram_app as ta
+    from .fleet_mission_service import start_fleet_autopilot_for_uid
+    from .fleet_region_mission_ui import format_autopilot_html, parse_region_args
+
+    uid = ta._uid(update)
+    msg = update.effective_message
+    if not msg:
+        return
+    province, opts = parse_region_args(list(context.args or []))
+    result = start_fleet_autopilot_for_uid(uid, province=province, **opts)
+    await msg.reply_text(format_autopilot_html(result), parse_mode="HTML")
+
+
 def register_fleet_region_handlers(application: Application) -> None:
     global _REGISTERED
     if _REGISTERED:
@@ -171,6 +186,7 @@ def register_fleet_region_handlers(application: Application) -> None:
         ("fleetvisa", cmd_fleetvisa),
         ("fleetaod", cmd_fleetaod),
         ("fleetregion", cmd_fleetregion),
+        ("fleetstart", cmd_fleetstart),
     ):
         application.add_handler(CommandHandler(name, handler))
     _REGISTERED = True
@@ -186,6 +202,14 @@ def patch_fleet_region_callbacks() -> None:
     _orig = cb.handle_callback
 
     async def handle_callback_patched(update, context, data, default, query, uid):
+        if data == "fleet:cmd:start":
+            from .fleet_mission_service import start_fleet_autopilot_for_uid
+            from .fleet_region_mission_ui import format_autopilot_html
+
+            result = start_fleet_autopilot_for_uid(uid)
+            if query and query.message:
+                await query.message.reply_text(format_autopilot_html(result), parse_mode="HTML")
+            return
         if data == "fleet:cmd:aod":
             from .fleet_mission_service import enqueue_aod_missions_for_uid
 

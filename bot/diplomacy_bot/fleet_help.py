@@ -12,6 +12,7 @@ def format_fleet_help_html() -> str:
         f"<b>📋 Filo komuta rehberi</b> {get_version_label()}\n\n"
         f"<b>Hızlı başlangıç ({limit} hesap)</b>\n"
         "<code>/fleetinbox</code> — token_inbox'tan toplu bağla\n"
+        "<code>/fleetstart Hürmüz vote</code> — onar + kalıcı Hürmüz mission\n"
         "<code>/fleetaod</code> — bootstrap + fabrika + seyahat + ikamet\n"
         "<code>/fleetregion Hürmüz vote</code> — kalıcı bölge mission\n"
         "<code>/fleet audit</code> — otomasyon eksiklerini gör\n"
@@ -22,7 +23,7 @@ def format_fleet_help_html() -> str:
         "⚠️ JWT'yi sohbete yapıştırma — dosya kullan:\n"
         "<code>data/token_inbox/u{telegram_id}_01.jwt</code>\n\n"
         "<b>Panel</b>\n"
-        "🇦🇴 AOD · 📋 Durum · ⚙️ İşlemler (alt menü + ◀️ geri)\n\n"
+        "▶️ Başlat · 🇦🇴 AOD · 📋 Durum · ⚙️ İşlemler (alt menü + ◀️ geri)\n\n"
         "<b>Sorun giderme</b>\n"
         "• İkamet 400 → <code>/fleetresidence Hürmüz</code> tekrar\n"
         "• Fabrika fail → ana hesapta fabrika kur, <code>/fleetfactory main</code>\n"
@@ -36,4 +37,4 @@ def format_fleet_help_html() -> str:
 
 
 def format_fleet_coach_hint() -> str:
-    return "/fleethelp — token sohbete değil inbox · /fleetaod"
+    return "/fleethelp — token sohbete değil inbox · /fleetstart Hürmüz"

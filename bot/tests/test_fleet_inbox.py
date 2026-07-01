@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot.fleet_inbox_import import import_inbox_for_uid
 from diplomacy_bot.fleet_inbox_watch import run_auto_inbox_setup_for_uid
-from diplomacy_bot.fleet_ui_markup import fleet_more_inline_markup
+from diplomacy_bot.fleet_ui_markup import fleet_more_inline_markup, patch_fleet_ui_buttons
 
 
 class FleetInboxImportTests(unittest.TestCase):
@@ -41,6 +45,15 @@ class FleetInboxImportTests(unittest.TestCase):
         back = rows[-1][0]
         self.assertEqual(back.callback_data, "fleet:menu:main")
         self.assertIn("Filo", back.text)
+
+    def test_fleet_main_menu_has_start_button(self):
+        from diplomacy_bot import telegram_ui as ui
+
+        patch_fleet_ui_buttons()
+        rows = ui.fleet_inline_markup("w1", []).inline_keyboard
+        callbacks = [button.callback_data for row in rows for button in row]
+
+        self.assertIn("fleet:cmd:start", callbacks)
 
 
 if __name__ == "__main__":
