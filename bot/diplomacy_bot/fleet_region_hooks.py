@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import logging
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from .fleet_autopilot_policy import policy_from_region_args, save_fleet_autopilot_policy
 from .fleet_command import format_batch_html, format_next_steps_footer
 from .fleet_action_guard import reject_stale_fleet_action
 from .fleet_region_mission_ui import format_region_mission_html, parse_region_args
+from .fleet_start_planner import resolve_fleet_start_plan
 from .fleet_status import format_post_aod_footer
 from .fleet_residence import (
     DEFAULT_RESIDENCE_PROVINCE,
@@ -24,7 +25,6 @@ from .fleet_ui_markup import fleet_nav_inline_markup
 
 log = logging.getLogger(__name__)
 _REGISTERED = False
-
 def _format_aod_html(steps: dict, telegram_user_id: int) -> str:
     from .account_config import get_config
     from .account_main import get_main_account_name
@@ -189,9 +189,9 @@ async def cmd_fleetstart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
     args = list(context.args or [])
     if args:
-        province, opts = parse_region_args(args)
-        save_fleet_autopilot_policy(uid, policy_from_region_args(province, opts))
-        result = start_fleet_autopilot_for_uid(uid, province=province, **opts)
+        plan = resolve_fleet_start_plan(uid, args)
+        save_fleet_autopilot_policy(uid, policy_from_region_args(plan.province, plan.opts))
+        result = start_fleet_autopilot_for_uid(uid, province=plan.province, **plan.opts)
     else:
         result = start_fleet_autopilot_for_uid(uid)
     await msg.reply_text(
