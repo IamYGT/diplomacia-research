@@ -199,16 +199,15 @@ async def cmd_fleetstart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         parse_mode="HTML",
         reply_markup=fleet_nav_inline_markup(),
     )
-
-
 def register_fleet_region_handlers(application: Application) -> None:
+    from .fleet_plan_preview import cmd_fleetplan
     global _REGISTERED
     if _REGISTERED:
         return
     commands = (
         ("fleetresidence", cmd_fleetresidence), ("fleetvote", cmd_fleetvote),
         ("fleetcitizen", cmd_fleetcitizen), ("fleetvisa", cmd_fleetvisa),
-        ("fleetaod", cmd_fleetaod), ("fleetregion", cmd_fleetregion), ("fleetstart", cmd_fleetstart),
+        ("fleetaod", cmd_fleetaod), ("fleetregion", cmd_fleetregion), ("fleetstart", cmd_fleetstart), ("fleetplan", cmd_fleetplan),
     )
     for name, handler in commands:
         application.add_handler(CommandHandler(name, handler))

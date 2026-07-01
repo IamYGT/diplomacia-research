@@ -11,6 +11,7 @@ def format_fleet_help_html() -> str:
     return (
         f"<b>📋 Filo komuta rehberi</b> {get_version_label()}\n\n"
         f"<b>Hızlı başlangıç ({limit} hesap)</b>\n"
+        "<code>/fleetplan 20 hesabı Hürmüz'e çek oy ver</code> — çalıştırmadan hedef önizle\n"
         "<code>/fleetinbox</code> — token_inbox'tan toplu bağla\n"
         "<code>/fleetstart Hürmüz vote</code> — inbox + onar + kalıcı Hürmüz mission\n"
         "<code>/fleetaod</code> — bootstrap + fabrika + seyahat + ikamet\n"

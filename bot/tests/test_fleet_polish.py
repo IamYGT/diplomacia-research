@@ -60,6 +60,7 @@ class InboxProcessedStateTests(unittest.TestCase):
 class FleetHelpTests(unittest.TestCase):
     def test_fleet_help_has_troubleshooting(self):
         html = format_fleet_help_html()
+        self.assertIn("/fleetplan", html)
         self.assertIn("/fleetstart Hürmüz vote", html)
         self.assertIn("/loginkaydet", html)
         self.assertIn("Sorun giderme", html)
