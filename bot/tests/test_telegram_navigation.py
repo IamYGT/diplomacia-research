@@ -36,7 +36,7 @@ class TelegramNavigationTests(unittest.TestCase):
         self.assertTrue(is_navigation_callback("role:pick:farm01"))
         self.assertTrue(is_navigation_callback("fleet:menu:more"))
         self.assertTrue(is_navigation_callback("fleet:menu:main"))
-        self.assertTrue(is_navigation_callback("fleet:tick:all"))
+        self.assertFalse(is_navigation_callback("fleet:tick:all"))
         self.assertTrue(is_navigation_callback("easy:run:farm01"))
         self.assertTrue(is_navigation_callback("mission:step:farm01"))
         self.assertFalse(is_navigation_callback("dash:refresh"))

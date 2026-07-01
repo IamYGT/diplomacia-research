@@ -173,6 +173,10 @@ async def handle_callback(
         return
 
     if data.startswith("role:set:"):
+        from .fleet_action_guard import reject_stale_fleet_action
+
+        if await reject_stale_fleet_action(query, "Rol değiştir", uid):
+            return
         parts = data.split(":")
         if len(parts) >= 4:
             name, role = parts[2], parts[3]
@@ -199,6 +203,10 @@ async def handle_callback(
         return
 
     if data.startswith("fleet:tick:"):
+        from .fleet_action_guard import reject_stale_fleet_action
+
+        if await reject_stale_fleet_action(query, "Filo tick", uid):
+            return
         kind = data.split(":")[2]
         role = None if kind == "all" else kind
         from .fleet_live import format_fleet_final, resolve_fleet_accounts, run_fleet_parallel_live
@@ -237,6 +245,10 @@ async def handle_callback(
         return
 
     if data.startswith("fleet:af:on:"):
+        from .fleet_action_guard import reject_stale_fleet_action
+
+        if await reject_stale_fleet_action(query, "Autofarm aç", uid):
+            return
         kind = data.split(":")[3]
         n = 0
         for a in _user_accounts(uid):

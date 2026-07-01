@@ -173,6 +173,49 @@ class FleetActionGuardTests(unittest.IsolatedAsyncioTestCase):
             cb.handle_callback = original
             cb._fleet_region_callbacks_installed = old_flag
 
+    async def test_rejects_stale_legacy_fleet_tick(self):
+        from diplomacy_bot import callbacks as cb
+
+        query = _Query(datetime.now(timezone.utc) - timedelta(minutes=10))
+        context = MagicMock()
+        with (
+            patch("diplomacy_bot.fleet_ui_markup.fleet_nav_inline_markup", return_value=None),
+            patch("diplomacy_bot.fleet_status.format_fleet_ops_status", return_value="<b>durum</b>"),
+            patch("diplomacy_bot.fleet_live.run_fleet_parallel_live") as run,
+        ):
+            await cb.handle_callback(None, context, "fleet:tick:all", "main", query, 99)
+
+        run.assert_not_called()
+        query.message.reply_text.assert_awaited_once()
+
+    async def test_rejects_stale_legacy_autofarm_enable(self):
+        from diplomacy_bot import callbacks as cb
+
+        query = _Query(datetime.now(timezone.utc) - timedelta(minutes=10))
+        with (
+            patch("diplomacy_bot.fleet_ui_markup.fleet_nav_inline_markup", return_value=None),
+            patch("diplomacy_bot.fleet_status.format_fleet_ops_status", return_value="<b>durum</b>"),
+            patch("diplomacy_bot.callbacks.set_autofarm") as set_af,
+        ):
+            await cb.handle_callback(None, MagicMock(), "fleet:af:on:farm", "main", query, 99)
+
+        set_af.assert_not_called()
+        query.message.reply_text.assert_awaited_once()
+
+    async def test_rejects_stale_legacy_role_set(self):
+        from diplomacy_bot import callbacks as cb
+
+        query = _Query(datetime.now(timezone.utc) - timedelta(minutes=10))
+        with (
+            patch("diplomacy_bot.fleet_ui_markup.fleet_nav_inline_markup", return_value=None),
+            patch("diplomacy_bot.fleet_status.format_fleet_ops_status", return_value="<b>durum</b>"),
+            patch("diplomacy_bot.callbacks.update_config_field") as update_cfg,
+        ):
+            await cb.handle_callback(None, MagicMock(), "role:set:w1:farm", "main", query, 99)
+
+        update_cfg.assert_not_called()
+        query.message.reply_text.assert_awaited_once()
+
 
 if __name__ == "__main__":
     unittest.main()
