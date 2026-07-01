@@ -124,6 +124,34 @@ class FleetInboxImportTests(unittest.TestCase):
         self.assertIn("fleet:cmd:ops", callbacks)
         self.assertIn("fleet:menu:more", callbacks)
 
+    def test_fleet_main_menu_shows_pending_inbox_count(self):
+        from diplomacy_bot import telegram_ui as ui
+        from diplomacy_bot.store import Account
+
+        acc = Account(
+            id=1,
+            name="w1",
+            token="tok",
+            player_id="p1",
+            username="W1",
+            autofarm=True,
+            last_farm_at=0.0,
+            last_balance=0,
+            proxy_id="direct",
+            proxy_url="",
+            status="active",
+            telegram_user_id=42,
+        )
+        patch_fleet_ui_buttons()
+        with patch(
+            "diplomacy_bot.token_watch.list_inbox_import_candidates",
+            return_value=[("u42_01", "tok1"), ("u42_02", "tok2")],
+        ):
+            rows = ui.fleet_inline_markup("w1", [acc]).inline_keyboard
+
+        self.assertEqual(rows[0][0].callback_data, "fleet:cmd:start")
+        self.assertIn("2 tokeni başlat", rows[0][0].text)
+
     def test_fleet_main_menu_hides_technical_tick_buttons(self):
         from diplomacy_bot import telegram_ui as ui
 

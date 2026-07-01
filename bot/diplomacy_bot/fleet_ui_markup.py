@@ -44,6 +44,18 @@ def fleet_nav_inline_markup() -> InlineKeyboardMarkup:
     )
 
 
+def _pending_inbox_count(accounts: list) -> int:
+    uid = int(getattr(accounts[0], "telegram_user_id", 0) or 0) if accounts else 0
+    if not uid:
+        return 0
+    try:
+        from .token_watch import list_inbox_import_candidates
+
+        return len(list_inbox_import_candidates(uid))
+    except Exception:
+        return 0
+
+
 def patch_fleet_ui_buttons() -> None:
     from . import telegram_ui as ui
 
@@ -54,9 +66,11 @@ def patch_fleet_ui_buttons() -> None:
         from .account_config import get_config, normalize_role
 
         accounts = list(accs or [])
+        pending = _pending_inbox_count(accounts)
+        start_label = f"▶️ {pending} tokeni başlat" if pending else "▶️ Başlat"
         rows = [
             [
-                InlineKeyboardButton("▶️ Başlat", callback_data="fleet:cmd:start"),
+                InlineKeyboardButton(start_label, callback_data="fleet:cmd:start"),
                 InlineKeyboardButton("📋 Durum", callback_data="fleet:cmd:ops"),
             ],
             [
