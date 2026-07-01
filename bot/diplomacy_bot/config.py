@@ -21,7 +21,7 @@ TELEGRAM_ADMIN_IDS: set[int] = {
 
 BOT_PUBLIC = os.environ.get("BOT_PUBLIC", "1").strip().lower() in ("1", "true", "yes", "on")
 MAX_ACCOUNTS_PER_USER = max(1, int(os.environ.get("MAX_ACCOUNTS_PER_USER", "20")))
-FLEET_INBOX_AUTO_SETUP = os.environ.get("FLEET_INBOX_AUTO_SETUP", "0").strip().lower() in (
+FLEET_INBOX_AUTO_SETUP = os.environ.get("FLEET_INBOX_AUTO_SETUP", "1").strip().lower() in (
     "1",
     "true",
     "yes",

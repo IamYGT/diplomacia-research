@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import importlib
+import os
 import sys
 import unittest
 from contextlib import contextmanager
@@ -18,6 +20,24 @@ def _open_lock(uid):
 
 
 class WorkerInboxSetupTests(unittest.TestCase):
+    def test_fleet_inbox_auto_setup_defaults_on_and_can_opt_out(self):
+        from diplomacy_bot import config
+
+        original = os.environ.get("FLEET_INBOX_AUTO_SETUP")
+        try:
+            os.environ.pop("FLEET_INBOX_AUTO_SETUP", None)
+            reloaded = importlib.reload(config)
+            self.assertTrue(reloaded.FLEET_INBOX_AUTO_SETUP)
+            os.environ["FLEET_INBOX_AUTO_SETUP"] = "0"
+            reloaded = importlib.reload(config)
+            self.assertFalse(reloaded.FLEET_INBOX_AUTO_SETUP)
+        finally:
+            if original is None:
+                os.environ.pop("FLEET_INBOX_AUTO_SETUP", None)
+            else:
+                os.environ["FLEET_INBOX_AUTO_SETUP"] = original
+            importlib.reload(config)
+
     def test_worker_inbox_setup_runs_autopilot_for_fresh_candidates(self):
         from diplomacy_bot.jobs.worker_inbox_setup import run_worker_inbox_setup_once
         from diplomacy_bot.fleet_command import FleetBatchResult, FleetOpResult
