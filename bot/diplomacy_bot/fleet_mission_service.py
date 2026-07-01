@@ -29,18 +29,31 @@ class FleetAutopilotResult:
 def start_fleet_autopilot_for_uid(
     telegram_user_id: int,
     *,
-    province: str = "Hürmüz",
-    role: str = "hybrid",
-    citizenship_country_id: str = "",
-    independent_citizenship: bool = False,
-    visa_country_id: str = "",
-    vote: bool = False,
-    province_vote: bool = False,
-    candidate_id: str = "",
+    province: str | None = None,
+    role: str | None = None,
+    citizenship_country_id: str | None = None,
+    independent_citizenship: bool | None = None,
+    visa_country_id: str | None = None,
+    vote: bool | None = None,
+    province_vote: bool | None = None,
+    candidate_id: str | None = None,
 ) -> FleetAutopilotResult:
     """Tek operatör aksiyonu: inbox import, otonomi onarım, kalıcı bölge mission."""
     from .fleet_inbox_import import import_inbox_for_uid
     from .fleet_autonomy_repair import repair_fleet_autonomy_for_uid
+    from .fleet_autopilot_policy import FleetAutopilotPolicy, load_fleet_autopilot_policy
+
+    policy = load_fleet_autopilot_policy(telegram_user_id) if province is None else FleetAutopilotPolicy()
+    province = province or policy.province
+    role = role or policy.role
+    citizenship_country_id = citizenship_country_id if citizenship_country_id is not None else policy.citizenship_country_id
+    independent_citizenship = (
+        independent_citizenship if independent_citizenship is not None else policy.independent_citizenship
+    )
+    visa_country_id = visa_country_id if visa_country_id is not None else policy.visa_country_id
+    vote = vote if vote is not None else policy.vote
+    province_vote = province_vote if province_vote is not None else policy.province_vote
+    candidate_id = candidate_id if candidate_id is not None else policy.candidate_id
 
     inbox = import_inbox_for_uid(telegram_user_id)
     repair = repair_fleet_autonomy_for_uid(telegram_user_id, role=role)

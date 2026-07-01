@@ -7,7 +7,9 @@ import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
+from .fleet_autopilot_policy import policy_from_region_args, save_fleet_autopilot_policy
 from .fleet_command import format_batch_html, format_next_steps_footer
+from .fleet_region_mission_ui import format_region_mission_html, parse_region_args
 from .fleet_status import format_post_aod_footer
 from .fleet_residence import (
     DEFAULT_RESIDENCE_PROVINCE,
@@ -158,13 +160,15 @@ async def cmd_fleetaod(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def cmd_fleetregion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     from . import telegram_app as ta
     from .fleet_mission_service import enqueue_region_missions_for_uid
-    from .fleet_region_mission_ui import format_region_mission_html, parse_region_args
 
     uid = ta._uid(update)
     msg = update.effective_message
     if not msg:
         return
-    province, opts = parse_region_args(list(context.args or []))
+    args = list(context.args or [])
+    province, opts = parse_region_args(args)
+    if args:
+        save_fleet_autopilot_policy(uid, policy_from_region_args(province, opts))
     result = enqueue_region_missions_for_uid(uid, province=province, **opts)
     await msg.reply_text(
         format_region_mission_html(result, province),
@@ -177,14 +181,19 @@ async def cmd_fleetregion(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def cmd_fleetstart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     from . import telegram_app as ta
     from .fleet_mission_service import start_fleet_autopilot_for_uid
-    from .fleet_region_mission_ui import format_autopilot_html, parse_region_args
+    from .fleet_region_mission_ui import format_autopilot_html
 
     uid = ta._uid(update)
     msg = update.effective_message
     if not msg:
         return
-    province, opts = parse_region_args(list(context.args or []))
-    result = start_fleet_autopilot_for_uid(uid, province=province, **opts)
+    args = list(context.args or [])
+    if args:
+        province, opts = parse_region_args(args)
+        save_fleet_autopilot_policy(uid, policy_from_region_args(province, opts))
+        result = start_fleet_autopilot_for_uid(uid, province=province, **opts)
+    else:
+        result = start_fleet_autopilot_for_uid(uid)
     await msg.reply_text(
         format_autopilot_html(result),
         parse_mode="HTML",
@@ -270,13 +279,6 @@ def patch_fleet_region_callbacks() -> None:
     cb._fleet_region_callbacks_installed = True
 
 
-def patch_fleet_aod_button() -> None:
-    """AOD butonu artık fleet_command_hooks komuta panelinde — no-op uyumluluk."""
-    from . import telegram_ui as ui
-
-    ui._fleet_aod_button_installed = True
-
-
 def install_fleet_region_hooks() -> None:
     from . import fleet_command_hooks as fch
     from . import telegram_app as ta
@@ -285,7 +287,6 @@ def install_fleet_region_hooks() -> None:
         return
 
     patch_fleet_region_callbacks()
-    patch_fleet_aod_button()
 
     _orig_post = ta._post_init
 

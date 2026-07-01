@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from diplomacy_bot.fleet_autopilot_policy import (
+    FleetAutopilotPolicy,
+    load_fleet_autopilot_policy,
+    policy_from_region_args,
+    save_fleet_autopilot_policy,
+)
+
+
+class FleetAutopilotPolicyTests(unittest.TestCase):
+    def test_policy_roundtrip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "fleet_autopilot_policy.json"
+            with patch("diplomacy_bot.fleet_autopilot_policy._STATE_PATH", path):
+                save_fleet_autopilot_policy(
+                    42,
+                    FleetAutopilotPolicy(
+                        province="Tahran",
+                        vote=True,
+                        province_vote=True,
+                        candidate_id="cand-1",
+                    ),
+                )
+
+                policy = load_fleet_autopilot_policy(42)
+
+        self.assertEqual(policy.province, "Tahran")
+        self.assertTrue(policy.vote)
+        self.assertTrue(policy.province_vote)
+        self.assertEqual(policy.candidate_id, "cand-1")
+
+    def test_policy_from_region_args_keeps_optional_flags(self):
+        policy = policy_from_region_args(
+            "Hürmüz",
+            {
+                "vote": True,
+                "province_vote": True,
+                "candidate_id": "cand-1",
+                "independent_citizenship": True,
+                "visa_country_id": "country-2",
+            },
+        )
+
+        self.assertEqual(policy.province, "Hürmüz")
+        self.assertTrue(policy.vote)
+        self.assertTrue(policy.province_vote)
+        self.assertTrue(policy.independent_citizenship)
+        self.assertEqual(policy.visa_country_id, "country-2")
+
+    def test_start_autopilot_uses_saved_policy_when_no_args(self):
+        from diplomacy_bot.fleet_mission_service import start_fleet_autopilot_for_uid
+
+        policy = FleetAutopilotPolicy(province="Tahran", vote=True, province_vote=True)
+        inbox = SimpleNamespace(ok=0, total=0, results=[])
+        repair = SimpleNamespace(ok=1, total=1, results=[])
+        mission = SimpleNamespace(fleet_id="region-1", batch=SimpleNamespace(ok=1, total=1, results=[]))
+        with (
+            patch("diplomacy_bot.fleet_autopilot_policy.load_fleet_autopilot_policy", return_value=policy),
+            patch("diplomacy_bot.fleet_inbox_import.import_inbox_for_uid", return_value=inbox),
+            patch("diplomacy_bot.fleet_autonomy_repair.repair_fleet_autonomy_for_uid", return_value=repair),
+            patch(
+                "diplomacy_bot.fleet_mission_service.enqueue_region_missions_for_uid",
+                return_value=mission,
+            ) as enqueue,
+        ):
+            result = start_fleet_autopilot_for_uid(42)
+
+        self.assertEqual(result.province, "Tahran")
+        self.assertTrue(enqueue.call_args.kwargs["vote"])
+        self.assertTrue(enqueue.call_args.kwargs["province_vote"])
+        self.assertEqual(enqueue.call_args.kwargs["province"], "Tahran")
+
+
+if __name__ == "__main__":
+    unittest.main()
