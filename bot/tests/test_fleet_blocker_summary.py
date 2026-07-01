@@ -44,17 +44,25 @@ class FleetBlockerSummaryTests(unittest.TestCase):
         )
         with patch(
             "diplomacy_bot.action_log_query.count_action_results_since",
-            return_value={"no_training_war": 2, "ignored": 9},
+            return_value={"no_training_war": 2, "training_exception": 1, "ignored": 9},
+        ), patch(
+            "diplomacy_bot.action_log_query.count_actions_since",
+            return_value=1,
         ):
             text = format_fleet_blocker_summary([_acc("w1", state="cooldown"), _acc("w2"), _acc("w3")], audit)
 
         self.assertIn("1 hazır değil", text)
         self.assertIn("1 cooldown", text)
         self.assertIn("2 training savaş yok", text)
+        self.assertIn("1 training hata", text)
+        self.assertIn("1 mission hata", text)
 
     def test_summary_reports_no_visible_blocker_when_ready(self):
         audit = FleetAudit(total=1, ready=1, rows=[FleetAuditRow("w1", True)])
-        with patch("diplomacy_bot.action_log_query.count_action_results_since", return_value={}):
+        with (
+            patch("diplomacy_bot.action_log_query.count_action_results_since", return_value={}),
+            patch("diplomacy_bot.action_log_query.count_actions_since", return_value=0),
+        ):
             text = format_fleet_blocker_summary([_acc("w1")], audit)
 
         self.assertIn("görünür engel yok", text)

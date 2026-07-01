@@ -20,6 +20,7 @@ _TRAINING_LABELS = {
     "no_training_war_id": "training id yok",
     "free_attack_cooldown": "training cooldown",
     "no_result": "training sonuç yok",
+    "training_exception": "training hata",
 }
 
 
@@ -52,6 +53,18 @@ def _training_skip_counts(account_names: list[str]) -> Counter[str]:
     return counts
 
 
+def _mission_exception_counts(account_names: list[str]) -> Counter[str]:
+    from .action_log_query import count_actions_since
+
+    n = count_actions_since(
+        account_names=account_names,
+        action="worker_mission_exception",
+        since_unix=time.time() - 86400,
+        success_only=False,
+    )
+    return Counter({"mission hata": n}) if n else Counter()
+
+
 def format_fleet_blocker_summary(accounts: list[Account], audit: FleetAudit) -> str:
     if audit.total <= 0:
         return ""
@@ -60,6 +73,7 @@ def format_fleet_blocker_summary(accounts: list[Account], audit: FleetAudit) -> 
         parts.append(f"{audit.total - audit.ready} hazır değil")
     counts = _runtime_counts(accounts)
     counts.update(_training_skip_counts(_names(accounts)))
+    counts.update(_mission_exception_counts(_names(accounts)))
     for label, count in counts.most_common(4):
         if count > 0:
             parts.append(f"{count} {label}")
