@@ -114,6 +114,33 @@ class FleetActionGuardTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(rejected)
         query.message.reply_text.assert_not_awaited()
 
+    async def test_token_inbox_callback_runs_autopilot(self):
+        from diplomacy_bot import callbacks as cb
+        from diplomacy_bot.fleet_callbacks import install_fleet_command_callbacks
+
+        original = cb.handle_callback
+        old_flag = getattr(cb, "_fleet_cmd_callbacks_installed", False)
+        cb._fleet_cmd_callbacks_installed = False
+        install_fleet_command_callbacks()
+        try:
+            query = _Query(datetime.now(timezone.utc))
+            result = MagicMock()
+            with (
+                patch(
+                    "diplomacy_bot.fleet_mission_service.start_fleet_autopilot_for_uid",
+                    return_value=result,
+                ) as start,
+                patch("diplomacy_bot.fleet_region_mission_ui.format_autopilot_html", return_value="<b>ok</b>"),
+                patch("diplomacy_bot.fleet_callbacks.fleet_nav_inline_markup", return_value=None),
+            ):
+                await cb.handle_callback(None, None, "fleet:cmd:inbox", None, query, 99)
+            start.assert_called_once_with(99)
+            query.message.reply_text.assert_awaited_once()
+            self.assertEqual(query.message.reply_text.call_args.args[0], "<b>ok</b>")
+        finally:
+            cb.handle_callback = original
+            cb._fleet_cmd_callbacks_installed = old_flag
+
     async def test_rejects_stale_region_side_effect_commands(self):
         from diplomacy_bot import callbacks as cb
         from diplomacy_bot.fleet_region_hooks import patch_fleet_region_callbacks

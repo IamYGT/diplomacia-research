@@ -82,16 +82,13 @@ def install_fleet_command_callbacks() -> None:
         if data == "fleet:cmd:inbox":
             if await reject_stale_fleet_command(query, data):
                 return
-            from .fleet_inbox_import import format_inbox_import_footer, import_inbox_for_uid
+            from .fleet_mission_service import start_fleet_autopilot_for_uid
+            from .fleet_region_mission_ui import format_autopilot_html
 
-            batch = import_inbox_for_uid(uid)
+            result = start_fleet_autopilot_for_uid(uid)
             if query and query.message:
                 await query.message.reply_text(
-                    format_batch_html(
-                        "📥 Filo inbox",
-                        batch,
-                        footer=format_inbox_import_footer(uid, batch),
-                    ),
+                    format_autopilot_html(result),
                     parse_mode="HTML",
                     reply_markup=fleet_nav_inline_markup(),
                 )
