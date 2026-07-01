@@ -107,6 +107,22 @@ def _target_opts(target: Any) -> dict[str, Any]:
     }
 
 
+def tag_fleet_plan(result: Any, plan: FleetStartPlan) -> Any:
+    notice = ""
+    if plan.source == "deepseek":
+        notice = "Yazılı hedef: DeepSeek planı"
+    elif plan.warnings:
+        notice = "Yazılı hedef: parser fallback"
+    if not notice:
+        return result
+    mission = getattr(result, "mission", result)
+    warnings = list(getattr(mission, "warnings", []) or [])
+    if notice not in warnings:
+        warnings.insert(0, notice)
+    setattr(mission, "warnings", warnings)
+    return result
+
+
 def _clean_province(text: str, parsed: str) -> str:
     low = text.lower()
     if "hürmüz" in low or "hurmuz" in low or "aod" in low:

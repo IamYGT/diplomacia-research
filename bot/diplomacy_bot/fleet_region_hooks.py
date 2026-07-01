@@ -11,7 +11,7 @@ from .fleet_autopilot_policy import policy_from_region_args, save_fleet_autopilo
 from .fleet_command import format_batch_html, format_next_steps_footer
 from .fleet_action_guard import reject_stale_fleet_action
 from .fleet_region_mission_ui import format_region_mission_html, parse_region_args
-from .fleet_start_planner import resolve_fleet_start_plan
+from .fleet_start_planner import resolve_fleet_start_plan, tag_fleet_plan
 from .fleet_status import format_post_aod_footer
 from .fleet_residence import (
     DEFAULT_RESIDENCE_PROVINCE,
@@ -169,7 +169,7 @@ async def cmd_fleetregion(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     plan = resolve_fleet_start_plan(uid, args)
     if args:
         save_fleet_autopilot_policy(uid, policy_from_region_args(plan.province, plan.opts))
-    result = enqueue_region_missions_for_uid(uid, province=plan.province, **plan.opts)
+    result = tag_fleet_plan(enqueue_region_missions_for_uid(uid, province=plan.province, **plan.opts), plan)
     await msg.reply_text(
         format_region_mission_html(result, plan.province),
         parse_mode="HTML",
@@ -191,7 +191,7 @@ async def cmd_fleetstart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if args:
         plan = resolve_fleet_start_plan(uid, args)
         save_fleet_autopilot_policy(uid, policy_from_region_args(plan.province, plan.opts))
-        result = start_fleet_autopilot_for_uid(uid, province=plan.province, **plan.opts)
+        result = tag_fleet_plan(start_fleet_autopilot_for_uid(uid, province=plan.province, **plan.opts), plan)
     else:
         result = start_fleet_autopilot_for_uid(uid)
     await msg.reply_text(

@@ -99,7 +99,12 @@ class FleetStartCommandPolicyTests(unittest.IsolatedAsyncioTestCase):
 
         def fake_planner(uid, args):
             decision = normalize_llm_decision({"province": "Hürmüz", "vote": True})
-            return SimpleNamespace(province=decision.target.province, opts={"vote": decision.target.vote})
+            return SimpleNamespace(
+                province=decision.target.province,
+                opts={"vote": decision.target.vote},
+                source="deepseek",
+                warnings=(),
+            )
 
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "fleet_autopilot_policy.json"
@@ -120,6 +125,7 @@ class FleetStartCommandPolicyTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(enqueue.call_args.kwargs["province"], "Hürmüz")
         self.assertTrue(enqueue.call_args.kwargs["vote"])
         update.effective_message.reply_text.assert_awaited_once()
+        self.assertIn("DeepSeek planı", update.effective_message.reply_text.await_args.args[0])
 
     async def test_fleetstart_command_saves_target_policy_and_replies(self):
         from diplomacy_bot.fleet_region_hooks import cmd_fleetstart
