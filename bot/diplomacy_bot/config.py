@@ -60,6 +60,10 @@ _coach_raw = os.environ.get("GEMINI_COACH_MODEL", "gemini-2.5-flash-lite,gemini-
 GEMINI_COACH_MODELS: list[str] = [x.strip() for x in _coach_raw.split(",") if x.strip()]
 GEMINI_THINKING_BUDGET = int(os.environ.get("GEMINI_THINKING_BUDGET", "0"))
 
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
+
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DATA_DIR / "accounts.db"
 LEGACY_AUTH = DATA_DIR / "import-auth.json"
