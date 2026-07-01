@@ -45,7 +45,10 @@ class FleetAutonomyAuditTests(unittest.TestCase):
             preferred_factory_id="fid",
             work_mode="fixed",
         )
-        with patch("diplomacy_bot.fleet_autonomy_audit.get_config", return_value=cfg):
+        with (
+            patch("diplomacy_bot.fleet_autonomy_audit.get_config", return_value=cfg),
+            patch("diplomacy_bot.fleet_autonomy_audit.load_token_refresh_sources"),
+        ):
             audit = audit_fleet_autonomy([_acc("main"), _acc("w1")], factory_id="fid", main_account_name="main")
 
         self.assertEqual((audit.ready, audit.total), (1, 1))
@@ -63,7 +66,10 @@ class FleetAutonomyAuditTests(unittest.TestCase):
             preferred_factory_id="",
             work_mode="own",
         )
-        with patch("diplomacy_bot.fleet_autonomy_audit.get_config", return_value=cfg):
+        with (
+            patch("diplomacy_bot.fleet_autonomy_audit.get_config", return_value=cfg),
+            patch("diplomacy_bot.fleet_autonomy_audit.load_token_refresh_sources"),
+        ):
             audit = audit_fleet_autonomy([_acc("w1", autofarm=False)], factory_id="fid")
 
         self.assertEqual((audit.ready, audit.total), (0, 1))
@@ -85,11 +91,33 @@ class FleetAutonomyAuditTests(unittest.TestCase):
         with (
             patch("diplomacy_bot.fleet_autonomy_audit.get_config", return_value=cfg),
             patch("diplomacy_bot.fleet_autonomy_audit._has_token_refresh_source", return_value=False),
+            patch("diplomacy_bot.fleet_autonomy_audit.load_token_refresh_sources"),
         ):
             audit = audit_fleet_autonomy([_acc("w1")], factory_id="fid")
 
         self.assertEqual((audit.ready, audit.total), (0, 1))
         self.assertIn("token refresh kaynağı yok", audit.rows[0].blockers)
+
+    def test_audit_twenty_workers_ready(self):
+        cfg = MagicMock(
+            role="hybrid",
+            stat_auto_enabled=True,
+            training_enabled=True,
+            craft_pills_when_low=True,
+            auto_travel_enabled=True,
+            auto_token_refresh=True,
+            preferred_factory_id="fid",
+            work_mode="fixed",
+        )
+        accs = [_acc("main")] + [_acc(f"w{i:02d}") for i in range(20)]
+        with (
+            patch("diplomacy_bot.fleet_autonomy_audit.get_config", return_value=cfg),
+            patch("diplomacy_bot.fleet_autonomy_audit.load_token_refresh_sources") as sources,
+        ):
+            audit = audit_fleet_autonomy(accs, factory_id="fid", main_account_name="main")
+
+        self.assertEqual((audit.ready, audit.total), (20, 20))
+        sources.assert_called_once()
 
 
 if __name__ == "__main__":

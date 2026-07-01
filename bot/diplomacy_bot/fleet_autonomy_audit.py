@@ -29,6 +29,24 @@ class FleetAudit:
         return [r for r in self.rows if not r.ready]
 
 
+@dataclass
+class TokenRefreshSources:
+    legacy_token: str | None = None
+    inbox: dict[str, str] = field(default_factory=dict)
+
+
+def load_token_refresh_sources() -> TokenRefreshSources:
+    try:
+        from .token_watch import read_legacy_auth_token, scan_token_inbox
+
+        return TokenRefreshSources(
+            legacy_token=read_legacy_auth_token(force=True),
+            inbox=scan_token_inbox(force=True),
+        )
+    except Exception:
+        return TokenRefreshSources()
+
+
 def _mission_label(account_name: str) -> str:
     try:
         from .mission_store import get_active_mission
@@ -45,7 +63,7 @@ def _mission_label(account_name: str) -> str:
         return ""
 
 
-def _has_token_refresh_source(acc: Account) -> bool:
+def _has_token_refresh_source(acc: Account, sources: TokenRefreshSources) -> bool:
     if token_exp_unix(acc.token or "") is None:
         return True
     try:
@@ -56,13 +74,15 @@ def _has_token_refresh_source(acc: Account) -> bool:
     except Exception:
         pass
     try:
-        from .token_watch import pick_inbox_token, read_legacy_auth_token, scan_token_inbox, token_matches_account
+        from .token_watch import pick_inbox_token, token_matches_account
 
-        legacy = read_legacy_auth_token(force=True)
-        if legacy and token_matches_account(legacy, player_id=acc.player_id or "", account_name=acc.name):
+        if sources.legacy_token and token_matches_account(
+            sources.legacy_token,
+            player_id=acc.player_id or "",
+            account_name=acc.name,
+        ):
             return True
-        inbox = scan_token_inbox(force=True)
-        return pick_inbox_token(acc.name, acc.player_id or "", inbox) is not None
+        return pick_inbox_token(acc.name, acc.player_id or "", sources.inbox) is not None
     except Exception:
         return False
 
@@ -77,6 +97,7 @@ def audit_fleet_autonomy(
     main = main_account_name.strip().lower()
     fid = factory_id.strip()
     rows: list[FleetAuditRow] = []
+    token_sources = load_token_refresh_sources()
     for acc in accounts:
         name = acc.name.strip().lower()
         if main and name == main:
@@ -100,7 +121,7 @@ def audit_fleet_autonomy(
             blockers.append("oto seyahat kapalı")
         if not cfg.auto_token_refresh:
             blockers.append("token auto kapalı")
-        elif not _has_token_refresh_source(acc):
+        elif not _has_token_refresh_source(acc, token_sources):
             blockers.append("token refresh kaynağı yok")
         if fid and ((cfg.preferred_factory_id or "").strip() != fid or cfg.work_mode != "fixed"):
             blockers.append("ana fabrikaya sabit değil")
