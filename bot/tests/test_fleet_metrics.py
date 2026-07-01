@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from diplomacy_bot.fleet_metrics import format_fleet_metrics_line
+from diplomacy_bot.fleet_metrics import count_fleet_training_waiting, format_fleet_metrics_line
 
 
 class FleetMetricsTests(unittest.TestCase):
@@ -21,6 +21,7 @@ class FleetMetricsTests(unittest.TestCase):
             patch("diplomacy_bot.fleet_metrics.count_fleet_farms_24h", return_value=0),
             patch("diplomacy_bot.fleet_metrics.count_fleet_training_attacks_24h", return_value=0),
             patch("diplomacy_bot.fleet_metrics.count_fleet_training_skips_24h", return_value=0),
+            patch("diplomacy_bot.fleet_metrics.count_fleet_training_waiting", return_value=0),
         ):
             self.assertEqual(format_fleet_metrics_line(1), "")
 
@@ -29,11 +30,35 @@ class FleetMetricsTests(unittest.TestCase):
             patch("diplomacy_bot.fleet_metrics.count_fleet_farms_24h", return_value=12),
             patch("diplomacy_bot.fleet_metrics.count_fleet_training_attacks_24h", return_value=3),
             patch("diplomacy_bot.fleet_metrics.count_fleet_training_skips_24h", return_value=2),
+            patch("diplomacy_bot.fleet_metrics.count_fleet_training_waiting", return_value=4),
         ):
             line = format_fleet_metrics_line(42)
         self.assertIn("12", line)
         self.assertIn("3", line)
         self.assertIn("2 bekleme", line)
+        self.assertIn("4 sırada", line)
+
+    def test_count_training_waiting_uses_next_attempt_bucket(self):
+        from types import SimpleNamespace
+
+        now = time.time()
+        with (
+            patch(
+                "diplomacy_bot.fleet_metrics.scoped_list_accounts",
+                return_value=[SimpleNamespace(name="w1"), SimpleNamespace(name="w2")],
+            ),
+            patch(
+                "diplomacy_bot.fleet_metrics.load_health_state",
+                return_value={
+                    "training_watch_next_attempt": {
+                        "w1": now + 60,
+                        "w2": now - 60,
+                        "other": now + 60,
+                    }
+                },
+            ),
+        ):
+            self.assertEqual(count_fleet_training_waiting(42), 1)
 
     def test_count_actions_since(self):
         import sqlite3

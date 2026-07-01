@@ -63,13 +63,25 @@ def count_fleet_training_skips_24h(telegram_user_id: int) -> int:
     )
 
 
+def count_fleet_training_waiting(telegram_user_id: int) -> int:
+    names = set(_account_names(telegram_user_id))
+    if not names:
+        return 0
+    now = time.time()
+    bucket = dict(load_health_state().get("training_watch_next_attempt") or {})
+    return sum(1 for name, ts in bucket.items() if name in names and float(ts or 0) > now)
+
+
 def format_fleet_metrics_line(telegram_user_id: int) -> str:
     farms = count_fleet_farms_24h(telegram_user_id)
     attacks = count_fleet_training_attacks_24h(telegram_user_id)
     skips = count_fleet_training_skips_24h(telegram_user_id)
-    if farms == 0 and attacks == 0 and skips == 0:
+    waiting = count_fleet_training_waiting(telegram_user_id)
+    if farms == 0 and attacks == 0 and skips == 0 and waiting == 0:
         return ""
     line = f"📊 Son 24s: 🌾 {farms} farm · ⚔️ {attacks} antrenman"
     if skips:
         line += f" · ⏳ {skips} bekleme"
+    if waiting:
+        line += f" · 🕒 {waiting} sırada"
     return line
