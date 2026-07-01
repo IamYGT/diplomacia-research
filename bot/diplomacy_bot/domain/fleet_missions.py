@@ -12,8 +12,10 @@ class FleetMissionTarget:
     province: str = "Hürmüz"
     residence: bool = True
     citizenship_country_id: str = ""
+    independent_citizenship: bool = False
     visa_country_id: str = ""
     vote: bool = False
+    province_vote: bool = False
     candidate_id: str = ""
     farm_cycles: int = 1
     fleet_id: str = ""
@@ -37,10 +39,16 @@ def build_aod_phase_dicts(target: FleetMissionTarget) -> list[dict]:
         phases.append(
             {"phase": "citizenship_apply", "params": {"country_id": target.citizenship_country_id}}
         )
+    if target.independent_citizenship:
+        phases.append({"phase": "independent_citizenship", "params": {"province": target.province}})
     if target.visa_country_id:
         phases.append({"phase": "visa_apply", "params": {"country_id": target.visa_country_id}})
     if target.vote:
         phases.append({"phase": "election_vote", "params": {"candidate_id": target.candidate_id}})
+    if target.province_vote:
+        phases.append(
+            {"phase": "election_vote", "params": {"candidate_id": target.candidate_id, "scope": "province"}}
+        )
     phases.append({"phase": "farm_tick", "farm_cycles": max(1, int(target.farm_cycles))})
     return phases
 
@@ -64,10 +72,16 @@ def build_region_phase_dicts(target: FleetMissionTarget) -> list[dict]:
         phases.append(
             {"phase": "citizenship_apply", "params": {"country_id": target.citizenship_country_id}}
         )
+    if target.independent_citizenship:
+        phases.append({"phase": "independent_citizenship", "params": {"province": target.province}})
     if target.visa_country_id:
         phases.append({"phase": "visa_apply", "params": {"country_id": target.visa_country_id}})
     if target.vote:
         phases.append({"phase": "election_vote", "params": {"candidate_id": target.candidate_id}})
+    if target.province_vote:
+        phases.append(
+            {"phase": "election_vote", "params": {"candidate_id": target.candidate_id, "scope": "province"}}
+        )
     if target.farm_cycles:
         phases.append({"phase": "farm_tick", "farm_cycles": max(1, int(target.farm_cycles))})
     return phases

@@ -9,8 +9,10 @@ def parse_region_args(args: list[str]) -> tuple[str, dict]:
     province_parts: list[str] = []
     opts = {
         "vote": False,
+        "province_vote": False,
         "candidate_id": "",
         "citizenship_country_id": "",
+        "independent_citizenship": False,
         "visa_country_id": "",
     }
     pending: str | None = None
@@ -23,6 +25,12 @@ def parse_region_args(args: list[str]) -> tuple[str, dict]:
             continue
         if low in ("vote", "oy"):
             opts["vote"] = True
+            continue
+        if low in ("provincevote", "province_vote", "eyaletoy", "eyalet-oy"):
+            opts["province_vote"] = True
+            continue
+        if low in ("independent", "independence", "bagimsiz", "bağımsız"):
+            opts["independent_citizenship"] = True
             continue
         if low in ("candidate", "aday"):
             pending = "candidate_id"

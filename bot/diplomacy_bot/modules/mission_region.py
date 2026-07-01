@@ -58,6 +58,23 @@ def phase_visa_apply(
     return _done(rt, spec, {"visa": result}, ok=bool(result.get("ok")))
 
 
+def phase_independent_citizenship(
+    token: str,
+    cfg: AccountConfig,
+    rt: MissionRuntime,
+    spec: PhaseSpec,
+    *,
+    _api: ApiFn,
+) -> MissionStepResult:
+    from ..fleet_province_politics import claim_independent_citizenship
+
+    province = str((spec.params or {}).get("province") or "").strip()
+    if not province:
+        return _done(rt, spec, {"independent_citizenship": {"skipped": "province_missing"}})
+    result = claim_independent_citizenship(token, province, _api=_api)
+    return _done(rt, spec, {"independent_citizenship": result}, ok=bool(result.get("ok")))
+
+
 def phase_election_vote(
     token: str,
     cfg: AccountConfig,
@@ -66,10 +83,15 @@ def phase_election_vote(
     *,
     _api: ApiFn,
 ) -> MissionStepResult:
+    from ..fleet_province_politics import cast_province_election_vote
     from ..fleet_residence import cast_election_vote
 
     candidate_id = str((spec.params or {}).get("candidate_id") or "").strip() or None
-    result = cast_election_vote(token, candidate_id=candidate_id, _api=_api)
+    scope = str((spec.params or {}).get("scope") or "").strip().lower()
+    if scope == "province":
+        result = cast_province_election_vote(token, candidate_id=candidate_id, _api=_api)
+    else:
+        result = cast_election_vote(token, candidate_id=candidate_id, _api=_api)
     if not result.get("ok") and str(result.get("error") or "").lower() in (
         "oy verilecek aday yok",
         "seçim yok",

@@ -130,6 +130,7 @@ BOT_API_ROUTES: tuple[ApiRouteSpec, ...] = (
     _r("players.residence", "GET", "/players/residence", "citizenship", safe=True, optional=True),
     _r("players.residence_set", "PUT", "/players/residence", "citizenship", body={"province_name": "x"}),
     _r("elections.vote", "POST", "/elections/vote", "politics", body={"candidate_id": ""}),
+    _r("provinces.election", "GET", "/provinces/election", "politics", safe=True, optional=True),
     _r("provinces.election_vote", "POST", "/provinces/election/vote", "politics", body={"candidate_id": ""}),
     _r("citizenship.apply", "POST", "/citizenship/apply", "citizenship", body={"to_country_id": "", "reason": "x"}),
     _r("visas.my", "GET", "/visas/my", "visas", safe=True, optional=True),

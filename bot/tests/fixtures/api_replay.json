@@ -55,6 +55,7 @@
     {"route_id": "players.residence", "status": 200, "data": {"residence_province": null, "can_vote_now": true}},
     {"route_id": "players.residence_set", "status": 400, "data": {"error": "İkamet değiştirilemez"}},
     {"route_id": "elections.vote", "status": 400, "data": {"error": "Seçim yok"}},
+    {"route_id": "provinces.election", "status": 404, "data": {"error": "Eyalet seçimi yok"}},
     {"route_id": "citizenship.apply", "status": 400, "data": {"error": "Başvuru reddedildi"}},
     {"route_id": "visas.my", "status": 200, "data": {"visas": []}},
     {"route_id": "visas.apply", "status": 400, "data": {"error": "Vize başvurusu başarısız"}},

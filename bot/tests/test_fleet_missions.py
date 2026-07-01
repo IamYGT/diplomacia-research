@@ -51,8 +51,10 @@ class FleetMissionTests(unittest.TestCase):
                 factory_id="fid",
                 province="Hürmüz",
                 citizenship_country_id="c-tr",
+                independent_citizenship=True,
                 visa_country_id="v-ir",
                 vote=True,
+                province_vote=True,
                 candidate_id="cand-1",
             )
         )
@@ -63,11 +65,15 @@ class FleetMissionTests(unittest.TestCase):
                 "travel_to_province",
                 "residence_set",
                 "citizenship_apply",
+                "independent_citizenship",
                 "visa_apply",
+                "election_vote",
                 "election_vote",
                 "farm_tick",
             ],
         )
+        province_vote = [p for p in phases if p["phase"] == "election_vote"][-1]
+        self.assertEqual(province_vote["params"]["scope"], "province")
 
     def test_assign_config_phase_enables_fixed_autofarm(self):
         from diplomacy_bot.modules.mission_executor import run_mission_step
@@ -135,6 +141,62 @@ class FleetMissionTests(unittest.TestCase):
         self.assertTrue(r.ok)
         self.assertTrue(r.mission_complete)
         clear.assert_called_once_with("w1", status="completed")
+
+    def test_independent_citizenship_phase_calls_discovered_route(self):
+        from diplomacy_bot.modules.mission_executor import run_mission_step
+
+        calls = []
+
+        def mock_api(method, path, token, body=None, delay=0):
+            calls.append((method, path, body))
+            return 200, {"ok": True}
+
+        plan = MissionPlan(
+            "m1",
+            "w1",
+            [PhaseSpec(MissionPhase.INDEPENDENT_CITIZENSHIP, params={"province": "Hürmüz"})],
+        )
+        rt = MissionRuntime("m1", "w1", plan)
+        with (
+            patch("diplomacy_bot.modules.mission_executor.clear_mission"),
+            patch("diplomacy_bot.store.set_runtime_state"),
+            patch("diplomacy_bot.tick_activity.record_mission_step"),
+        ):
+            r = run_mission_step("tok", rt, cfg=SimpleNamespace(), _api=mock_api)
+
+        self.assertTrue(r.ok)
+        self.assertEqual(calls[0][0:2], ("POST", "/players/independent-citizenship"))
+        self.assertEqual(calls[0][2]["province_name"], "Hürmüz")
+
+    def test_province_vote_phase_uses_province_endpoint(self):
+        from diplomacy_bot.modules.mission_executor import run_mission_step
+
+        calls = []
+
+        def mock_api(method, path, token, body=None, delay=0):
+            calls.append((method, path, body))
+            if path == "/provinces/election":
+                return 200, {"elections": [{"candidates": [{"id": "cand-p"}]}]}
+            if path == "/provinces/election/vote":
+                return 200, {"ok": True}
+            return 404, {"error": "no"}
+
+        plan = MissionPlan(
+            "m1",
+            "w1",
+            [PhaseSpec(MissionPhase.ELECTION_VOTE, params={"scope": "province"})],
+        )
+        rt = MissionRuntime("m1", "w1", plan)
+        with (
+            patch("diplomacy_bot.modules.mission_executor.clear_mission"),
+            patch("diplomacy_bot.store.set_runtime_state"),
+            patch("diplomacy_bot.tick_activity.record_mission_step"),
+        ):
+            r = run_mission_step("tok", rt, cfg=SimpleNamespace(), _api=mock_api)
+
+        self.assertTrue(r.ok)
+        self.assertIn(("GET", "/provinces/election", None), calls)
+        self.assertIn(("POST", "/provinces/election/vote", {"candidate_id": "cand-p"}), calls)
 
     def test_enqueue_aod_missions_skips_main_and_writes_workers(self):
         from diplomacy_bot.fleet_mission_service import enqueue_aod_missions_for_uid

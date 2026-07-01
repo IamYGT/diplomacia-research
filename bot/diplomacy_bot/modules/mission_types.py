@@ -10,6 +10,7 @@ class MissionPhase(str, Enum):
     TRAVEL_TO_PROVINCE = "travel_to_province"
     RESIDENCE_SET = "residence_set"
     CITIZENSHIP_APPLY = "citizenship_apply"
+    INDEPENDENT_CITIZENSHIP = "independent_citizenship"
     VISA_APPLY = "visa_apply"
     ELECTION_VOTE = "election_vote"
     WAR_TICK = "war_tick"

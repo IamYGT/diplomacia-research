@@ -29,8 +29,10 @@ def start_fleet_autopilot_for_uid(
     province: str = "Hürmüz",
     role: str = "hybrid",
     citizenship_country_id: str = "",
+    independent_citizenship: bool = False,
     visa_country_id: str = "",
     vote: bool = False,
+    province_vote: bool = False,
     candidate_id: str = "",
 ) -> FleetAutopilotResult:
     """Tek operatör aksiyonu: inbox import, otonomi onarım, kalıcı bölge mission."""
@@ -44,8 +46,10 @@ def start_fleet_autopilot_for_uid(
         province=province,
         role=role,
         citizenship_country_id=citizenship_country_id,
+        independent_citizenship=independent_citizenship,
         visa_country_id=visa_country_id,
         vote=vote,
+        province_vote=province_vote,
         candidate_id=candidate_id,
     )
     return FleetAutopilotResult(province=province, inbox=inbox, repair=repair, mission=mission)
@@ -100,8 +104,10 @@ def enqueue_region_missions_for_uid(
     province: str = "Hürmüz",
     role: str = "hybrid",
     citizenship_country_id: str = "",
+    independent_citizenship: bool = False,
     visa_country_id: str = "",
     vote: bool = False,
+    province_vote: bool = False,
     candidate_id: str = "",
 ) -> FleetMissionEnqueueResult:
     """Bölge taşıma mission'ı: worker seyahat/ikamet/izin/oy/farm fazlarını sürdürür."""
@@ -118,8 +124,10 @@ def enqueue_region_missions_for_uid(
         province=province or auto_prov or "Hürmüz",
         fleet_id=fleet_id,
         citizenship_country_id=citizenship_country_id,
+        independent_citizenship=independent_citizenship,
         visa_country_id=visa_country_id,
         vote=vote,
+        province_vote=province_vote,
         candidate_id=candidate_id,
         farm_cycles=1,
     )
