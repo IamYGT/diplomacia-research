@@ -202,8 +202,9 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
         r = get_config(a.name).role
         roles[r] = roles.get(r, 0) + 1
     role_bits = " · ".join(f"{html.escape(k)}:{v}" for k, v in sorted(roles.items()))
+    total_limit = MAX_ACCOUNTS_PER_USER + (1 if get_main_account_name(telegram_user_id) else 0)
     head = [
-        f"<b>👥 Filo komuta — {len(accs)}/{MAX_ACCOUNTS_PER_USER} hesap</b>",
+        f"<b>👥 Filo komuta — {len(accs)}/{total_limit} hesap</b>",
         f"🟢 autofarm: {af_on}/{len(accs)} · {role_bits}",
     ]
     if fid:

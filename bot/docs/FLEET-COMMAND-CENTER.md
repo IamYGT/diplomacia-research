@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.11 ✅ Faz 4.5–4.38
+**Sürüm:** 4.28.12 ✅ Faz 4.5–4.39
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -16,7 +16,7 @@
 | 1.3 | Worker training sidecar (saatlik saldırı) | ✅ | `jobs/worker_training.py`, cooldown-aware next attempt |
 | 1.4 | Fleet bootstrap (`/fleetbootstrap`) | ✅ | `fleet_command.py` |
 | 1.5 | Fleet status (fabrika modu satırı) | ✅ | `fleet_command_hooks.py` `/fleetops` |
-| 1.6 | `MAX_ACCOUNTS_PER_USER=20` dokümantasyon | ✅ | `.env.example`, bu dosya |
+| 1.6 | `MAX_ACCOUNTS_PER_USER=20` worker limiti | ✅ | Ana hesap varsa toplam kapasite 21: 1 main + 20 worker |
 | 1.7 | Unit + integration testler | ✅ | `tests/test_fleet_command.py` |
 
 ## Faz 2 — Komuta konsolu
@@ -81,13 +81,14 @@
 | 4.36 | Eski bölge işlem koruması | ✅ | Eski `İkamet/Oy ver` butonları işlem çalıştırmadan güncel panele yönlendirir |
 | 4.37 | Mission farm hap hazırlığı | ✅ | Region/AOD farm fazı work öncesi elmas→hap hazırlığını normal tick ile eşitler |
 | 4.38 | Token-aware inbox processed key | ✅ | Aynı `u{uid}_NN.jwt` slotuna yeni JWT konursa otomatik import yeniden çalışır |
+| 4.39 | Ana + 20 worker limiti | ✅ | Main hesap tanımlıysa 20 worker eklenebilir; 22. toplam hesap reddedilir |
 
 ---
 
 ## Operatör runbook (20 hesap)
 
 ```bash
-# 1. Ortam
+# 1. Ortam — 20 worker + varsa 1 ana hesap
 export MAX_ACCOUNTS_PER_USER=20
 
 # 2. Ana hesap fabrika UUID (coach veya fabrika panelinden)
@@ -117,7 +118,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.28.11):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
+**Filo paneli (v4.28.12):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result, alt-menü ve bölge işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları, worker darboğaz özetini, kayıtlı `▶️ Başlat` hedefini ve bekleyen inbox token sayısını gösterir; ana hesap varsa kapasite `21/21` olarak 1 main + 20 worker senaryosuna göre hesaplanır. Region/AOD mission farm fazı work öncesi elmas→hap hazırlığını da çalıştırır. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir; aynı `u{uid}_NN.jwt` slotuna farklı JWT konursa token hash değiştiği için otomatik import tekrar denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
 
 ---
 
@@ -130,7 +131,7 @@ python3 scripts/discover_frontend_api.py --show-missing
 | U3 | `/fleetvote` | aktif seçimde oy veya net hata | 🔲 canlı |
 | U4 | `/fleet status` | rol, mod, bakiye, kapasite + 24s metrik | ✅ 2 hesap tablosu |
 | U5 | ⚙️ İşlemler menüsü | alt klavye açılır | 🔲 canlı |
-| U6 | 20 hesap limit | 21. hesap reddedilir | ✅ unit `test_connect_core.py`, 🔲 canlı |
+| U6 | 20 worker + ana hesap limit | 21. toplam hesap main varsa kabul, 22. toplam reddedilir | ✅ unit `test_connect_core.py`, 🔲 canlı |
 | U7 | `worker_training` | cooldown bitince free attack denemesi | ✅ unit, 🔲 canlı |
 | U8 | `/fleetregion Hürmüz vote` | kalıcı region mission kuyruğu | ✅ unit, 🔲 canlı |
 | U9 | 1 ana + 20 worker dry-run | repair + audit + AOD/region + training | ✅ `test_fleet_goal_dryrun.py` |
@@ -170,7 +171,7 @@ python3 scripts/discover_frontend_api.py --show-missing
 | JWT expired | Token süresi | `/loginkaydet` veya yeni token inbox |
 | Aynı inbox slotu yeniden kullanılacak | Eski processed key aynı dosya adına bağlıydı | v4.28.11 sonrası token hash değişirse watcher tekrar dener |
 | Token refresh tekrar tekrar deniyor | Kaynak yok / login başarısız | Worker hesap bazlı 30 dk backoff yazar; manuel force refresh backoff'u aşar |
-| 21. hesap | Limit | `MAX_ACCOUNTS_PER_USER=20` env |
+| 22. toplam hesap | Limit | `MAX_ACCOUNTS_PER_USER=20` → main varsa 1 ana + 20 worker |
 | Çalışma izni yok | API endpoint keşfedilmedi | `api_route_registry.py` güncellenmeden otomasyon ekleme |
 | Antrenman saldırmıyor | `/training-wars/my` boş veya cooldown | Worker next-attempt yazar; savaş oluşturma/join endpoint keşfi ayrı |
 
@@ -225,6 +226,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.12 | `MAX_ACCOUNTS_PER_USER=20` ana hesap varsa 20 worker + 1 main kapasite verir |
 | 2026-07-01 | 4.28.11 | Inbox processed state dosya adı yerine token hash'i de içerir; aynı slotta yeni JWT retry edilir |
 | 2026-07-01 | 4.28.10 | Region/AOD mission farm fazı normal autofarm gibi work öncesi hap hazırlığı yapar |
 | 2026-07-01 | 4.28.9 | Eski `İkamet/Oy ver` callback'leri stale ise işlem çalıştırmadan güncel nav mesajı açar |

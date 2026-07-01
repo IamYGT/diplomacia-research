@@ -169,6 +169,22 @@ class FleetStatusTests(unittest.TestCase):
         self.assertIn("Başlat hedefi", html)
         self.assertIn("Gelişmiş kabiliyet", html)
 
+    def test_status_limit_allows_main_plus_twenty_workers(self):
+        accs = [_acc("main")] + [_acc(f"w{i:02d}") for i in range(20)]
+        cfg = MagicMock(role="hybrid", work_mode="fixed", preferred_factory_id="factory-uuid")
+        with (
+            patch("diplomacy_bot.fleet_status.scoped_list_accounts", return_value=accs),
+            patch("diplomacy_bot.fleet_status.get_main_account_name", return_value="main"),
+            patch("diplomacy_bot.fleet_command.resolve_operator_factory", return_value=("factory-uuid", "Hürmüz", "")),
+            patch("diplomacy_bot.fleet_status.get_config", return_value=cfg),
+            patch("diplomacy_bot.fleet_status.resolve_display_balance", return_value=MagicMock(format=lambda: "1")),
+            patch("diplomacy_bot.fleet_status.format_factory_capacity_line", return_value=""),
+            patch("diplomacy_bot.fleet_status.format_next_steps_footer", return_value=""),
+        ):
+            html = format_fleet_ops_status(99)
+
+        self.assertIn("21/21 hesap", html)
+
     def test_capability_line_surfaces_unknown_advanced_routes(self):
         line = format_fleet_capability_line()
         self.assertIn("çalışma izni", line)

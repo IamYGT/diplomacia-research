@@ -19,6 +19,7 @@ def connect_core(name: str, token: str, *, telegram_user_id: int) -> ConnectCore
     """Token doğrula, DB'ye yaz — Telegram/UI yok."""
     from .account_pool import suggest_proxy
     from .account_runtime import account_context
+    from .account_main import get_main_account_name
     from .auth import resolve_account
     from .auto_defaults import apply_auto_defaults_for_new_account
     from .config import MAX_ACCOUNTS_PER_USER
@@ -27,8 +28,9 @@ def connect_core(name: str, token: str, *, telegram_user_id: int) -> ConnectCore
     from .token_meta_store import record_token_saved
 
     existing = resolve_account(name, telegram_user_id)
-    if count_accounts_for_user(telegram_user_id) >= MAX_ACCOUNTS_PER_USER and not existing:
-        raise ValueError(f"En fazla {MAX_ACCOUNTS_PER_USER} hesap")
+    total_limit = MAX_ACCOUNTS_PER_USER + (1 if get_main_account_name(telegram_user_id) else 0)
+    if count_accounts_for_user(telegram_user_id) >= total_limit and not existing:
+        raise ValueError(f"En fazla {total_limit} hesap")
 
     slot = suggest_proxy(proxy_assignments())
     with account_context(proxy_id=slot.id, proxy_url=slot.url or None):
