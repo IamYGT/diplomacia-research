@@ -229,7 +229,7 @@ def patch_fleet_region_callbacks() -> None:
             from .fleet_mission_service import start_fleet_autopilot_for_uid
             from .fleet_region_mission_ui import format_autopilot_html
 
-            if await reject_stale_fleet_action(query, "Başlat"): return
+            if await reject_stale_fleet_action(query, "Başlat", uid): return
             result = start_fleet_autopilot_for_uid(uid)
             if query and query.message:
                 await query.message.reply_text(
@@ -241,7 +241,7 @@ def patch_fleet_region_callbacks() -> None:
         if data == "fleet:cmd:aod":
             from .fleet_mission_service import enqueue_aod_missions_for_uid
 
-            if await reject_stale_fleet_action(query, "AOD"): return
+            if await reject_stale_fleet_action(query, "AOD", uid): return
             result = enqueue_aod_missions_for_uid(uid)
             if query and query.message:
                 await query.message.reply_text(
@@ -251,7 +251,7 @@ def patch_fleet_region_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:residence":
-            if await reject_stale_fleet_action(query, "İkamet"): return
+            if await reject_stale_fleet_action(query, "İkamet", uid): return
             batch = set_fleet_residence(uid, DEFAULT_RESIDENCE_PROVINCE)
             if query and query.message:
                 await query.message.reply_text(
@@ -261,7 +261,7 @@ def patch_fleet_region_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:vote":
-            if await reject_stale_fleet_action(query, "Oy ver"): return
+            if await reject_stale_fleet_action(query, "Oy ver", uid): return
             batch = fleet_vote(uid)
             if query and query.message:
                 await query.message.reply_text(

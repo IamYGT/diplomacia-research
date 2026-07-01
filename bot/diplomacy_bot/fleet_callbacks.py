@@ -38,13 +38,13 @@ async def open_fleet_more_menu(query, data: str) -> None:
         await query.message.reply_text(text, **kwargs)
 
 
-async def reject_stale_fleet_command(query, data: str) -> bool:
+async def reject_stale_fleet_command(query, data: str, telegram_user_id: int | None = None) -> bool:
     label = _SIDE_EFFECT_LABELS.get(data)
     if not label:
         return False
     from .fleet_action_guard import reject_stale_fleet_action
 
-    return await reject_stale_fleet_action(query, label)
+    return await reject_stale_fleet_action(query, label, telegram_user_id)
 
 
 def install_fleet_command_callbacks() -> None:
@@ -65,7 +65,7 @@ def install_fleet_command_callbacks() -> None:
             await open_fleet_more_menu(query, data)
             return
         if data == "fleet:af:on:hybrid":
-            if await reject_stale_fleet_command(query, data):
+            if await reject_stale_fleet_command(query, data, uid):
                 return
             batch = bootstrap_fleet(uid, role="hybrid")
             if query and query.message:
@@ -80,7 +80,7 @@ def install_fleet_command_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:inbox":
-            if await reject_stale_fleet_command(query, data):
+            if await reject_stale_fleet_command(query, data, uid):
                 return
             from .fleet_mission_service import start_fleet_autopilot_for_uid
             from .fleet_region_mission_ui import format_autopilot_html
@@ -94,7 +94,7 @@ def install_fleet_command_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:factory":
-            if await reject_stale_fleet_command(query, data):
+            if await reject_stale_fleet_command(query, data, uid):
                 return
             batch = assign_fleet_to_factory(uid)
             if query and query.message:
@@ -109,7 +109,7 @@ def install_fleet_command_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:travel":
-            if await reject_stale_fleet_command(query, data):
+            if await reject_stale_fleet_command(query, data, uid):
                 return
             batch = travel_fleet(uid, "Hürmüz")
             if query and query.message:
@@ -120,7 +120,7 @@ def install_fleet_command_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:bootstrap":
-            if await reject_stale_fleet_command(query, data):
+            if await reject_stale_fleet_command(query, data, uid):
                 return
             batch = bootstrap_fleet(uid, role="hybrid")
             if query and query.message:
@@ -143,7 +143,7 @@ def install_fleet_command_callbacks() -> None:
                 )
             return
         if data == "fleet:cmd:repair":
-            if await reject_stale_fleet_command(query, data):
+            if await reject_stale_fleet_command(query, data, uid):
                 return
             from .fleet_autonomy_repair import repair_fleet_autonomy_for_uid
 

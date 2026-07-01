@@ -82,11 +82,18 @@ class FleetActionGuardTests(unittest.IsolatedAsyncioTestCase):
     async def test_rejects_old_side_effect_button(self):
         query = _Query(datetime.now(timezone.utc) - timedelta(minutes=10))
 
-        with patch("diplomacy_bot.fleet_ui_markup.fleet_nav_inline_markup", return_value=None):
-            rejected = await reject_stale_fleet_action(query, "Başlat")
+        with (
+            patch("diplomacy_bot.fleet_ui_markup.fleet_nav_inline_markup", return_value=None),
+            patch("diplomacy_bot.fleet_status.format_fleet_ops_status", return_value="<b>durum</b>") as status,
+        ):
+            rejected = await reject_stale_fleet_action(query, "Başlat", 42)
 
         self.assertTrue(rejected)
+        status.assert_called_once_with(42, detailed=False)
         query.message.reply_text.assert_awaited_once()
+        text = query.message.reply_text.call_args.args[0]
+        self.assertIn("Eski <b>Başlat</b> butonu", text)
+        self.assertIn("<b>durum</b>", text)
 
     async def test_allows_recent_side_effect_button(self):
         query = _Query(datetime.now(timezone.utc) - timedelta(seconds=30))
@@ -101,7 +108,7 @@ class FleetActionGuardTests(unittest.IsolatedAsyncioTestCase):
         query = _Query(datetime.now(timezone.utc) - timedelta(minutes=10))
 
         with patch("diplomacy_bot.fleet_ui_markup.fleet_nav_inline_markup", return_value=None):
-            rejected = await reject_stale_fleet_command(query, "fleet:cmd:factory")
+            rejected = await reject_stale_fleet_command(query, "fleet:cmd:factory", 99)
 
         self.assertTrue(rejected)
         query.message.reply_text.assert_awaited_once()
