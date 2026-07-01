@@ -46,6 +46,28 @@ class WorkerMissionsTests(unittest.TestCase):
         tick.assert_called_once_with(acc)
         log_action.assert_called_once()
 
+    def test_worker_missions_logs_exception_action(self):
+        from diplomacy_bot.jobs.worker_missions import run_worker_missions_once
+
+        acc = SimpleNamespace(name="w1", telegram_user_id=42)
+        rt = SimpleNamespace(wait_until=time.time() - 1)
+        with (
+            patch("diplomacy_bot.store.list_accounts", return_value=[acc]),
+            patch("diplomacy_bot.mission_store.get_active_mission", return_value=rt),
+            patch("diplomacy_bot.fleet_manager.tick_one", side_effect=RuntimeError("boom")),
+            patch("diplomacy_bot.store.log_action") as log_action,
+        ):
+            ok, attempted = run_worker_missions_once()
+
+        self.assertEqual((ok, attempted), (0, 1))
+        log_action.assert_called_once_with(
+            "worker_mission_exception",
+            account_name="w1",
+            telegram_user_id=42,
+            result="boom",
+            success=False,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

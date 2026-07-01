@@ -38,6 +38,13 @@ def run_worker_missions_once() -> tuple[int, int]:
             )
         except Exception as e:
             log.warning("worker mission %s: %s", acc.name, e)
+            log_action(
+                "worker_mission_exception",
+                account_name=acc.name,
+                telegram_user_id=acc.telegram_user_id or 0,
+                result=str(e)[:120],
+                success=False,
+            )
     if attempted:
         log.info("worker: missions %s/%s ok", ok, attempted)
     return ok, attempted
