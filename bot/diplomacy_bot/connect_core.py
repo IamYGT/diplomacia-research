@@ -37,6 +37,14 @@ def connect_core(name: str, token: str, *, telegram_user_id: int) -> ConnectCore
         prof = get_profile(token)
 
     is_new = existing is None
+    existing_pid = str(existing.player_id or "") if existing else ""
+    profile_pid = str(prof.player_id or "")
+    if existing_pid and profile_pid and existing_pid != profile_pid:
+        raise ValueError(
+            "Bu slot başka bir Diplomacia hesabına ait; "
+            f"yeni Google hesabı için boş bir u{telegram_user_id}_NN dosya adı kullan."
+        )
+
     acc = add_account(
         name,
         token,
