@@ -141,6 +141,23 @@ def format_autopilot_target_line(telegram_user_id: int) -> str:
     return line
 
 
+def format_inbox_autopilot_line(telegram_user_id: int) -> str:
+    try:
+        from .config import FLEET_INBOX_AUTO_SETUP
+        from .token_watch import list_fresh_inbox_import_candidates
+
+        pending = len(list_fresh_inbox_import_candidates(telegram_user_id))
+    except Exception:
+        return ""
+    state = "açık" if FLEET_INBOX_AUTO_SETUP else "kapalı"
+    line = f"🤖 Inbox autopilot: <b>{state}</b>"
+    if pending:
+        line += f" · 📥 {pending} token bekliyor"
+    if not FLEET_INBOX_AUTO_SETUP:
+        line += " · <code>FLEET_INBOX_AUTO_SETUP=0</code>"
+    return line
+
+
 def format_factory_capacity_line(telegram_user_id: int, factory_id: str) -> str:
     import html
 
@@ -193,7 +210,7 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
         return (
             "👥 Henüz hesap yok.\n\n"
             f"<i>Token yapıştır veya <code>data/token_inbox/u{telegram_user_id}_01.jwt</code> bırak, "
-            "sonra <code>/fleetstart</code> çalıştır.</i>"
+            "worker otomatik işler; elle başlatmak için <code>/fleetstart</code>.</i>"
         )
     fid, prov, err = resolve_operator_factory(telegram_user_id)
     af_on = sum(1 for a in accs if a.autofarm)
@@ -238,6 +255,8 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
         head.append(metrics)
     if target_line := format_autopilot_target_line(telegram_user_id):
         head.append(target_line)
+    if inbox_line := format_inbox_autopilot_line(telegram_user_id):
+        head.append(inbox_line)
     head.append(format_fleet_capability_line())
     head.append("")
     detailed_limit = min(len(accs), total_limit)

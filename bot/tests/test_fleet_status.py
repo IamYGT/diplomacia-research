@@ -68,6 +68,7 @@ from diplomacy_bot.fleet_status import (
     format_autopilot_target_line,
     format_factory_capacity_line,
     format_fleet_ops_status,
+    format_inbox_autopilot_line,
     format_next_steps_footer,
 )
 from diplomacy_bot.fleet_autopilot_policy import FleetAutopilotPolicy
@@ -99,6 +100,7 @@ class FleetStatusTests(unittest.TestCase):
             html = format_fleet_ops_status(515491882)
         self.assertIn("data/token_inbox/u515491882_01.jwt", html)
         self.assertIn("/fleetstart", html)
+        self.assertIn("worker otomatik işler", html)
         self.assertNotIn("{uid}", html)
 
     def test_next_steps_suggest_factory_when_not_fixed(self):
@@ -143,6 +145,17 @@ class FleetStatusTests(unittest.TestCase):
         self.assertIn("oy", line)
         self.assertIn("1 token bekliyor", line)
 
+    def test_inbox_autopilot_line_shows_enabled_and_pending_tokens(self):
+        with (
+            patch("diplomacy_bot.config.FLEET_INBOX_AUTO_SETUP", True),
+            patch("diplomacy_bot.token_watch.list_fresh_inbox_import_candidates", return_value=[("u99_01", "tok")]),
+        ):
+            line = format_inbox_autopilot_line(99)
+
+        self.assertIn("Inbox autopilot", line)
+        self.assertIn("açık", line)
+        self.assertIn("1 token bekliyor", line)
+
     def test_status_includes_active_mission_phase(self):
         acc = _acc()
         cfg = MagicMock(role="hybrid", work_mode="fixed", preferred_factory_id="factory-uuid")
@@ -159,6 +172,7 @@ class FleetStatusTests(unittest.TestCase):
             patch("diplomacy_bot.fleet_blocker_summary.format_fleet_blocker_summary", return_value="🧯 Darboğaz: 1 cooldown"),
             patch("diplomacy_bot.fleet_metrics.format_fleet_metrics_line", return_value=""),
             patch("diplomacy_bot.fleet_status.format_autopilot_target_line", return_value="🎯 Başlat hedefi: Hürmüz"),
+            patch("diplomacy_bot.fleet_status.format_inbox_autopilot_line", return_value="🤖 Inbox autopilot: açık"),
             patch("diplomacy_bot.fleet_status.format_next_steps_footer", return_value=""),
             patch("diplomacy_bot.mission_store.get_active_mission", return_value=rt),
         ):
@@ -167,6 +181,7 @@ class FleetStatusTests(unittest.TestCase):
         self.assertIn("Otonomi audit", html)
         self.assertIn("Darboğaz", html)
         self.assertIn("Başlat hedefi", html)
+        self.assertIn("Inbox autopilot", html)
         self.assertIn("Gelişmiş kabiliyet", html)
 
     def test_status_limit_allows_main_plus_twenty_workers(self):
