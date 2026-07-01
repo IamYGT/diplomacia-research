@@ -25,6 +25,8 @@ def is_navigation_callback(data: str) -> bool:
         data in NAVIGATION_CALLBACKS
         or data.startswith("menu:accounts:")
         or data.startswith("nav:account:")
+        or data.startswith("role:pick:")
+        or data.startswith("fleet:tick:")
     )
 
 

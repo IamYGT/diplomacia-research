@@ -190,11 +190,12 @@ async def handle_callback(
     if data.startswith("role:pick:"):
         name = data.split(":", 2)[2]
         if query.message:
-            await query.edit_message_text(
-                f"Rol seç — *{name}*",
-                parse_mode="Markdown",
-                reply_markup=role_picker_markup(name),
-            )
+            text = f"Rol seç — *{name}*"
+            markup = role_picker_markup(name)
+            if callback_prefers_fresh_reply(data, query):
+                await query.message.reply_text(text, parse_mode="Markdown", reply_markup=markup)
+            else:
+                await query.edit_message_text(text, parse_mode="Markdown", reply_markup=markup)
         return
 
     if data.startswith("fleet:tick:"):
@@ -204,19 +205,32 @@ async def handle_callback(
 
         accs = resolve_fleet_accounts(role, accounts=_user_accounts(uid))
         if not accs:
-            await query.edit_message_text("👥 Filo boş — önce hesap ekle veya rolü off yapma.")
+            text = "👥 Filo boş — önce hesap ekle veya rolü off yapma."
+            if query.message and callback_prefers_fresh_reply(data, query):
+                await query.message.reply_text(text)
+            else:
+                await query.edit_message_text(text)
             return
         if query.message:
-            await query.edit_message_text(
-                f"👥 Filo başlıyor…\n\n" + "\n".join(f"⏳ {a.name} — hazırlanıyor" for a in accs[:12])
+            text = f"👥 Filo başlıyor…\n\n" + "\n".join(f"⏳ {a.name} — hazırlanıyor" for a in accs[:12])
+            if callback_prefers_fresh_reply(data, query):
+                live_message = await query.message.reply_text(text)
+            else:
+                await query.edit_message_text(text)
+                live_message = query.message
+            chat_id = getattr(live_message, "chat_id", None) or getattr(
+                getattr(live_message, "chat", None),
+                "id",
+                query.message.chat_id,
             )
+            message_id = getattr(live_message, "message_id", query.message.message_id)
             run = await run_fleet_parallel_live(
                 context.bot,
-                query.message.chat_id,
-                query.message.message_id,
+                chat_id,
+                message_id,
                 accs,
             )
-            await query.message.edit_text(
+            await live_message.edit_text(
                 format_fleet_final(run),
                 reply_markup=result_with_home_markup(),
             )

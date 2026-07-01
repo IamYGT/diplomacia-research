@@ -223,17 +223,21 @@ def bootstrap_fleet(
     *,
     role: str = "hybrid",
     limit: int | None = None,
+    include_main: bool = False,
 ) -> FleetBatchResult:
-    """Mevcut hesaplara rol + autofarm + oto bayrakları."""
+    """İşçi hesaplara rol + autofarm + oto bayrakları."""
     from .account_config import normalize_role
 
     want = normalize_role(role)
     batch = FleetBatchResult()
+    main_name = (get_main_account_name(telegram_user_id) or "").strip().lower()
     accs = scoped_list_accounts(telegram_user_id)
+    if not include_main and main_name:
+        accs = [a for a in accs if a.name.strip().lower() != main_name]
     if limit is not None:
         accs = accs[: max(0, limit)]
     if not accs:
-        batch.add(FleetOpResult("-", False, "hesap yok — önce token bağla"))
+        batch.add(FleetOpResult("-", False, "işçi hesap yok — önce token bağla"))
         return batch
     for acc in accs:
         try:

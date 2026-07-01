@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot.fleet_command import (
     FleetBatchResult,
@@ -32,7 +36,7 @@ def _acc(name: str = "worker1", uid: int = 42) -> Account:
     )
 
 
-class FactoryPillBeforeCooldownTests(unittest.TestCase):
+class FleetCommandTests(unittest.TestCase):
     def test_resolve_operator_factory_from_config(self):
         with (
             patch("diplomacy_bot.fleet_command.get_main_account_name", return_value="main1"),
@@ -68,6 +72,20 @@ class FactoryPillBeforeCooldownTests(unittest.TestCase):
             batch = bootstrap_fleet(1)
             self.assertEqual(batch.total, 1)
             self.assertFalse(batch.results[0].ok)
+
+    def test_bootstrap_skips_main_account_by_default(self):
+        accs = [_acc("main"), _acc("w1"), _acc("w2")]
+        with (
+            patch("diplomacy_bot.fleet_command.get_main_account_name", return_value="main"),
+            patch("diplomacy_bot.fleet_command.scoped_list_accounts", return_value=accs),
+            patch("diplomacy_bot.fleet_command.update_config_field") as update_cfg,
+            patch("diplomacy_bot.fleet_command.bulk_enable_auto") as enable_auto,
+        ):
+            batch = bootstrap_fleet(42)
+
+        self.assertEqual((batch.ok, batch.total), (2, 2))
+        self.assertEqual([c.args[0] for c in update_cfg.call_args_list], ["w1", "w2"])
+        self.assertEqual([c.args[0].name for c in enable_auto.call_args_list], ["w1", "w2"])
 
     def test_format_batch_html(self):
         batch = FleetBatchResult(total=1, ok=1)
