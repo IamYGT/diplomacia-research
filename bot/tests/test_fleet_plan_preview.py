@@ -25,6 +25,8 @@ class FleetPlanPreviewTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Hürmüz", html)
         self.assertIn("DeepSeek planı", html)
         self.assertIn("oy", html.lower())
+        self.assertIn("/fleetstart Hürmüz vote eyaletoy", html)
+        self.assertIn("/fleetregion Hürmüz vote eyaletoy", html)
         self.assertIn("sadece önizleme", html)
 
     async def test_fleetplan_command_replies_with_preview(self):

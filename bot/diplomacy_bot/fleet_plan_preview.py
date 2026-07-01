@@ -37,9 +37,29 @@ def format_fleet_plan_preview_html(plan: FleetStartPlan) -> str:
         lines.append(f"📋 Vize ülke: <code>{html.escape(vid)}</code>")
     if phase_text := format_phase_plan(phases):
         lines.append(f"\n🧩 Plan: {html.escape(phase_text)}")
+    command_args = _command_args(plan)
+    lines.append("\n<b>Uygula</b>")
+    lines.append(f"<code>/fleetstart {html.escape(command_args)}</code>")
+    lines.append(f"<code>/fleetregion {html.escape(command_args)}</code>")
     lines.append("\n<i>Bu sadece önizleme; işlem başlatmaz.</i>")
-    lines.append("<code>/fleetstart ...</code> veya <code>/fleetregion ...</code> ile uygula.")
     return "\n".join(lines)
+
+
+def _command_args(plan: FleetStartPlan) -> str:
+    parts = [plan.province]
+    if plan.opts.get("vote"):
+        parts.append("vote")
+    if plan.opts.get("province_vote"):
+        parts.append("eyaletoy")
+    if plan.opts.get("independent_citizenship"):
+        parts.append("independent")
+    if cid := str(plan.opts.get("citizenship_country_id") or ""):
+        parts.append(f"citizen:{cid}")
+    if vid := str(plan.opts.get("visa_country_id") or ""):
+        parts.append(f"visa:{vid}")
+    if cand := str(plan.opts.get("candidate_id") or ""):
+        parts.append(f"candidate:{cand}")
+    return " ".join(parts)
 
 
 @user_required
