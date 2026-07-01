@@ -16,6 +16,7 @@ from .auth import resolve_account
 from .store import get_account
 from .telegram_easy import _run_program_step
 from .telegram_helpers import user_required
+from .telegram_navigation import reply_or_edit_callback
 from .war_commands import resolve_and_configure_war
 
 log = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ async def handle_mission_callback(data: str, query, uid: int) -> bool:
         accs = scoped_list_accounts(uid)
         if accs:
             clear_mission(accs[0].name)
-        await query.edit_message_text("🛑 Program durduruldu.")
+        await reply_or_edit_callback(query, data, "🛑 Program durduruldu.")
         return True
     if data.startswith("mission:step:"):
         name = data.split(":", 2)[-1].lower()
@@ -147,6 +148,6 @@ async def handle_mission_callback(data: str, query, uid: int) -> bool:
         from .telegram_easy import _run_program_step
 
         text, markup = await _run_program_step(acc)
-        await query.edit_message_text(text, parse_mode="HTML", reply_markup=markup)
+        await reply_or_edit_callback(query, data, text, parse_mode="HTML", reply_markup=markup)
         return True
     return False

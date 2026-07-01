@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.26.2 ✅ Faz 4.5–4.9
+**Sürüm:** 4.26.3 ✅ Faz 4.5–4.10
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -52,6 +52,7 @@
 | 4.7 | Training cooldown retry scheduler | ✅ | `test_worker_training.py` |
 | 4.8 | 20 hesap dry-run goal testi | ✅ | `test_fleet_goal_dryrun.py` |
 | 4.9 | Token refresh backoff + Telegram deps | ✅ | `token_refresh_service.py`, `requirements.txt` kurulum teyidi |
+| 4.10 | Kolay/program callback fresh panel | ✅ | `telegram_navigation.py`, `telegram_easy.py`, `telegram_mission.py` |
 
 ---
 
@@ -169,6 +170,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.26.3 | Kolay/program/onboarding eski callback'lerinde görünür yeni panel fallback |
 | 2026-07-01 | 4.26.2 | Telegram paketleri kuruldu, token refresh backoff, token_extract domain helper |
 | 2026-07-01 | 4.26.1 | Telegram stale panel fallback, 20 hesap dry-run testi, `/fleetrepair` doküman netliği |
 | 2026-07-01 | 4.26.0 | durable `/fleetregion`, mission region phases, training cooldown scheduler, craft→hap→work test |

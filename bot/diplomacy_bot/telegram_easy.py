@@ -21,6 +21,7 @@ from .modules.mission_executor import run_mission_step
 from .auth import resolve_account
 from .store import get_account
 from .telegram_helpers import user_required
+from .telegram_navigation import reply_or_edit_callback
 from .war_contribute_format import enrich_war_contribute_pack, format_war_contribute_html_enhanced
 from .war_ops import run_war_contribute
 
@@ -175,7 +176,9 @@ async def handle_easy_callback(data: str, query, uid: int) -> bool:
 
     if op == "hub":
         rt = get_active_mission(acc.name)
-        await query.edit_message_text(
+        await reply_or_edit_callback(
+            query,
+            data,
             format_program_status(rt, account_name=acc.name),
             parse_mode="HTML",
             reply_markup=program_hub_markup(acc.name),
@@ -184,7 +187,9 @@ async def handle_easy_callback(data: str, query, uid: int) -> bool:
 
     if op == "stop":
         clear_mission(acc.name)
-        await query.edit_message_text(
+        await reply_or_edit_callback(
+            query,
+            data,
             "🛑 Program durduruldu.",
             reply_markup=program_hub_markup(acc.name),
         )
@@ -193,7 +198,7 @@ async def handle_easy_callback(data: str, query, uid: int) -> bool:
     if op == "start":
         enqueue_mission(acc.name)
         text, markup = await _run_program_step(acc)
-        await query.edit_message_text(text, parse_mode="HTML", reply_markup=markup)
+        await reply_or_edit_callback(query, data, text, parse_mode="HTML", reply_markup=markup)
         return True
 
     if op == "run":
@@ -204,7 +209,7 @@ async def handle_easy_callback(data: str, query, uid: int) -> bool:
         if not get_active_mission(acc.name):
             enqueue_mission(acc.name)
         text, markup = await _run_program_step(acc)
-        await query.edit_message_text(text, parse_mode="HTML", reply_markup=markup)
+        await reply_or_edit_callback(query, data, text, parse_mode="HTML", reply_markup=markup)
         return True
 
     if op == "war":
@@ -214,7 +219,9 @@ async def handle_easy_callback(data: str, query, uid: int) -> bool:
             await query.answer("Farm hesabı — savaş kapalı", show_alert=True)
             return True
         msg = await _run_war_contrib(acc)
-        await query.edit_message_text(
+        await reply_or_edit_callback(
+            query,
+            data,
             msg,
             parse_mode="HTML",
             reply_markup=program_hub_markup(acc.name),

@@ -5,6 +5,7 @@ import sys
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import AsyncMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -12,6 +13,7 @@ from diplomacy_bot.telegram_navigation import (
     callback_prefers_fresh_reply,
     is_navigation_callback,
     message_age_seconds,
+    reply_or_edit_callback,
 )
 
 
@@ -33,6 +35,8 @@ class TelegramNavigationTests(unittest.TestCase):
         self.assertTrue(is_navigation_callback("nav:account:farm01"))
         self.assertTrue(is_navigation_callback("role:pick:farm01"))
         self.assertTrue(is_navigation_callback("fleet:tick:all"))
+        self.assertTrue(is_navigation_callback("easy:run:farm01"))
+        self.assertTrue(is_navigation_callback("mission:step:farm01"))
         self.assertFalse(is_navigation_callback("dash:refresh"))
         self.assertFalse(is_navigation_callback("farm:work"))
 
@@ -62,6 +66,37 @@ class TelegramNavigationTests(unittest.TestCase):
         age = message_age_seconds(datetime(2026, 7, 1, 11, 59), now=now)
 
         self.assertEqual(age, 60.0)
+
+
+class TelegramCallbackReplyOrEditTests(unittest.IsolatedAsyncioTestCase):
+    async def test_old_callback_message_replies_with_visible_panel(self):
+        now = datetime.now(timezone.utc)
+        query = _Query(now - timedelta(minutes=10))
+        query.message.reply_text = AsyncMock(return_value="sent")
+        query.edit_message_text = AsyncMock()
+
+        result = await reply_or_edit_callback(
+            query,
+            "easy:run:farm01",
+            "Yeni panel",
+            parse_mode="HTML",
+        )
+
+        self.assertEqual(result, "sent")
+        query.message.reply_text.assert_awaited_once_with("Yeni panel", parse_mode="HTML")
+        query.edit_message_text.assert_not_awaited()
+
+    async def test_recent_callback_message_edits_in_place(self):
+        now = datetime.now(timezone.utc)
+        query = _Query(now - timedelta(seconds=30))
+        query.message.reply_text = AsyncMock()
+        query.edit_message_text = AsyncMock(return_value="edited")
+
+        result = await reply_or_edit_callback(query, "mission:cancel", "Durdu")
+
+        self.assertEqual(result, "edited")
+        query.edit_message_text.assert_awaited_once_with("Durdu")
+        query.message.reply_text.assert_not_awaited()
 
 
 if __name__ == "__main__":

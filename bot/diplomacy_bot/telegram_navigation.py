@@ -27,6 +27,8 @@ def is_navigation_callback(data: str) -> bool:
         or data.startswith("nav:account:")
         or data.startswith("role:pick:")
         or data.startswith("fleet:tick:")
+        or data.startswith("easy:")
+        or data.startswith("mission:")
     )
 
 
@@ -57,3 +59,17 @@ def callback_prefers_fresh_reply(
     if age is None:
         return True
     return age >= stale_after_sec
+
+
+async def reply_or_edit_callback(
+    query: Any,
+    data: str,
+    text: str,
+    **kwargs: Any,
+) -> Any:
+    """Edit recent callback messages, but open a visible reply for stale panels."""
+    if callback_prefers_fresh_reply(data, query):
+        message = getattr(query, "message", None)
+        if message is not None:
+            return await message.reply_text(text, **kwargs)
+    return await query.edit_message_text(text, **kwargs)

@@ -10,6 +10,7 @@ from telegram.ext import ContextTypes
 from .easy_mode import format_onboarding_guide_html
 from .keyboard_prefs import is_reply_keyboard_enabled
 from .onboarding_store import is_easy_guide_shown, mark_easy_guide_shown
+from .telegram_navigation import reply_or_edit_callback
 
 log = logging.getLogger(__name__)
 
@@ -74,7 +75,9 @@ async def handle_onboarding_callback(data: str, query, *, uid: int = 0) -> bool:
             from .easy_role import format_onboarding_done_tail
 
         tail = format_onboarding_done_tail(war_enabled=war_on, keyboard_hidden=bool(hidden))
-        await query.edit_message_text(
+        await reply_or_edit_callback(
+            query,
+            data,
             f"✅ <b>Hazırsın!</b>\n\n"
             f"Şimdi {tail}",
             parse_mode="HTML",
