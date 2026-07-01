@@ -35,16 +35,25 @@ log = logging.getLogger(__name__)
 USER_FACING_ERROR = "İşlem başarısız. /start ile yeniden dene."
 
 
-async def open_extras_hub(update, context, query) -> None:
+async def open_extras_hub(update, context, query, *, edit: bool = True) -> None:
     """Ek menü — anında iskelet, ardından canlı hazırlık özeti."""
     from .telegram_ui import extras_inline_markup, format_extras_html
 
     if not query or not query.message:
         return
     bot = query.get_bot()
-    chat_id = query.message.chat_id
-    msg_id = query.message.message_id
-    await edit_safe(bot, chat_id, msg_id, format_extras_html(), reply_markup=extras_inline_markup())
+    if edit:
+        chat_id = query.message.chat_id
+        msg_id = query.message.message_id
+        await edit_safe(bot, chat_id, msg_id, format_extras_html(), reply_markup=extras_inline_markup())
+    else:
+        sent = await query.message.reply_text(
+            format_extras_html(),
+            parse_mode="HTML",
+            reply_markup=extras_inline_markup(),
+        )
+        chat_id = sent.chat_id
+        msg_id = sent.message_id
 
     default = (context.user_data.get("default_account") or "").strip().lower()
     uid = query.from_user.id if query.from_user else 0

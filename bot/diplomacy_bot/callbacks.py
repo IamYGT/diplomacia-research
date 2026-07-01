@@ -19,6 +19,7 @@ from .auth import resolve_account, default_account_name
 from .dynamic_context import invalidate_snapshot_cache, peek_snapshot_cache
 from .store import Account, set_autofarm, update_after_farm, log_action
 from .telegram_ui import connect_inline_markup, format_token_guide_html, result_with_home_markup
+from .telegram_navigation import callback_prefers_fresh_reply
 from .token_console import format_console_script_telegram
 from .ui_tracker import edit_safe, spawn_tracked
 from .telegram_helpers import (
@@ -61,19 +62,33 @@ async def handle_callback(
         acc = _acc(name)
         if acc:
             _set_default_account(context, uid, name)
-            await _app._send_dashboard(update, acc, context, edit=True)
+            await _app._send_dashboard(
+                update,
+                acc,
+                context,
+                edit=not callback_prefers_fresh_reply(data, query),
+            )
         return
 
     if data == "dash:home":
         acc = _acc()
+        edit = not callback_prefers_fresh_reply(data, query)
         if acc:
-            await _app._send_dashboard(update, acc, context, edit=True)
+            await _app._send_dashboard(update, acc, context, edit=edit)
         elif query.message:
-            await query.message.edit_text(
-                format_token_guide_html(),
-                parse_mode="HTML",
-                reply_markup=connect_inline_markup(),
-            )
+            if edit:
+                await query.message.edit_text(
+                    format_token_guide_html(),
+                    parse_mode="HTML",
+                    reply_markup=connect_inline_markup(),
+                )
+            else:
+                await query.message.reply_text(
+                    format_token_guide_html(),
+                    parse_mode="HTML",
+                    reply_markup=connect_inline_markup(),
+                    disable_web_page_preview=True,
+                )
         return
 
     if data == "dash:refresh":
@@ -85,25 +100,46 @@ async def handle_callback(
     if data == "menu:settings":
         acc = _acc()
         if acc:
-            await _send_settings(update, acc, edit=True, uid=uid)
+            await _send_settings(
+                update,
+                acc,
+                edit=not callback_prefers_fresh_reply(data, query),
+                uid=uid,
+            )
         return
 
     if data == "menu:accounts":
-        await _send_accounts_picker(update, context, edit=True)
+        await _send_accounts_picker(
+            update,
+            context,
+            edit=not callback_prefers_fresh_reply(data, query),
+        )
         return
 
     if data == "menu:fleet":
-        await _send_fleet(update, context, edit=True)
+        await _send_fleet(
+            update,
+            context,
+            edit=not callback_prefers_fresh_reply(data, query),
+        )
         return
 
     if data == "menu:connect":
         if query.message:
-            await query.message.edit_text(
-                format_token_guide_html(),
-                parse_mode="HTML",
-                reply_markup=connect_inline_markup(),
-                disable_web_page_preview=True,
-            )
+            if callback_prefers_fresh_reply(data, query):
+                await query.message.reply_text(
+                    format_token_guide_html(),
+                    parse_mode="HTML",
+                    reply_markup=connect_inline_markup(),
+                    disable_web_page_preview=True,
+                )
+            else:
+                await query.message.edit_text(
+                    format_token_guide_html(),
+                    parse_mode="HTML",
+                    reply_markup=connect_inline_markup(),
+                    disable_web_page_preview=True,
+                )
             await query.message.reply_text(format_console_script_telegram())
         _set_pending_connect(context, uid, True)
         return
@@ -121,7 +157,12 @@ async def handle_callback(
     if data == "menu:extras":
         from .feature_handlers import open_extras_hub
 
-        await open_extras_hub(update, context, query)
+        await open_extras_hub(
+            update,
+            context,
+            query,
+            edit=not callback_prefers_fresh_reply(data, query),
+        )
         return
 
     if data.startswith("role:set:"):
@@ -1080,5 +1121,4 @@ async def handle_callback(
     extra = await _try_extra_feature_action(update, context, data, acc, query)
     if extra:
         return
-
 
