@@ -10,6 +10,7 @@ from unittest.mock import AsyncMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot.fleet_action_guard import is_stale_fleet_action, reject_stale_fleet_action
+from diplomacy_bot.fleet_callbacks import reject_stale_fleet_command
 
 
 class _Message:
@@ -38,6 +39,23 @@ class FleetActionGuardTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(is_stale_fleet_action(query))
         rejected = await reject_stale_fleet_action(query, "Başlat")
+
+        self.assertFalse(rejected)
+        query.message.reply_text.assert_not_awaited()
+
+    async def test_rejects_stale_more_menu_side_effect_command(self):
+        query = _Query(datetime.now(timezone.utc) - timedelta(minutes=10))
+
+        with patch("diplomacy_bot.fleet_ui_markup.fleet_nav_inline_markup", return_value=None):
+            rejected = await reject_stale_fleet_command(query, "fleet:cmd:factory")
+
+        self.assertTrue(rejected)
+        query.message.reply_text.assert_awaited_once()
+
+    async def test_allows_read_only_status_command_when_stale(self):
+        query = _Query(datetime.now(timezone.utc) - timedelta(minutes=10))
+
+        rejected = await reject_stale_fleet_command(query, "fleet:cmd:ops")
 
         self.assertFalse(rejected)
         query.message.reply_text.assert_not_awaited()

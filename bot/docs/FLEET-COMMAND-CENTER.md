@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.6 ✅ Faz 4.5–4.33
+**Sürüm:** 4.28.7 ✅ Faz 4.5–4.34
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -76,6 +76,7 @@
 | 4.31 | Permit API keşif kapsamı | ✅ | Discovery `/employment` ve `/work-permits` aday path'lerini de tarar |
 | 4.32 | Eski işlem butonu koruması | ✅ | Eski `Başlat/AOD` result butonları yan etkili işlem üretmeden güncel panele yönlendirir |
 | 4.33 | Fleetstart command UAT | ✅ | `/fleetstart Hürmüz vote` handler policy kaydı + cevap üretimi testli |
+| 4.34 | Eski alt-menü işlem koruması | ✅ | Eski `Fabrika/Hürmüz/Inbox/Hazırla/Onar` butonları işlem çalıştırmadan güncel panele yönlendirir |
 
 ---
 
@@ -112,7 +113,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.28.6):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result mesajlarındaki `Başlat/AOD` butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları ve worker darboğaz özetini sayar. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
+**Filo paneli (v4.28.7):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. Eski result ve alt-menü işlem butonları yan etkili işlem üretmeden güncel panele yönlendirir. `/fleet status` antrenman cooldown bekleyen hesapları ve worker darboğaz özetini sayar. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder; `/fleetstart Hürmüz vote` komut handler'ı bu akışı test eder.
 
 ---
 
@@ -218,6 +219,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.7 | Eski alt-menü yan etkili filo komutları stale ise işlem çalıştırmadan güncel nav mesajı açar |
 | 2026-07-01 | 4.28.6 | `/fleetstart Hürmüz vote` command handler policy kaydı ve Telegram cevap üretimi testli |
 | 2026-07-01 | 4.28.5 | Eski `Başlat/AOD` result butonları stale ise işlem çalıştırmadan güncel nav mesajı açar |
 | 2026-07-01 | 4.28.4 | API discovery `/employment` ve `/work-permits` prefix'lerini tarar; U6 unit kanıtı dokümana işlendi |
