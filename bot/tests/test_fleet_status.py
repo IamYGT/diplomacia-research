@@ -11,8 +11,12 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 if "telegram" not in sys.modules:
     telegram_stub = ModuleType("telegram")
+    telegram_stub.BotCommand = MagicMock
     telegram_stub.InlineKeyboardButton = MagicMock
     telegram_stub.InlineKeyboardMarkup = MagicMock
+    telegram_stub.KeyboardButton = MagicMock
+    telegram_stub.MenuButtonCommands = MagicMock
+    telegram_stub.ReplyKeyboardMarkup = MagicMock
     sys.modules["telegram"] = telegram_stub
 
 from diplomacy_bot.fleet_status import (
@@ -22,6 +26,7 @@ from diplomacy_bot.fleet_status import (
     format_next_steps_footer,
 )
 from diplomacy_bot.fleet_capabilities import format_fleet_capability_line
+from diplomacy_bot.telegram_ui import format_fleet_html
 from diplomacy_bot.store import Account
 
 
@@ -99,6 +104,15 @@ class FleetStatusTests(unittest.TestCase):
         line = format_fleet_capability_line()
         self.assertIn("çalışma izni", line)
         self.assertIn("endpoint keşfi bekliyor", line)
+
+    def test_fleet_panel_copy_prioritizes_simple_flow(self):
+        acc = _acc()
+        cfg = MagicMock(role="hybrid", work_mode="fixed")
+        with patch("diplomacy_bot.telegram_ui.get_config", return_value=cfg):
+            html = format_fleet_html("u99_worker", [acc])
+        self.assertIn("Önerilen akış", html)
+        self.assertIn("▶️ Başlat", html)
+        self.assertIn("⚙️ İşlemler", html)
 
 
 class TokenInboxFleetTests(unittest.TestCase):

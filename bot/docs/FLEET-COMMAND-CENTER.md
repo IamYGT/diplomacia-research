@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.27.0 ✅ Faz 4.5–4.17
+**Sürüm:** 4.27.1 ✅ Faz 4.5–4.18
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -60,6 +60,7 @@
 | 4.15 | Frontend API keşfi + capability satırı | ✅ | `scripts/discover_frontend_api.py`, `/fleet status` |
 | 4.16 | Keşfedilen bölge politikası fazları | ✅ | `independent`, `eyaletoy` opsiyonel mission fazları |
 | 4.17 | Filo sonuç navigasyonu | ✅ | Her sonuçta `Durum / Başlat / İşlemler / Ana panel` |
+| 4.18 | Sade filo ana paneli | ✅ | Ana ekranda sadece başlat/durum/AOD/işlemler + hesap rolü |
 
 ---
 
@@ -96,7 +97,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.27.0):** üst satır `▶️ Başlat | 🇦🇴 AOD | 📋 Durum` → alt menüde fabrika, seyahat, bootstrap, inbox, ikamet, oy. Filo sonuç mesajları artık `Durum / Başlat / İşlemler / Ana panel` geri dönüş butonlarını taşır.
+**Filo paneli (v4.27.1):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, seyahat, bootstrap, inbox, ikamet, oy. Filo sonuç mesajları `Durum / Başlat / İşlemler / Ana panel` geri dönüş butonlarını taşır.
 
 ---
 
@@ -200,6 +201,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.27.1 | Filo ana paneli sadeleşti; teknik tick butonları alt menüye indi |
 | 2026-07-01 | 4.27.0 | Filo sonuç mesajlarına ortak geri dönüş navigasyonu |
 | 2026-07-01 | 4.26.9 | `independent` ve `eyaletoy` bölge mission opsiyonları |
 | 2026-07-01 | 4.26.8 | Frontend API keşif script'i, registry genişletme ve fleet capability satırı |

@@ -51,25 +51,27 @@ def patch_fleet_ui_buttons() -> None:
     if getattr(ui, "_fleet_ops_buttons_installed", False):
         return
 
-    _orig = ui.fleet_inline_markup
-
     def fleet_inline_markup_patched(active_name: str, accs=None):
-        markup = _orig(active_name, accs)
-        rows = list(markup.inline_keyboard)
-        rows.insert(
-            0,
+        from .account_config import get_config, normalize_role
+
+        accounts = list(accs or [])
+        rows = [
             [
                 InlineKeyboardButton("▶️ Başlat", callback_data="fleet:cmd:start"),
-                InlineKeyboardButton("🇦🇴 AOD kurulum", callback_data="fleet:cmd:aod"),
                 InlineKeyboardButton("📋 Durum", callback_data="fleet:cmd:ops"),
             ],
-        )
-        rows.insert(
-            1,
             [
+                InlineKeyboardButton("🇦🇴 AOD", callback_data="fleet:cmd:aod"),
                 InlineKeyboardButton("⚙️ İşlemler", callback_data="fleet:menu:more"),
             ],
-        )
+        ]
+        labels = getattr(ui, "ROLE_LABELS_TR")
+        for acc in accounts[:8]:
+            cfg = get_config(acc.name)
+            mark = "⭐" if acc.name == active_name else ""
+            role = labels.get(normalize_role(cfg.role), "?")
+            rows.append([InlineKeyboardButton(f"{mark}{acc.name} · {role}", callback_data=f"role:pick:{acc.name}")])
+        rows.append([ui.back_home_button()])
         return InlineKeyboardMarkup(rows)
 
     ui.fleet_inline_markup = fleet_inline_markup_patched

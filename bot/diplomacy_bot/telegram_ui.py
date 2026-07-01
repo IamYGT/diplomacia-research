@@ -390,11 +390,14 @@ def format_fleet_html(active_name: str, accs: list[Account] | None = None) -> st
     accs = accs if accs is not None else list_accounts()
     counts = count_by_role(accounts=accs)
     rows = fleet_rows(live=False, accounts=accs)
+    af_on = sum(1 for r in rows if r.autofarm)
+    fixed = sum(1 for r in rows if get_config(r.name).work_mode == "fixed")
     lines = [
         f"<b>👥 Filo — {len(rows)} hesap</b>",
-        f"🌾 {counts.get('farm', 0)} farm · ⚔️ {counts.get('war', 0)} savaş · "
-        f"🔀 {counts.get('hybrid', 0)} karma · ⭐ {counts.get('hub', 0)} hub · "
-        f"⏸ {counts.get('off', 0)} durdu\n",
+        "<b>Önerilen akış:</b> ▶️ Başlat → 📋 Durum → gerekirse ⚙️ İşlemler",
+        f"🟢 oto farm {af_on}/{len(rows)} · 🏭 sabit fabrika {fixed}/{len(rows)}",
+        f"🌾 {counts.get('farm', 0)} · ⚔️ {counts.get('war', 0)} · "
+        f"🔀 {counts.get('hybrid', 0)} · ⭐ {counts.get('hub', 0)} · ⏸ {counts.get('off', 0)}\n",
     ]
     by_role: dict[str, list] = {r: [] for r in BOT_ROLES}
     for r in rows:
@@ -413,7 +416,7 @@ def format_fleet_html(active_name: str, accs: list[Account] | None = None) -> st
                 f"· {r.balance:,}₺ {af} · <code>{html.escape(r.proxy_id)}</code>"
             )
         lines.append("")
-    lines.append("<i>Rol değiştir: hesaba bas · Toplu tick: alttaki butonlar</i>")
+    lines.append("<i>Hesaba bas: rol değiştir · Teknik işlemler: ⚙️ İşlemler</i>")
     return "\n".join(lines)
 
 

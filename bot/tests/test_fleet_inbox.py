@@ -72,6 +72,18 @@ class FleetInboxImportTests(unittest.TestCase):
         callbacks = [button.callback_data for row in rows for button in row]
 
         self.assertIn("fleet:cmd:start", callbacks)
+        self.assertIn("fleet:cmd:ops", callbacks)
+        self.assertIn("fleet:menu:more", callbacks)
+
+    def test_fleet_main_menu_hides_technical_tick_buttons(self):
+        from diplomacy_bot import telegram_ui as ui
+
+        patch_fleet_ui_buttons()
+        rows = ui.fleet_inline_markup("w1", []).inline_keyboard
+        callbacks = [button.callback_data for row in rows for button in row]
+
+        self.assertNotIn("fleet:tick:farm", callbacks)
+        self.assertNotIn("fleet:af:on:farm", callbacks)
 
 
 if __name__ == "__main__":
