@@ -196,6 +196,10 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
         main_account_name=_main_name(telegram_user_id) or "",
     )
     head.append(format_fleet_audit_line(audit))
+    from .fleet_blocker_summary import format_fleet_blocker_summary
+
+    if blocker_summary := format_fleet_blocker_summary(accs, audit):
+        head.append(blocker_summary)
     from .fleet_metrics import format_fleet_metrics_line
 
     if metrics := format_fleet_metrics_line(telegram_user_id):

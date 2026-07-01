@@ -98,6 +98,7 @@ class FleetStatusTests(unittest.TestCase):
             patch("diplomacy_bot.fleet_status.get_config", return_value=cfg),
             patch("diplomacy_bot.fleet_status.resolve_display_balance", return_value=MagicMock(format=lambda: "1,000")),
             patch("diplomacy_bot.fleet_status.format_factory_capacity_line", return_value=""),
+            patch("diplomacy_bot.fleet_blocker_summary.format_fleet_blocker_summary", return_value="🧯 Darboğaz: 1 cooldown"),
             patch("diplomacy_bot.fleet_metrics.format_fleet_metrics_line", return_value=""),
             patch("diplomacy_bot.fleet_status.format_next_steps_footer", return_value=""),
             patch("diplomacy_bot.mission_store.get_active_mission", return_value=rt),
@@ -105,6 +106,7 @@ class FleetStatusTests(unittest.TestCase):
             html = format_fleet_ops_status(99)
         self.assertIn("travel_to_province:waiting", html)
         self.assertIn("Otonomi audit", html)
+        self.assertIn("Darboğaz", html)
         self.assertIn("Gelişmiş kabiliyet", html)
 
     def test_capability_line_surfaces_unknown_advanced_routes(self):
