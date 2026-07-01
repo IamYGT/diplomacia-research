@@ -58,16 +58,16 @@ def test_readiness_cache_skips_second_probe():
     assert out.get("quests_claimable") == 2
 
 
-def test_dashboard_markup_quest_badge():
+def test_dashboard_markup_has_quick_actions():
     acc = _acc()
     mk = dashboard_inline_markup(
         acc,
         {"health": 100, "quests_claimable": 3, "training_ready": True},
     )
     flat = [b.text for row in mk.inline_keyboard for b in row]
-    assert any("Görev (3)" in t for t in flat)
-    assert any("Antrenman" in t for t in flat)
-    assert any("📜3" in t for t in flat)
+    assert any("Günlük" in t for t in flat)
+    assert any("Altın Kazan" in t for t in flat)
+    assert any("Program" in t for t in flat)
 
 
 def test_build_readiness_from_probes():
@@ -77,3 +77,20 @@ def test_build_readiness_from_probes():
     fields = readiness_fields(r)
     assert fields["quests_claimable"] == 1
     assert fields["training_ready"] is True
+
+
+def test_build_readiness_from_probes_daily():
+    r = build_readiness_from_probes(
+        {
+            "quests": {
+                "claimable": [],
+                "in_progress": [],
+                "done": [{"quest_key": "daily_login", "rewarded": True, "progress": 1, "target": 1}],
+            },
+            "auto": {"work_ready": True},
+            "training": {"ready": False},
+        }
+    )
+    fields = readiness_fields(r)
+    assert fields["daily_claimed"] is True
+    assert fields["daily_available"] is False

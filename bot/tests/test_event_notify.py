@@ -21,7 +21,7 @@ class EventNotifyTests(unittest.TestCase):
     def test_dedup_blocks_repeat_within_cooldown(self):
         calls = {"n": 0}
 
-        def fake_send(chat_id, text):
+        def fake_send(chat_id, text, **kwargs):
             calls["n"] += 1
             return True
 
@@ -35,7 +35,7 @@ class EventNotifyTests(unittest.TestCase):
     def test_different_event_keys_not_deduped(self):
         calls = {"n": 0}
 
-        def fake_send(chat_id, text):
+        def fake_send(chat_id, text, **kwargs):
             calls["n"] += 1
             return True
 
@@ -51,7 +51,7 @@ class EventNotifyTests(unittest.TestCase):
 
         calls = {"n": 0}
 
-        def fake_send(chat_id, text):
+        def fake_send(chat_id, text, **kwargs):
             calls["n"] += 1
             return True
 
@@ -69,7 +69,7 @@ class EventNotifyTests(unittest.TestCase):
     def test_text_format(self):
         captured = {}
 
-        def fake_send(chat_id, text):
+        def fake_send(chat_id, text, **kwargs):
             captured["text"] = text
             return True
 

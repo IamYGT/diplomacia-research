@@ -14,12 +14,25 @@ def register_all_feature_jobs(app: Application) -> None:
     if getattr(app, "_feature_scheduler_registered", False):
         return
     from .event_alerts import alert_watch_job
+    from .fleet_inbox_watch import fleet_inbox_watch_job
     from .pill_cooldown_watch import pill_cooldown_watch_job
+    from .training_watch import training_watch_job
 
     app.job_queue.run_repeating(alert_watch_job, interval=120, first=60)
     app.job_queue.run_repeating(pill_cooldown_watch_job, interval=90, first=45)
+    app.job_queue.run_repeating(training_watch_job, interval=300, first=180)
+    from .config import FLEET_INBOX_WATCH_INTERVAL_SEC
+
+    app.job_queue.run_repeating(
+        fleet_inbox_watch_job,
+        interval=FLEET_INBOX_WATCH_INTERVAL_SEC,
+        first=240,
+    )
     app._feature_scheduler_registered = True
-    log.info("Feature scheduler: alert_watch 120s, pill_cd_watch 90s")
+    log.info(
+        "Feature scheduler: alert 120s, pill_cd 90s, training 300s, inbox_watch %ss",
+        FLEET_INBOX_WATCH_INTERVAL_SEC,
+    )
 
 
 def install_feature_scheduler_hook() -> None:

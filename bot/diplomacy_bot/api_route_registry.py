@@ -125,6 +125,12 @@ BOT_API_ROUTES: tuple[ApiRouteSpec, ...] = (
     # --- citizenship / visas ---
     _r("citizenship.my", "GET", "/citizenship/my", "citizenship", safe=True, optional=True),
     _r("visas.pending", "GET", "/visas/pending-count", "visas", safe=True, optional=True),
+    _r("players.residence", "GET", "/players/residence", "citizenship", safe=True, optional=True),
+    _r("players.residence_set", "PUT", "/players/residence", "citizenship", body={"province_name": "x"}),
+    _r("elections.vote", "POST", "/elections/vote", "politics", body={"candidate_id": ""}),
+    _r("citizenship.apply", "POST", "/citizenship/apply", "citizenship", body={"to_country_id": "", "reason": "x"}),
+    _r("visas.my", "GET", "/visas/my", "visas", safe=True, optional=True),
+    _r("visas.apply", "POST", "/visas/apply", "visas", body={"to_country_id": "", "reason": "x"}),
     # --- diamonds / monetization ---
     _r("players.diamonds_packages", "GET", "/players/diamonds/packages", "players", safe=True),
     _r("players.diamonds_iap", "POST", "/players/diamonds/iap-verify", "players", body={"receipt": ""}),

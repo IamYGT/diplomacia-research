@@ -13,9 +13,9 @@ def test_register_all_feature_jobs_once():
     app._feature_scheduler_registered = False
     app.job_queue = MagicMock()
     register_all_feature_jobs(app)
-    assert app.job_queue.run_repeating.call_count == 2
+    assert app.job_queue.run_repeating.call_count == 4
     register_all_feature_jobs(app)
-    assert app.job_queue.run_repeating.call_count == 2
+    assert app.job_queue.run_repeating.call_count == 4
 
 
 def test_install_feature_scheduler_hook_calls_register():

@@ -21,7 +21,7 @@ def test_phase_labels_turkish():
 def test_program_status_no_mission():
     text = format_program_status(None, account_name="ali")
     assert "program yok" in text.lower() or "aktif program yok" in text.lower()
-    assert "Savaş" in text
+    assert "Fabrika" in text
 
 
 def test_dashboard_headline_low_health():

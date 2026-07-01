@@ -39,10 +39,7 @@ def _sanitize_alias(username: str) -> str:
 
 
 def suggest_new_account_name(telegram_user_id: int, username: str) -> str:
-    alias = _sanitize_alias(username)
-    if not get_account(alias):
-        return alias
-    return default_account_name(telegram_user_id, alias)
+    return default_account_name(telegram_user_id, _sanitize_alias(username))
 
 
 def plan_token_connect(
@@ -107,6 +104,22 @@ def plan_token_connect(
     if pending_add:
         name = pending_add.strip().lower()
         existing = get_account(name)
+        if existing and existing.telegram_user_id not in (0, telegram_user_id):
+            return TokenConnectPlan(
+                action="reject",
+                message=f"❌ <b>{name}</b> başka bir Telegram kullanıcısına ait.",
+            )
+        if existing and existing.telegram_user_id == 0:
+            from .auth import can_claim_orphan_account
+
+            if not can_claim_orphan_account(name, telegram_user_id):
+                return TokenConnectPlan(
+                    action="reject",
+                    message=(
+                        f"❌ <b>{name}</b> legacy hesap adı — claim edilemez.\n"
+                        f"Yeni hesap: <code>/add {_sanitize_alias(username)}</code>"
+                    ),
+                )
         if existing and existing.player_id and existing.player_id != player_id:
             return TokenConnectPlan(
                 action="reject",
@@ -154,11 +167,14 @@ def plan_token_connect(
     )
 
 
-def format_account_connected_html(acc_name: str, prof, *, telegram_user_id: int) -> str:
+def format_account_connected_html(
+    acc_name: str, prof, *, telegram_user_id: int, is_new_account: bool = False
+) -> str:
     """Bağlantı başarı mesajı — farm ipuçları dahil."""
     import html
 
-    from .auth import count_accounts_for_user
+    from .store import count_accounts_for_user
+    from .auto_defaults import auto_features_summary
 
     name = html.escape(acc_name.strip().lower())
     user = html.escape(str(prof.username))
@@ -168,14 +184,15 @@ def format_account_connected_html(acc_name: str, prof, *, telegram_user_id: int)
         "",
         "🏠 Ana Sayfa ile panele geç.",
     ]
+    if is_new_account:
+        lines.extend(["", auto_features_summary()])
     if count_accounts_for_user(telegram_user_id) >= 2:
         lines.extend(
             [
                 "",
-                "💡 <b>Farm hesabı</b> için:",
+                "💡 <b>İkinci hesap</b> için:",
                 f"<code>/setrole {name} farm</code>",
                 f"<code>/setfabric {name} foreign</code> veya <code>world</code>",
-                "Ayarlardan <b>otomatik farm</b> ve <b>seyahat otomatik</b> aç.",
             ]
         )
     return "\n".join(lines)

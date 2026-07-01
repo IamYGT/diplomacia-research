@@ -46,10 +46,14 @@ async def open_extras_hub(update, context, query) -> None:
     msg_id = query.message.message_id
     await edit_safe(bot, chat_id, msg_id, format_extras_html(), reply_markup=extras_inline_markup())
 
-    default = (context.user_data.get("default_account") or "ygt").strip().lower()
-    from .store import get_account
+    default = (context.user_data.get("default_account") or "").strip().lower()
+    uid = query.from_user.id if query.from_user else 0
+    from .auth import resolve_account, scoped_list_accounts
 
-    acc = get_account(default)
+    acc = resolve_account(default, uid) if default else None
+    if not acc:
+        accs = scoped_list_accounts(uid)
+        acc = accs[0] if accs else None
     if not acc:
         return
 

@@ -1,0 +1,1 @@
+"""Adapter katmanı — infra implementasyonları."""

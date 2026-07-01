@@ -12,6 +12,7 @@ from .auth import scoped_list_accounts
 from .easy_mode import format_program_status, program_hub_markup
 from .mission_store import clear_mission, enqueue_mission, get_active_mission
 from .modules.mission_executor import run_mission_step
+from .auth import resolve_account
 from .store import get_account
 from .telegram_easy import _run_program_step
 from .telegram_helpers import user_required
@@ -49,6 +50,9 @@ async def cmd_mission(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     sub = args[0].lower()
     if sub in ("cancel", "iptal", "durdur"):
         name = (args[1] if len(args) > 1 else accs[0].name).lower()
+        if not resolve_account(name, uid):
+            await update.message.reply_text("❌ Bu hesap sana ait değil.")
+            return
         clear_mission(name)
         await update.message.reply_text(f"🛑 {name} programı durduruldu.")
         return
@@ -87,6 +91,9 @@ async def cmd_mission_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await update.message.reply_text("Hesap yok.")
         return
     name = (context.args[0] if context.args else accs[0].name).lower()
+    if not resolve_account(name, uid):
+        await update.message.reply_text("❌ Bu hesap sana ait değil.")
+        return
     clear_mission(name)
     await update.message.reply_text(f"🛑 {name} programı durduruldu.")
 
@@ -133,7 +140,7 @@ async def handle_mission_callback(data: str, query, uid: int) -> bool:
         return True
     if data.startswith("mission:step:"):
         name = data.split(":", 2)[-1].lower()
-        acc = get_account(name)
+        acc = resolve_account(name, uid)
         if not acc:
             await query.answer("Hesap yok", show_alert=True)
             return True

@@ -8,9 +8,8 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from .account_main import get_main_account_name, set_main_account
-from .auth import scoped_list_accounts
-from .store import get_account
-from .telegram_helpers import user_required
+from .auth import resolve_account, scoped_list_accounts
+from .telegram_helpers import _set_default_account, user_required
 
 log = logging.getLogger(__name__)
 _REGISTERED = False
@@ -32,11 +31,15 @@ async def cmd_setmain(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         )
         return
     name = context.args[0].strip().lower()
-    if not get_account(name):
-        await update.message.reply_text(f"❌ `{name}` bulunamadı.", parse_mode="Markdown")
+    if not resolve_account(name, uid):
+        await update.message.reply_text(f"❌ `{name}` bulunamadı veya senin değil.", parse_mode="Markdown")
         return
     set_main_account(name, telegram_user_id=uid)
-    await update.message.reply_text(f"✅ Ana hesap: <b>{name}</b>", parse_mode="HTML")
+    _set_default_account(context, uid, name)
+    await update.message.reply_text(
+        f"✅ Ana hesap: <b>{name}</b>\n<i>Dashboard ve komutlar bu hesaba geçti.</i>",
+        parse_mode="HTML",
+    )
 
 
 @user_required

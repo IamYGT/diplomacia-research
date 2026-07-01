@@ -3,6 +3,451 @@
   "intro": "Her sürüm, oyundaki bir sonraki hamlen için botun ne öğrendiğini anlatır.",
   "releases": [
     {
+      "version": "4.27.2",
+      "date": "2026-06-30",
+      "codename": "Handlers II",
+      "title": "handlers/cmd_accounts — telegram_app 1124 satır",
+      "story": "/accounts /add /remove /status /whoami /setaccount → handlers/.\n\naccount_helpers farm/daily için.\n\n_save_account connect_save wire ile kalır.",
+      "highlights": [
+        "📂 handlers/cmd_accounts",
+        "🔧 account_helpers",
+        "📉 telegram_app −146 satır",
+        "641+ test"
+      ],
+      "try_now": [
+        "/accounts",
+        "/add test"
+      ]
+    },
+    {
+      "version": "4.27.1",
+      "date": "2026-06-30",
+      "codename": "Handlers I",
+      "title": "handlers/ onboarding + registry — telegram_app −135 satır",
+      "story": "/start ve /connect → handlers/cmd_onboarding.py.\n\nregister_command_handlers merkezi kayıt.\n\nLegacy PTB job stub'ları kaldırıldı.",
+      "highlights": [
+        "📂 handlers/cmd_onboarding",
+        "📋 handlers/registry",
+        "📉 telegram_app 1297 satır",
+        "639+ test"
+      ],
+      "try_now": [
+        "/start",
+        "/connect",
+        "/updates"
+      ]
+    },
+    {
+      "version": "4.27.0",
+      "date": "2026-06-30",
+      "codename": "PTB Jobs",
+      "title": "3 PTB job jobs/ altında — tek bootstrap wire",
+      "story": "stat_queue + press_like → jobs/*.\n\ninstall_telegram_ptb_jobs tek hook.\n\nfleet_residence arch_check yeşil.",
+      "highlights": [
+        "⚙️ 3 PTB job explicit",
+        "📦 fleet_aod_setup ayrıldı",
+        "✅ arch_check OK",
+        "638+ test"
+      ],
+      "try_now": [
+        "/updates",
+        "pm2 logs diplomacy-ygt-bot"
+      ]
+    },
+    {
+      "version": "4.26.9",
+      "date": "2026-06-30",
+      "codename": "Explicit Job",
+      "title": "Autofarm PTB job — patch yok, bootstrap wire",
+      "story": "autofarm_runtime silindi.\n\njobs/autofarm_telegram_job.py explicit handler.\n\nARCHITECTURE-PATRON M0–M8 güncellendi.",
+      "highlights": [
+        "⚙️ jobs/autofarm_telegram_job",
+        "🔌 bootstrap wire (15 hook)",
+        "🗑️ autofarm_runtime kaldırıldı",
+        "📐 ARCHITECTURE-PATRON sync"
+      ],
+      "try_now": [
+        "/updates",
+        "pm2 logs diplomacy-ygt-bot"
+      ]
+    },
+    {
+      "version": "4.26.8",
+      "date": "2026-06-30",
+      "codename": "Delivery Unify",
+      "title": "autofarm_delivery tek kaynak",
+      "story": "Worker ve bot job aynı HTTP delivery modülünü kullanıyor.\n\nToken recovery + farm bildirimi tek kod yolu — drift yok.",
+      "highlights": [
+        "📬 autofarm_delivery birleşik port",
+        "🔄 runtime → delivery delegate",
+        "🗑️ autofarm_worker_notify kaldırıldı",
+        "✅ 634+ test"
+      ],
+      "try_now": [
+        "/updates",
+        "pm2 logs diplomacy-worker"
+      ]
+    },
+    {
+      "version": "4.26.7",
+      "date": "2026-06-30",
+      "codename": "Worker Notify",
+      "title": "Worker Telegram push + runtime_install silindi",
+      "story": "AUTOFARM_WORKER_ONLY modunda worker farm sonucu ve token recovery mesajı gönderir.\n\nruntime_install tamamen kaldırıldı — tek giriş install_bootstrap().",
+      "highlights": [
+        "📬 worker sync Telegram notify",
+        "🔑 token recovery HTTP push",
+        "🗑️ runtime_install silindi",
+        "✅ 633+ test"
+      ],
+      "try_now": [
+        "pm2 logs diplomacy-worker",
+        "/updates"
+      ]
+    },
+    {
+      "version": "4.26.6",
+      "date": "2026-06-30",
+      "codename": "Domain Registry",
+      "title": "8 domain hook + worker token parity",
+      "story": "Connect, fleet, autofarm, scope, token refresh → domain_registry.\n\nWorker token hatasında autofarm kapanır (bot ile aynı).\n\nAUTOFARM_WORKER_ONLY=1 ile çift tick engellendi.",
+      "highlights": [
+        "🔧 8 domain bootstrap hook",
+        "⚙️ worker token_invalid parity",
+        "🚫 AUTOFARM_WORKER_ONLY çift tick",
+        "📉 runtime_install shim (~10 satır)"
+      ],
+      "try_now": [
+        "pm2 logs diplomacy-worker",
+        "/updates"
+      ]
+    },
+    {
+      "version": "4.26.5",
+      "date": "2026-06-30",
+      "codename": "Worker Farm",
+      "title": "14 explicit hook + worker autofarm tick",
+      "story": "settings_easy, tabs, token_recovery, updates → bootstrap registry.\n\ndiplomacy-worker artık due hesaplarda tick_one çalıştırıyor.\n\nCoach dashboard token-dead ekranda zinciri koruyor.",
+      "highlights": [
+        "🔧 14 explicit bootstrap hook",
+        "⚙️ worker_autofarm tick_one",
+        "🎯 Coach wrap pattern",
+        "📉 runtime_install ~90 satır"
+      ],
+      "try_now": [
+        "pm2 logs diplomacy-worker",
+        "/updates"
+      ]
+    },
+    {
+      "version": "4.26.4",
+      "date": "2026-06-30",
+      "codename": "Explicit Hooks III",
+      "title": "10 bootstrap hook — runtime %40 küçüldü",
+      "story": "Görev, kolay callback, dashboard flood/coach artık explicit registry'de.\n\nruntime_install sadece domain hook'ları tutuyor.\n\nHook sırası: mission → easy callback → coach.",
+      "highlights": [
+        "🔧 10 explicit bootstrap hook",
+        "📉 runtime_install sadeleşti",
+        "🎯 Coach dashboard explicit",
+        "✅ 624+ test"
+      ],
+      "try_now": [
+        "/updates",
+        "Ana Sayfa"
+      ]
+    },
+    {
+      "version": "4.26.3",
+      "date": "2026-06-30",
+      "codename": "Explicit Hooks II",
+      "title": "6 bootstrap hook + AOD fabrika atlama",
+      "story": "Onboarding, klavye, health_sync artık explicit bootstrap registry'de.\n\n/fleetaod ana fabrika yoksa adımı atlar ve yönlendirir.\n\nİlk owned fabrika otomatik primary_factory_id olarak kaydedilir.",
+      "highlights": [
+        "🔧 6 explicit bootstrap hook",
+        "⏭ /fleetaod fabrika atlama",
+        "🎯 Otomatik primary_factory_id",
+        "✅ 624+ test"
+      ],
+      "try_now": [
+        "/fleetaod",
+        "/updates"
+      ]
+    },
+    {
+      "version": "4.26.2",
+      "date": "2026-06-30",
+      "codename": "Store Facade",
+      "title": "M3 store split + explicit bootstrap hooks",
+      "story": "store.py artık ince facade — SQLite adapters/sqlite altında.\n\nBootstrap registry: sürüm rozeti, kolay mod UI, dispatch explicit.\n\ndiplomacy-worker PM2 ile autofarm + token refresh arka planda.",
+      "highlights": [
+        "🗄️ adapters/sqlite — accounts, snapshots, sessions",
+        "🔧 bootstrap/hooks — M4 explicit registry",
+        "⚙️ diplomacy-worker PM2 process",
+        "✅ 619 test yeşil"
+      ],
+      "try_now": [
+        "/accounts",
+        "/fleet status"
+      ]
+    },
+    {
+      "version": "4.26.1",
+      "date": "2026-06-30",
+      "codename": "Bootstrap Paket",
+      "title": "bootstrap/ paketi + worker iskelet",
+      "story": "bootstrap.py → bootstrap paketi.\n\nconnection.py test-patch uyumu.\n\nWorker döngüsü telegram'dan bağımsız.",
+      "highlights": [
+        "📦 bootstrap/ paket yapısı",
+        "🔌 store.DB_PATH patch uyumu",
+        "🔄 diplomacy-worker --once smoke"
+      ],
+      "try_now": [
+        "/updates"
+      ]
+    },
+    {
+      "version": "4.23.0",
+      "date": "2026-06-30",
+      "codename": "Filo Metrikler",
+      "title": "24s farm/antrenman özeti + UAT teyit",
+      "story": "/fleet status artık son 24 saatteki farm ve antrenman sayısını gösterir.\n\nInbox state atomic yazım ile güvenli.\n\n/fleethelp'e token güvenliği uyarısı eklendi.",
+      "highlights": [
+        "📊 Son 24s farm + antrenman metrikleri",
+        "💾 Atomic inbox_processed.json",
+        "⚠️ JWT sohbete değil inbox uyarısı",
+        "✅ UAT U1/U4 headless teyit"
+      ],
+      "try_now": [
+        "/fleet status",
+        "/fleethelp"
+      ]
+    },
+    {
+      "version": "4.22.0",
+      "date": "2026-06-30",
+      "codename": "Filo Runbook",
+      "title": "connect_core, kalıcı inbox state, /fleethelp",
+      "story": "Hesap bağlama mantığı tek connect_core modülünde birleşti.\n\nInbox işlenen adaylar PM2 restart sonrası da kalıcı.\n\n/fleethelp ve /help filo ile sorun giderme rehberi.",
+      "highlights": [
+        "🔗 connect_core — interactive + headless ortak",
+        "💾 inbox_processed.json kalıcı state",
+        "📖 /fleethelp troubleshooting",
+        "📭 Boş inbox footer ipucu geri geldi"
+      ],
+      "try_now": [
+        "/fleethelp",
+        "/help filo",
+        "/fleetinbox"
+      ]
+    },
+    {
+      "version": "4.21.0",
+      "date": "2026-06-30",
+      "codename": "Inbox Otomasyon",
+      "title": "Headless inbox import + otomatik AOD job",
+      "story": "Token dosyası bırakınca artık headless import çalışır — job ve callback aynı kodu kullanır.\n\nFLEET_INBOX_AUTO_SETUP=1 ile yeni token gelince otomatik import + AOD + Telegram özeti.\n\nİşlemler menüsünde ◀️ Filo paneli geri butonu.",
+      "highlights": [
+        "📥 import_inbox_for_uid — headless bağlama",
+        "⏱ fleet_inbox_watch job (300s)",
+        "◀️ Filo paneli geri butonu",
+        "🔧 FLEET_INBOX_AUTO_SETUP env"
+      ],
+      "try_now": [
+        "data/token_inbox/u{uid}_01.jwt bırak",
+        "/fleetinbox",
+        "FLEET_INBOX_AUTO_SETUP=1 (opsiyonel)"
+      ]
+    },
+    {
+      "version": "4.20.1",
+      "date": "2026-06-30",
+      "codename": "Filo Polish",
+      "title": "Kompakt filo paneli, ikamet fallback, UAT hazırlığı",
+      "story": "Filo paneli artık 3 ana buton + İşlemler alt menüsü — Telegram'da daha az kaydırma.\n\nİkamet API'si province_id fallback ile daha dayanıklı.\n\n/fleetaod sonrası otomatik /fleetvote ipucu.",
+      "highlights": [
+        "⚙️ İşlemler alt menüsü — fabrika, bootstrap, inbox",
+        "🏠 İkamet province_id fallback",
+        "📋 AOD sonrası sonraki adım ipuçları",
+        "🧪 53 filo + replay testi geçti"
+      ],
+      "try_now": [
+        "Filo panelinde ⚙️ İşlemler",
+        "/fleetaod",
+        "/fleet status"
+      ]
+    },
+    {
+      "version": "4.20.0",
+      "date": "2026-06-30",
+      "codename": "Bölge Operasyonları",
+      "title": "İkamet, seçim oyu, vatandaşlık — /fleetaod tek tık",
+      "story": "20 hesaplı filo artık sadece fabrikada değil — bölgede yaşar ve oy kullanır.\n\n/fleetaod tek komutla bootstrap, fabrika, seyahat ve ikamet yapar.\n\n/fleetvote aktif seçime toplu oy verir.",
+      "highlights": [
+        "🏠 /fleetresidence — toplu ikamet",
+        "🗳 /fleetvote — seçim oyu",
+        "🪪 /fleetcitizen — vatandaşlık başvurusu",
+        "🇦🇴 /fleetaod — tam AOD kurulum",
+        "📋 Coach'ta filo komuta ipucu"
+      ],
+      "try_now": [
+        "/fleetaod",
+        "/fleetvote",
+        "Filo panelinde 🇦🇴 AOD kurulum"
+      ]
+    },
+    {
+      "version": "4.19.0",
+      "date": "2026-06-30",
+      "codename": "Komuta Konsolu",
+      "title": "Detay filo tablosu, kapasite uyarısı, inbox import",
+      "story": "/fleet status ile tüm hesapların rol, mod ve bakiye özeti.\n\nFabrika doluluk uyarısı operatörü uyarır.\n\n/fleetinbox ile token_inbox dosyaları toplu bağlanır.\n\n🔀 Hybrid oto butonu tek tıkla bootstrap yapar.",
+      "highlights": [
+        "📋 /fleet status — detaylı komuta tablosu",
+        "👷 Fabrika kapasite uyarısı",
+        "📥 /fleetinbox — u{uid}_*.jwt toplu import",
+        "🔀 Hybrid oto butonu",
+        "→ Sonraki adım önerileri bootstrap sonrası"
+      ],
+      "try_now": [
+        "/fleet status",
+        "/fleetinbox",
+        "Filo panelinde 🔀 Hybrid oto"
+      ]
+    },
+    {
+      "version": "4.18.0",
+      "date": "2026-06-30",
+      "codename": "Filo Komuta",
+      "title": "20 hesap filo — fabrika atama, bootstrap, antrenman izleme",
+      "story": "Operatör ana fabrikasını tüm işçi hesaplara tek komutla bağlayabilir.\n\n/fleetbootstrap ile mevcut hesaplara rol + oto açılır.\n\nWork cooldown varken düşük canda hap kullanılır; training_watch saatlik saldırıyı kaçırmaz.",
+      "highlights": [
+        "🏭 /fleetfactory main — toplu sabit fabrika",
+        "🚀 /fleetbootstrap hybrid — rol + oto açık",
+        "✈️ /fleettravel Hürmüz — toplu seyahat",
+        "💊 Hap kullanımı work CD'den bağımsız",
+        "⚔️ training_watch — 5 dk'da bir antrenman kontrolü",
+        "👥 MAX_ACCOUNTS_PER_USER=20"
+      ],
+      "try_now": [
+        "/fleetbootstrap hybrid",
+        "/fleetfactory main",
+        "/fleettravel Hürmüz",
+        "/fleetops — filo durumu"
+      ]
+    },
+    {
+      "version": "4.17.2",
+      "date": "2026-06-30",
+      "codename": "Oto Açık",
+      "title": "Yeni hesap — tüm otomatik özellikler varsayılan açık",
+      "story": "İlk token bağlantısında autofarm, günlük/görev, token yenileme, gazete beğeni, stat, antrenman, hap ve seyahat otomatik açılır.\n\nMevcut hesapların ayarları değişmez — yalnızca yeni kayıt.",
+      "highlights": [
+        "▶️ İlk bağlantıda autofarm otomatik ON",
+        "🤖 8 config bayrağı tek seferde açılır",
+        "📋 Bağlantı mesajında özet",
+        "🔒 Token yenileme mevcut ayarları ezmez"
+      ],
+      "try_now": [
+        "Yeni hesap bağla — «Otomatik özellikler açık» mesajını gör",
+        "Coach'ta 🟢 autofarm rozeti",
+        "/autofarm off ile kapat — yeniden bağlanınca açılmaz"
+      ]
+    },
+    {
+      "version": "4.17.1",
+      "date": "2026-06-30",
+      "codename": "Token Döngüsü+",
+      "title": "Coach token süresi + /tokenauto",
+      "story": "Coach kartında kalan token süresi görünür.\n\n/tokenauto on|off ile hesap bazlı otomatik yenileme kapatılabilir.\n\n/loginkaydet şifre mesajını silmeye çalışır ve uyarı verir.",
+      "highlights": [
+        "🔑 Coach'ta token kalan süre",
+        "⚙️ /tokenauto on|off",
+        "🗑 /loginkaydet mesaj silme + uyarı",
+        "🧪 API login mock integration testi"
+      ],
+      "try_now": [
+        "Coach kartında «Token kalan» satırına bak",
+        "/tokenauto — durumu gör",
+        "/loginkaydet sonrası komut mesajının silindiğini kontrol et"
+      ]
+    },
+    {
+      "version": "4.17.0",
+      "date": "2026-06-30",
+      "codename": "Token Döngüsü",
+      "title": "JWT otomatik yenileme — 7 gün beklemeden",
+      "story": "Bot artık token süresini izler ve dolmadan önce yeniler.\n\n/loginkaydet ile şifreli giriş bilgisi kaydedebilir veya data/token_inbox/hesap.jwt dosyası bırakabilirsin.\n\n401 görünce önce sessiz yenileme dener, olmazsa eski recovery akışı devreye girer.",
+      "highlights": [
+        "🔄 72 saat kala otomatik yenileme job'ı",
+        "🔐 /loginkaydet — şifreli API login",
+        "📁 token_inbox + LEGACY_AUTH dosya izleme",
+        "⚡ 401 öncesi sessiz refresh",
+        "⏱ JWT exp meta DB'de"
+      ],
+      "try_now": [
+        "/loginkaydet email şifre — aktif hesap için",
+        "Konsol token'ını data/token_inbox/ygt.jwt olarak kaydet",
+        "Coach'ta token dolmadan farm devam eder"
+      ]
+    },
+    {
+      "version": "4.16.2",
+      "date": "2026-06-30",
+      "codename": "Hesap Oturumu",
+      "title": "Legacy claim kilidi + setmain senkronu",
+      "story": "Legacy ygt gibi uid=0 hesaplar artık rastgele claim edilemez.\n\n/setmain dashboard aktif hesabını da günceller.\n\nCoach tek hesapta da ⭐ aktif satırı gösterir.",
+      "highlights": [
+        "🔒 Legacy claim — yalnızca u{uid}_* veya admin",
+        "👑 setmain → active_account senkron",
+        "⭐ Coach aktif hesap satırı",
+        "📛 Connect her zaman u{uid}_isim",
+        "🎓 game_coach scoped profil"
+      ],
+      "try_now": [
+        "/setmain hesap_adı — dashboard o hesaba geçer",
+        "Coach'ta ⭐ Aktif satırını gör",
+        "İkinci hesap /add ile u{senin_id}_alias formatında"
+      ]
+    },
+    {
+      "version": "4.16.0",
+      "date": "2026-06-30",
+      "codename": "Hesap Kalkanı",
+      "title": "Çoklu hesap izolasyonu + Telegram simülatörü",
+      "story": "Her Telegram kullanıcısı artık yalnızca kendi token/hesaplarını görür.\n\nAna sayfa coach kartında çoklu hesap satırı ve son tick özeti var.\n\nProgramı Çalıştır autofarm'ı açar ve görevi başlatır.",
+      "highlights": [
+        "🔒 UI fallback — başka kullanıcının hesabı listede görünmez",
+        "🧪 telegram_harness — prod auth ile simülasyon testi",
+        "👤 Coach: N hesap satırı + son tick",
+        "▶️ easy:run → autofarm aç + program adımı",
+        "Intent «tüm hesaplar» uid ile kapsamlı"
+      ],
+      "try_now": [
+        "İki hesap bağla — ana sayfada hesap değiştir",
+        "▶️ Program — autofarm otomatik açılır",
+        "Coach kartında son tick satırını gör"
+      ]
+    },
+    {
+      "version": "4.15.0",
+      "date": "2026-06-30",
+      "codename": "Günlük Rutin",
+      "title": "Otomatik günlük + görev toplama · coach dashboard",
+      "story": "Autofarm tick artık günün başında günlük ödülü ve hazır görevleri otomatik topluyor.\n\nAna sayfa sabit şablon yerine duruma göre değişen coach kartı: tek pulse cümlesi + en önemli aksiyon.\n\nAyarlar: auto_daily_claim ve auto_quest_claim (varsayılan açık).",
+      "highlights": [
+        "🎁 Tick başı günlük ödül — auto_daily_claim",
+        "📜 Hazır görevler otomatik claim — auto_quest_claim",
+        "📡 Coach dashboard — öncelik skorlu pulse",
+        "🎁günlük rozeti snapshot'ta",
+        "Autofarm mesajında günlük/görev özeti"
+      ],
+      "try_now": [
+        "/autofarm on — bir sonraki tick'te günlük + görev",
+        "🏠 Ana Sayfa — yeni coach kartını gör",
+        "Günlük alındıysa pulse değişir"
+      ]
+    },
+    {
       "version": "4.14.0",
       "date": "2026-06-30",
       "codename": "Can Senkronu",

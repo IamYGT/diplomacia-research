@@ -25,12 +25,7 @@ async def save_account_connected(
 ) -> None:
     """Token doğrula, DB'ye yaz, farm ipuçlu başarı mesajı + dashboard."""
     from . import telegram_app as ta
-    from .account_runtime import account_context
-    from .auth import resolve_account
-    from .config import MAX_ACCOUNTS_PER_USER
     from .connect_intel import format_account_connected_html
-    from .game_api import get_profile
-    from .store import add_account, count_accounts_for_user, proxy_assignments, suggest_proxy
     from .telegram_ui import main_reply_keyboard
 
     msg = update.effective_message
@@ -38,27 +33,15 @@ async def save_account_connected(
         return
 
     try:
-        existing = resolve_account(name, uid)
-        if count_accounts_for_user(uid) >= MAX_ACCOUNTS_PER_USER and not existing:
-            await msg.reply_text(f"❌ En fazla {MAX_ACCOUNTS_PER_USER} hesap ekleyebilirsin.")
-            return
+        from .token_db import persist_account_token
 
-        slot = suggest_proxy(proxy_assignments())
+        def _connect():
+            return persist_account_token(name, token, telegram_user_id=uid)
 
-        def _fetch():
-            with account_context(proxy_id=slot.id, proxy_url=slot.url or None):
-                return get_profile(token)
-
-        prof = await asyncio.to_thread(_fetch)
-        acc = add_account(
-            name,
-            token,
-            prof.player_id,
-            prof.username,
-            slot.id,
-            slot.url,
-            telegram_user_id=uid,
-        )
+        result = await asyncio.to_thread(_connect)
+        acc = result.account
+        prof = result.profile
+        is_new = result.is_new
         if context is not None:
             ta._set_default_account(context, uid, acc.name)
             ta._set_pending_connect(context, uid, False)
@@ -70,12 +53,16 @@ async def save_account_connected(
             result=f"{prof.username} lv{prof.level}",
         )
         await msg.reply_text(
-            format_account_connected_html(acc.name, prof, telegram_user_id=uid),
+            format_account_connected_html(
+                acc.name, prof, telegram_user_id=uid, is_new_account=is_new
+            ),
             parse_mode="HTML",
             reply_markup=main_reply_keyboard(),
         )
         if context is not None and acc:
             await ta._send_dashboard(update, acc, context)
+    except ValueError as e:
+        await msg.reply_text(f"❌ {html.escape(str(e))}", parse_mode="HTML")
     except Exception as e:
         from .token_recovery import is_token_auth_error
 

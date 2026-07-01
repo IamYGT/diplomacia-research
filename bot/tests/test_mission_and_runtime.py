@@ -103,10 +103,9 @@ def test_schedule_account_falls_back_to_tick(monkeypatch):
     assert r.ok
 
 
-def test_runtime_install_hooks():
-    from diplomacy_bot import runtime_install
-
-    runtime_install.install_all_runtime_hooks()
+def test_bootstrap_install_hooks():
+    from diplomacy_bot.bootstrap import install_bootstrap
     from diplomacy_bot import telegram_ui as ui
 
+    install_bootstrap()
     assert getattr(ui, "_release_badge_installed", False)

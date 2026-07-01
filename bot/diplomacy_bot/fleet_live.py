@@ -82,6 +82,9 @@ def tick_one_interactive(acc: Account) -> TickResult:
             r = tick_account(acc.token, acc.name, cfg=cfg)
         if r.balance_after:
             update_after_farm(acc.name, r.balance_after)
+        from .tick_activity import record_tick_result
+
+        record_tick_result(acc.name, r)
         return r
 
 

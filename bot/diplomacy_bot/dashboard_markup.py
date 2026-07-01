@@ -5,7 +5,7 @@ from __future__ import annotations
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .account_config import get_config
-from .store import Account, list_accounts
+from .store import Account
 from .tab_nav import tab_nav_row
 
 
@@ -39,7 +39,7 @@ def dashboard_inline_markup(
         ]
     )
 
-    accs = user_accs if user_accs is not None else list_accounts()
+    accs = user_accs if user_accs is not None else []
     if len(accs) > 1:
         switch = []
         for a in accs[:4]:

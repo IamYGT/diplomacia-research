@@ -74,6 +74,12 @@ def _action_labels(r: TickResult) -> list[str]:
                 labels.append("💊 can")
         if action.get("travel"):
             labels.append("🚶 seyahat")
+        rd = action.get("routine_daily")
+        if isinstance(rd, dict) and rd.get("claimed"):
+            labels.append("🎁 günlük")
+        rq = action.get("routine_quests")
+        if isinstance(rq, dict) and rq.get("claimed_count"):
+            labels.append(f"📜 {rq['claimed_count']} görev")
     if r.earned_money > 0 and "🌾 farm" not in labels:
         labels.append("🌾 farm")
     return labels

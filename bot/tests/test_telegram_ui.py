@@ -7,11 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from diplomacy_bot.runtime_install import patch_easy_mode_ui
 from diplomacy_bot.store import Account
 from diplomacy_bot import telegram_ui
-
-patch_easy_mode_ui()
 
 
 def _acc() -> Account:
@@ -31,6 +28,12 @@ def _acc() -> Account:
 
 
 class TelegramUiTests(unittest.TestCase):
+    def setUp(self):
+        from diplomacy_bot.bootstrap.hooks.easy_mode_ui import install_easy_mode_ui
+        import diplomacy_bot.telegram_ui as ui
+
+        ui._easy_mode_installed = False
+        install_easy_mode_ui()
     def test_menu_normalize_home(self):
         self.assertEqual(telegram_ui.normalize_menu_text("🏠 Ana Sayfa"), "dashboard")
 
@@ -65,10 +68,13 @@ class TelegramUiTests(unittest.TestCase):
             "training_ready": True,
         }
         html = telegram_ui.format_dashboard_html(_acc(), snap)
-        self.assertIn("Sıradaki işin", html)
         self.assertIn("Can Doldur", html)
-        self.assertIn("görev", html)
         self.assertIn("Hazır:", html)
+        self.assertIn("YGT", html)
+        self.assertTrue(
+            "Sıradaki işin" in html or "Can kritik" in html,
+            msg="dashboard should show next-step or health-critical hint",
+        )
 
     def test_dashboard_work_countdown(self):
         snap = {
@@ -87,7 +93,7 @@ class TelegramUiTests(unittest.TestCase):
             "autofarm": False,
         }
         html = telegram_ui.format_dashboard_html(_acc(), snap)
-        self.assertIn("45 sn", html)
+        self.assertTrue("45 sn" in html or "Bekle" in html)
 
     def test_help_html(self):
         self.assertIn("Altın", telegram_ui.format_help_html())

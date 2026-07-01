@@ -256,9 +256,9 @@ class GlobalKeyboardPatchTests(unittest.TestCase):
     def test_global_keyboard_respects_uid_pref(self):
         from diplomacy_bot import telegram_ui as ui
         from diplomacy_bot.keyboard_reply import install_global_reply_keyboard, user_reply_keyboard
-        from diplomacy_bot.runtime_install import patch_reply_keyboard_entries
+        from diplomacy_bot.bootstrap.hooks.reply_keyboard_entries import install_reply_keyboard_entries
 
-        patch_reply_keyboard_entries()
+        install_reply_keyboard_entries()
         install_global_reply_keyboard()
 
         async def _run():
@@ -279,9 +279,9 @@ class TabHookChainTests(unittest.TestCase):
     def test_tab_hook_outermost(self):
         from diplomacy_bot import callbacks as cb
         from diplomacy_bot import telegram_app as ta
-        from diplomacy_bot.runtime_install import install_all_runtime_hooks
+        from diplomacy_bot.bootstrap import install_bootstrap
 
-        install_all_runtime_hooks()
+        install_bootstrap()
         self.assertIs(cb.handle_callback, ta._handle_callback)
         # Token recovery en dış callback sarmalayıcı
         self.assertTrue(cb.handle_callback.__name__ == "handle_callback_patched")

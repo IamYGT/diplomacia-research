@@ -200,13 +200,19 @@ def answer_teach(
     default_account: str,
     *,
     use_gemini: bool = True,
+    telegram_user_id: int | None = None,
 ) -> str:
     profile = None
     acc = None
     try:
+        from .auth import resolve_account
         from .store import get_account
 
-        acc = get_account(default_account)
+        acc = (
+            resolve_account(default_account, telegram_user_id)
+            if telegram_user_id is not None
+            else get_account(default_account)
+        )
         if acc:
             profile = game_api.get_profile(acc.token)
     except Exception:
@@ -302,13 +308,24 @@ def answer_teach_full(
     default_account: str,
     *,
     use_gemini: bool = True,
+    telegram_user_id: int | None = None,
 ) -> TeachAnswer:
-    text = answer_teach(user_message, default_account, use_gemini=use_gemini)
+    text = answer_teach(
+        user_message,
+        default_account,
+        use_gemini=use_gemini,
+        telegram_user_id=telegram_user_id,
+    )
     profile = None
     try:
+        from .auth import resolve_account
         from .store import get_account
 
-        acc = get_account(default_account)
+        acc = (
+            resolve_account(default_account, telegram_user_id)
+            if telegram_user_id is not None
+            else get_account(default_account)
+        )
         if acc:
             profile = game_api.get_profile(acc.token)
     except Exception:

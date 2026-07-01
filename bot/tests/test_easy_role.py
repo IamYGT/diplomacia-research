@@ -54,7 +54,7 @@ def test_enqueue_mission_farm_skips_war(tmp_path, monkeypatch):
     store.init_db()
     save_config(AccountConfig(account_name="cursor", role="farm", war_enabled=False))
 
-    with patch("diplomacy_bot.mission_store.set_runtime_state"):
+    with patch("diplomacy_bot.store.set_runtime_state"):
         rt = enqueue_mission("cursor")
 
     phases = [p.phase for p in rt.plan.phases]

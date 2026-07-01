@@ -5,13 +5,36 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from contextlib import contextmanager
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot import factory_service
 from diplomacy_bot.game_api import Profile
-from diplomacy_bot.modules import factory as factory_mod
+
+
+@contextmanager
+def _profile_patch(**kw):
+    defaults = dict(
+        player_id="p1",
+        username="test",
+        balance=1000,
+        diamonds=10,
+        xp=100,
+        level=4,
+        health=100,
+        health_pills=5,
+        onboarding_step=None,
+        province_name="TestProvince",
+    )
+    defaults.update(kw)
+    prof = Profile(**defaults)
+    with (
+        patch("diplomacy_bot.modules.factory.get_profile", return_value=prof),
+        patch("diplomacy_bot.game_api.get_profile", return_value=prof),
+    ):
+        yield
 
 
 def _profile(**kw) -> Profile:
@@ -59,7 +82,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ),
             }
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+        with _profile_patch():
             fid = factory_service.factory_in_province("tok", _api=mock)
         self.assertEqual(fid, "local")
 
@@ -72,7 +95,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ),
             }
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+        with _profile_patch():
             fid = factory_service.factory_in_province("tok", _api=mock)
         self.assertIsNone(fid)
 
@@ -83,7 +106,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ("POST", "/factories/build"): (201, {"factory": {"id": "new-f"}}),
             }
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+        with _profile_patch():
             fid = factory_service.ensure_factory("tok", _api=mock)
         self.assertEqual(fid, "new-f")
 
@@ -104,13 +127,13 @@ class FactoryServiceTests(unittest.TestCase):
                 return 201, {"factory": {"id": "f2"}}
             return 200, {}
 
-        with patch.object(factory_mod, "get_profile", return_value=_profile()):
+        with _profile_patch():
             fid = factory_service.prepare_join("tok", "f1", _api=api_fn)
         self.assertEqual(fid, "f2")
 
     def test_use_pills_skips_at_full_health(self):
         mock = MockApi({})
-        with patch.object(factory_mod, "get_profile", return_value=_profile(health=100)):
+        with _profile_patch(health=100):
             err = factory_service.use_pills_if_needed("tok", _api=mock)
         self.assertIsNone(err)
         self.assertEqual(mock.calls, [])
@@ -119,7 +142,7 @@ class FactoryServiceTests(unittest.TestCase):
         mock = MockApi(
             {("POST", "/auto/use-pills"): (429, {"error": "cooldown", "remaining_ms": 600000})}
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile(health=0)):
+        with _profile_patch(health=0):
             err = factory_service.use_pills_if_needed("tok", _api=mock)
         self.assertIsNotNone(err)
         self.assertIn("cooldown", err["error"])
@@ -138,7 +161,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ("POST", "/factories/work"): (200, {"earned": {"money": 2400}}),
             }
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile(health=100)):
+        with _profile_patch(health=100):
             result = factory_service.run_work_cycle("tok", _api=mock)
         self.assertTrue(result["ok"])
         self.assertEqual(result["earned"]["money"], 2400)
@@ -156,7 +179,7 @@ class FactoryServiceTests(unittest.TestCase):
                 ("POST", "/auto/use-pills"): (400, {"error": "Hap bekleme süresi"}),
             }
         )
-        with patch.object(factory_mod, "get_profile", return_value=_profile(health=20)):
+        with _profile_patch(health=20):
             result = factory_service.run_work_cycle("tok", _api=mock)
         self.assertFalse(result["ok"])
         self.assertIn("bekleme", result["error"].lower())

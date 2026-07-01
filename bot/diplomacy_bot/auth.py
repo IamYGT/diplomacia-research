@@ -25,6 +25,12 @@ def can_access_account(acc: Account, telegram_user_id: int) -> bool:
 
 
 def scoped_list_accounts(telegram_user_id: int) -> list[Account]:
+    """Operatörün kendi hesapları — admin başka kullanıcı hesabını görmez."""
+    return list_accounts_for_user(telegram_user_id)
+
+
+def admin_list_all_accounts(telegram_user_id: int) -> list[Account]:
+    """Yalnızca admin — tüm DB hesapları (debug)."""
     if is_admin(telegram_user_id):
         return list_accounts()
     return list_accounts_for_user(telegram_user_id)
@@ -46,3 +52,17 @@ def default_account_name(telegram_user_id: int, alias: str = "") -> str:
     if alias:
         return f"u{telegram_user_id}_{alias}"
     return f"u{telegram_user_id}"
+
+
+def account_name_for_user(name: str, telegram_user_id: int) -> bool:
+    """Hesap adı bu Telegram kullanıcısının u{uid} ad alanında mı."""
+    n = name.strip().lower()
+    prefix = f"u{telegram_user_id}"
+    return n == prefix or n.startswith(f"{prefix}_")
+
+
+def can_claim_orphan_account(name: str, telegram_user_id: int) -> bool:
+    """telegram_user_id=0 legacy satırı — yalnızca admin veya u{uid}_* sahibi claim edebilir."""
+    if is_admin(telegram_user_id):
+        return True
+    return account_name_for_user(name, telegram_user_id)

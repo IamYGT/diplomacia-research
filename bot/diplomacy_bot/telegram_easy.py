@@ -18,6 +18,7 @@ from .easy_mode import (
 )
 from .mission_store import clear_mission, enqueue_mission, get_active_mission
 from .modules.mission_executor import run_mission_step
+from .auth import resolve_account
 from .store import get_account
 from .telegram_helpers import user_required
 from .war_contribute_format import enrich_war_contribute_pack, format_war_contribute_html_enhanced
@@ -32,9 +33,8 @@ def _resolve_account(name: str | None, uid: int):
     if not accs:
         return None, accs
     if name:
-        acc = get_account(name.strip().lower())
-        if acc:
-            return acc, accs
+        acc = resolve_account(name.strip().lower(), uid)
+        return acc, accs
     return accs[0], accs
 
 
@@ -197,6 +197,12 @@ async def handle_easy_callback(data: str, query, uid: int) -> bool:
         return True
 
     if op == "run":
+        from .store import set_autofarm
+
+        if not acc.autofarm:
+            set_autofarm(acc.name, True)
+        if not get_active_mission(acc.name):
+            enqueue_mission(acc.name)
         text, markup = await _run_program_step(acc)
         await query.edit_message_text(text, parse_mode="HTML", reply_markup=markup)
         return True

@@ -28,7 +28,7 @@ class ConnectIntelTests(unittest.TestCase):
         self.assertEqual(data.get("username"), "cursor")
 
     def test_suggest_name_from_username(self):
-        self.assertEqual(suggest_new_account_name(1, "Y.G.T1"), "ygt1")
+        self.assertEqual(suggest_new_account_name(1, "Y.G.T1"), "u1_ygt1")
 
     def test_blocks_overwrite_different_player_on_refresh(self):
         prof = Profile(
@@ -85,7 +85,7 @@ class ConnectIntelTests(unittest.TestCase):
                         default_account="ygt",
                     )
         self.assertEqual(plan.action, "save")
-        self.assertEqual(plan.account_name, "cursor")
+        self.assertEqual(plan.account_name, "u515491882_cursor")
 
 
 class TravelFastPathTests(unittest.TestCase):

@@ -17,9 +17,7 @@ def install_settings_easy_patch() -> None:
 
     def settings_inline_markup_patched(acc: Account, *, user_accs: list[Account] | None = None) -> InlineKeyboardMarkup:
         markup = _orig(acc, user_accs=user_accs)
-        from .store import list_accounts
-
-        all_accs = user_accs if user_accs is not None else list_accounts()
+        all_accs = user_accs if user_accs is not None else []
         rows = list(markup.inline_keyboard)
         rows.insert(
             0,

@@ -21,14 +21,29 @@ TELEGRAM_ADMIN_IDS: set[int] = {
 
 BOT_PUBLIC = os.environ.get("BOT_PUBLIC", "1").strip().lower() in ("1", "true", "yes", "on")
 MAX_ACCOUNTS_PER_USER = max(1, int(os.environ.get("MAX_ACCOUNTS_PER_USER", "5")))
+FLEET_INBOX_AUTO_SETUP = os.environ.get("FLEET_INBOX_AUTO_SETUP", "0").strip().lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
+FLEET_INBOX_WATCH_INTERVAL_SEC = int(os.environ.get("FLEET_INBOX_WATCH_INTERVAL_SEC", "300"))
 
 API_BASE = os.environ.get("DIPLOMACIA_API_BASE", "https://diplomacia.com.tr/api").rstrip("/")
 DATA_DIR = Path(os.environ.get("DATA_DIR", BOT_DIR / "data"))
 AUTOFARM_INTERVAL_SEC = int(os.environ.get("AUTOFARM_INTERVAL_SEC", "620"))
+AUTOFARM_WORKER_ONLY = os.environ.get("AUTOFARM_WORKER_ONLY", "").strip().lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
 STAT_QUEUE_INTERVAL_SEC = int(os.environ.get("STAT_QUEUE_INTERVAL_SEC", "60"))
 READINESS_CACHE_SEC = float(os.environ.get("READINESS_CACHE_SEC", "60"))
 FARM_DELAY_SEC = float(os.environ.get("FARM_DELAY_SEC", "6"))
 PILL_COOLDOWN_MS = 600_000
+TOKEN_REFRESH_INTERVAL_SEC = int(os.environ.get("TOKEN_REFRESH_INTERVAL_SEC", "21600"))
+TOKEN_REFRESH_LEAD_SEC = int(os.environ.get("TOKEN_REFRESH_LEAD_SEC", "259200"))
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite")

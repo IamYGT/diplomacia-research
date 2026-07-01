@@ -168,6 +168,9 @@ def run_mission_step(
     else:
         save_mission_runtime(rt, status="active")
 
+    from ..tick_activity import record_mission_step
+
+    record_mission_step(rt.account_name, result)
     return result
 
 

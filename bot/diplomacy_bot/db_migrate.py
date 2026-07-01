@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from typing import Callable
 
-CURRENT_SCHEMA_VERSION = 11
+CURRENT_SCHEMA_VERSION = 12
 
 MigrationFn = Callable[[sqlite3.Connection], None]
 
@@ -205,6 +205,23 @@ def _migration_11_pending_token_account(c: sqlite3.Connection) -> None:
         )
 
 
+def _migration_12_token_auto_refresh(c: sqlite3.Connection) -> None:
+    if _table_exists(c, "accounts"):
+        if not _column_exists(c, "accounts", "token_exp_at"):
+            c.execute("ALTER TABLE accounts ADD COLUMN token_exp_at REAL")
+        if not _column_exists(c, "accounts", "last_token_refresh_at"):
+            c.execute("ALTER TABLE accounts ADD COLUMN last_token_refresh_at REAL")
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS account_secrets (
+            account_name TEXT PRIMARY KEY,
+            login_enc TEXT NOT NULL DEFAULT '',
+            updated_at REAL DEFAULT (strftime('%s','now'))
+        )
+        """
+    )
+
+
 MIGRATIONS: list[tuple[int, MigrationFn]] = [
     (1, _migration_1_indexes),
     (2, _migration_2_persistence_tables),
@@ -217,6 +234,7 @@ MIGRATIONS: list[tuple[int, MigrationFn]] = [
     (9, _migration_9_reply_keyboard_pref),
     (10, _migration_10_dashboard_pin),
     (11, _migration_11_pending_token_account),
+    (12, _migration_12_token_auto_refresh),
 ]
 
 

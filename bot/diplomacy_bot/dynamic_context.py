@@ -172,8 +172,10 @@ def invalidate_snapshot_cache(account_name: str | None = None) -> None:
         invalidate_readiness_cache()
 
 
-def build_ai_context(default_account: str) -> str:
+def build_ai_context(default_account: str, *, telegram_user_id: int | None = None) -> str:
     """Gemini system prompt'a eklenecek dinamik blok."""
+    from .auth import scoped_list_accounts
+
     lines = ["CANLI DURUM (probe):"]
     acc = get_account(default_account)
     if acc:
@@ -189,7 +191,14 @@ def build_ai_context(default_account: str) -> str:
             lines.append(f"  pasif_skills: {', '.join(s['passive_keys'])}")
         if s.get("error"):
             lines.append(f"  hata: {s['error']}")
-    others = [a.name for a in list_accounts() if a.name != default_account][:5]
+    if telegram_user_id:
+        others = [
+            a.name
+            for a in scoped_list_accounts(telegram_user_id)
+            if a.name != default_account
+        ][:5]
+    else:
+        others = []
     if others:
         lines.append(f"Diğer hesaplar: {', '.join(others)}")
     lines.append(

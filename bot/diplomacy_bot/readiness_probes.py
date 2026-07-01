@@ -171,23 +171,32 @@ def probe_readiness_full(token: str, account_name: str, *, api_delay: float = 0.
 
 
 def build_readiness_from_probes(probes: dict[str, dict]) -> dict[str, Any]:
-    return build_readiness(
-        quests_analysis=probes.get("quests") or {},
+    from .routine_claims import infer_daily_from_quests
+
+    qa = probes.get("quests") or {}
+    all_quests = list(qa.get("claimable") or []) + list(qa.get("in_progress") or []) + list(qa.get("done") or [])
+    readiness = build_readiness(
+        quests_analysis=qa,
         auto_analysis=probes.get("auto") or {},
         wars_analysis=probes.get("wars") or {},
         passive_analysis=probes.get("passive") or {},
         craft_analysis=probes.get("craft") or {},
         training_analysis=probes.get("training") or {},
     )
+    readiness["daily"] = infer_daily_from_quests(all_quests)
+    return readiness
 
 
 def readiness_fields(readiness: dict[str, Any]) -> dict[str, Any]:
+    daily = readiness.get("daily") or {}
     return {
         "quests_claimable": int(readiness.get("quest_claimable") or 0),
         "training_ready": bool(readiness.get("training_ready")),
         "craft_ready": bool(readiness.get("craft_ready")),
         "war_active": int(readiness.get("war_active") or 0),
         "readiness_highlights": list(readiness.get("highlights") or [])[:4],
+        "daily_claimed": daily.get("daily_claimed"),
+        "daily_available": bool(daily.get("daily_available")),
     }
 
 

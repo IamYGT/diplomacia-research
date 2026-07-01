@@ -213,6 +213,6 @@ def install_work_mode_hooks() -> None:
     from .press_like_intent import install_press_like_intent_hook
 
     install_press_like_intent_hook()
-    from .health_sync import install_health_sync_hooks
+    from .feature_scheduler import install_feature_scheduler_hook
 
-    install_health_sync_hooks()
+    install_feature_scheduler_hook()

@@ -14,7 +14,8 @@ from .intent_router import try_fast_path
 from .response_format import format_step_results
 from .game_client import call
 from .safety import action_summary, classify_action, sanitize_path
-from .store import get_account, list_accounts
+from .auth import resolve_account, scoped_list_accounts
+from .store import get_account
 from .dynamic_context import build_ai_context
 from .version import get_version_label
 
@@ -55,7 +56,7 @@ def _accounts_context(telegram_user_id: int | None = None) -> str:
     if telegram_user_id:
         accounts = scoped_list_accounts(telegram_user_id)
     else:
-        accounts = list_accounts()
+        accounts = []
     lines = []
     for a in accounts:
         try:
@@ -78,7 +79,7 @@ def _build_plan_system(default_account: str = "ygt", telegram_user_id: int | Non
         "Görev: kullanıcı AKSİYON isteğini API çağrılarına çevir ve sonucu yorumla.\n"
         "Saf bilgi/öğretme sorularında steps=[] ve reply_tr ile kısa yönlendirme ver.\n"
         "Önce hızlı komutlar (farm, stat harca, akıllı farm) yeterliyse steps=[] bırak.\n\n"
-        f"{build_ai_context(default_account)}\n\n"
+        f"{build_ai_context(default_account, telegram_user_id=telegram_user_id)}\n\n"
         f"HESAPLAR:\n{accounts}\n\n"
         f"OYUN:\n{mechanics}\n\n"
         f"API KATALOĞU (method path):\n{catalog}\n\n"
@@ -105,6 +106,7 @@ def execute_steps(
     default_account: str,
     *,
     allow_confirm: bool = False,
+    telegram_user_id: int | None = None,
 ) -> tuple[list[dict], list[dict], bool]:
     """Returns (results, pending_confirm, had_blocked)"""
     results: list[dict] = []
@@ -118,9 +120,11 @@ def execute_steps(
         if body is not None and not isinstance(body, (dict, list)):
             body = None
         account_name = str(step.get("account") or default_account).lower()
-        acc = get_account(account_name)
+        acc = resolve_account(account_name, telegram_user_id) if telegram_user_id is not None else None
+        if not acc and telegram_user_id is None and account_name == default_account.lower():
+            acc = get_account(account_name)
         if not acc:
-            results.append({"step": step, "error": f"hesap yok: {account_name}"})
+            results.append({"step": step, "error": f"hesap yok veya erişim yok: {account_name}"})
             continue
 
         risk = classify_action(method, path, body if isinstance(body, dict) else None)
@@ -158,9 +162,11 @@ def run_agent(
     telegram_user_id: int | None = None,
 ) -> AgentResult:
     if not allow_confirm:
-        from .store import get_account
-
-        acc = get_account(default_account)
+        acc = (
+            resolve_account(default_account, telegram_user_id)
+            if telegram_user_id is not None
+            else get_account(default_account)
+        )
         if acc:
             from .intent_travel_fast import try_travel_fast_path
             from .intent_updates_fast import try_updates_fast_path
@@ -181,7 +187,12 @@ def run_agent(
 
     if is_teach_question(user_message):
         try:
-            taught = answer_teach_full(user_message, default_account, use_gemini=bool(GEMINI_API_KEY))
+            taught = answer_teach_full(
+                user_message,
+                default_account,
+                use_gemini=bool(GEMINI_API_KEY),
+                telegram_user_id=telegram_user_id,
+            )
             return AgentResult(reply=taught.text, inline_buttons=taught.inline_buttons)
         except Exception as e:
             log.warning("coach failed: %s", e)
@@ -213,7 +224,9 @@ def run_agent(
             pending_actions=[{**s, "account": s.get("account") or account} for s in steps],
         )
 
-    results, pending, blocked = execute_steps(steps, account, allow_confirm=allow_confirm)
+    results, pending, blocked = execute_steps(
+        steps, account, allow_confirm=allow_confirm, telegram_user_id=telegram_user_id
+    )
     out = reply
     if results:
         formatted = format_step_results(results)
@@ -232,8 +245,17 @@ def run_agent(
     return AgentResult(reply=out, steps_run=results)
 
 
-def run_confirmed(pending: list[dict], default_account: str) -> AgentResult:
-    results, still_pending, _ = execute_steps(pending, default_account, allow_confirm=True)
+def run_confirmed(
+    pending: list[dict],
+    default_account: str,
+    *,
+    telegram_user_id: int | None = None,
+) -> AgentResult:
+    if telegram_user_id is None:
+        return AgentResult(reply="⚠️ Oturum doğrulanamadı — /cancel sonra işlemi tekrarla.")
+    results, still_pending, _ = execute_steps(
+        pending, default_account, allow_confirm=True, telegram_user_id=telegram_user_id
+    )
     reply = "✅ Onaylı işlemler çalıştırıldı.\n\n" + format_step_results(results)
     if still_pending:
         reply += "\n\n⚠️ Hâlâ bekleyen adım var."
@@ -247,6 +269,7 @@ def direct_api(
     body: dict | None = None,
     *,
     allow_confirm: bool = False,
+    telegram_user_id: int | None = None,
 ) -> AgentResult:
     step = {"method": method, "path": path, "body": body}
     risk = classify_action(method, path, body)
@@ -258,7 +281,11 @@ def direct_api(
             needs_confirmation=True,
             pending_actions=[{**step, "account": account_name}],
         )
-    acc = get_account(account_name)
+    acc = (
+        resolve_account(account_name, telegram_user_id)
+        if telegram_user_id is not None
+        else get_account(account_name)
+    )
     if not acc:
         return AgentResult(reply=f"Hesap yok: {account_name}")
     res = call(method, path, token=acc.token, body=body, delay=1.0)

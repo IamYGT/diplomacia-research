@@ -216,7 +216,7 @@ def prepare_join(
 
 def use_pills_if_needed(token: str, *, _api: ApiFn = default_api, health: int | None = None) -> dict | None:
     if health is None:
-        from .health_sync import work_health
+        from ..health_sync import work_health
 
         health = work_health(token, _api=_api)
     if health >= 100:
@@ -239,15 +239,28 @@ def run_work_cycle(
 ) -> dict:
     result: dict[str, Any] = {"ok": False, "earned": {}, "error": None, "factory_id": factory_id}
     status = get_auto_status(token, _api=_api)
+    from ..health_sync import work_health
+
+    health = work_health(token, _api=_api, auto_status=status)
+    pill_cd = int(status.get("pill_cooldown_ms") or 0)
+
+    # Hap kullanımı work CD'den önce — düşük canda beklemeden iyileş
+    if health < 100 and pill_cd <= 0:
+        pill_err = use_pills_if_needed(token, _api=_api, health=health)
+        if pill_err:
+            result["error"] = pill_err["error"]
+            result["cooldown_ms"] = pill_err.get("cooldown_ms")
+            return result
+        result["used_pills"] = True
+
     wait_ms = int(status.get("next_work_in_ms") or 0)
     if wait_ms > 0:
         result["error"] = "work cooldown"
         result["cooldown_ms"] = wait_ms
+        if result.get("used_pills"):
+            result["ok"] = True
         return result
 
-    from ..health_sync import work_health
-
-    health = work_health(token, _api=_api, auto_status=status)
     pill_cd = int(status.get("pill_cooldown_ms") or 0)
 
     _, ws = _api("GET", "/factories/work-status", token, delay=0.15)

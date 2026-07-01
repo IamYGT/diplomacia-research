@@ -2,20 +2,17 @@
 """Diplomacia bot giriş — fatal hatalarda Telegram bildirimi."""
 from __future__ import annotations
 
-import sys
-
 from diplomacy_bot.crash_notify import install_crash_hooks, send_crash_notify
 
 
 def main() -> None:
     install_crash_hooks()
     try:
+        from diplomacy_bot.bootstrap import install_bootstrap
+
+        install_bootstrap()
+
         from diplomacy_bot.telegram_app import run
-
-        import diplomacy_bot.dashboard_readiness  # noqa: F401 — dashboard patch (publish + markup)
-        import diplomacy_bot.runtime_install  # noqa: F401
-
-        diplomacy_bot.runtime_install.install_all_runtime_hooks()
 
         run()
     except SystemExit as e:

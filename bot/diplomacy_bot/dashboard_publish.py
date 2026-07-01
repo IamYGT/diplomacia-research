@@ -85,7 +85,12 @@ async def publish_dashboard_two_phase(
         log.exception("dashboard core snapshot: %s", e)
         snap = stale or {"error": str(e)[:120]}
 
-    if snap.get("error") and stale and "error" not in stale:
+    from .token_recovery import is_token_auth_error
+
+    token_dead = bool(snap.get("error") and is_token_auth_error(str(snap["error"])))
+    if token_dead:
+        text, markup = _render(snap)
+    elif snap.get("error") and stale and "error" not in stale:
         text, markup = _render(
             stale,
             footer=f"\n\n<i>⚠️ Canlı veri alınamadı: {html.escape(str(snap['error'])[:80])}</i>",

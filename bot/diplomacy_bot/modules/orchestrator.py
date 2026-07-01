@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 
 from ..account_config import AccountConfig, get_config, normalize_role
@@ -7,6 +8,7 @@ from ..game_api import get_profile
 from . import economy, factory, premium, stats, training, travel, war
 
 ApiFn = economy.ApiFn
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -57,6 +59,19 @@ def tick_account(
 
     result.username = prof.username
     result.balance_before = prof.balance
+
+    # 0. Günlük ödül + görev claim (idempotent)
+    routine = {}
+    try:
+        from ..routine_claims import run_routine_claims
+
+        routine = run_routine_claims(token, cfg, _api=api_fn)
+        if routine.get("daily"):
+            result.actions.append({"routine_daily": routine["daily"]})
+        if routine.get("quests") and routine["quests"].get("claimed_count"):
+            result.actions.append({"routine_quests": routine["quests"]})
+    except Exception as e:
+        log.debug("routine_claims %s: %s", account_name, e)
 
     # 1. Stat otomasyonu (pasif puan + altın — farm öncesi)
     if cfg.stat_auto_enabled:
@@ -155,6 +170,8 @@ def tick_account(
                 result.error = work.get("error")
                 if work.get("cooldown_ms"):
                     result.actions.append({"cooldown_ms": work["cooldown_ms"]})
+                if work.get("used_pills") or craft:
+                    result.ok = True
     elif role == "war":
         craft = economy.ensure_pills(token, cfg, _api=api_fn)
         if craft:
@@ -181,29 +198,30 @@ def tick_account(
 def _persist_runtime_state(account_name: str, result: TickResult) -> None:
     from ..store import set_runtime_state
 
+    state = "idle"
     if result.error:
         err = result.error.lower()
         if "travel" in err or "seyahat" in err:
-            set_runtime_state(account_name, "traveling")
-            return
-        if "cooldown" in err or "bekle" in err:
-            set_runtime_state(account_name, "cooldown")
-            return
-    for action in result.actions:
-        if not isinstance(action, dict):
-            continue
-        if action.get("cooldown_ms"):
-            set_runtime_state(account_name, "cooldown")
-            return
-        war_act = action.get("war") or {}
-        if isinstance(war_act, dict) and war_act.get("skipped") == "war_cooldown":
-            set_runtime_state(account_name, "cooldown")
-            return
-    if result.ok and result.earned_money > 0:
-        set_runtime_state(account_name, "working")
-    elif result.ok and result.actions:
-        set_runtime_state(account_name, "idle")
-    elif result.error == "paused":
-        set_runtime_state(account_name, "off")
+            state = "traveling"
+        elif "cooldown" in err or "bekle" in err:
+            state = "cooldown"
+        elif result.error == "paused":
+            state = "off"
     else:
-        set_runtime_state(account_name, "idle")
+        for action in result.actions:
+            if not isinstance(action, dict):
+                continue
+            if action.get("cooldown_ms"):
+                state = "cooldown"
+                break
+            war_act = action.get("war") or {}
+            if isinstance(war_act, dict) and war_act.get("skipped") == "war_cooldown":
+                state = "cooldown"
+                break
+        else:
+            if result.ok and result.earned_money > 0:
+                state = "working"
+    set_runtime_state(account_name, state)
+    from ..tick_activity import record_tick_result
+
+    record_tick_result(account_name, result)
