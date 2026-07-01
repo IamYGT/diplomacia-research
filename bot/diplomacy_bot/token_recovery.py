@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import html
-import re
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from .token_extract import extract_jwt_from_text
 from .token_console import CONSOLE_GRAB_TOKEN_ONELINER, format_console_script_telegram
 from .version import get_version_label
 
@@ -68,8 +68,3 @@ def token_recovery_markup(account_name: str) -> InlineKeyboardMarkup:
 
 def console_script_for_user() -> str:
     return format_console_script_telegram()
-
-
-def extract_jwt_from_text(text: str) -> str | None:
-    m = re.search(r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+", text or "")
-    return m.group(0) if m else None

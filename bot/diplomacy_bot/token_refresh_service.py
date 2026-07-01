@@ -20,17 +20,14 @@ from .jwt_meta import (
 )
 from .token_auto_login import login_for_token
 from .token_meta_store import record_token_saved
-from .token_watch import (
-    pick_inbox_token,
-    read_legacy_auth_token,
-    scan_token_inbox,
-    token_matches_account,
-)
 
 if TYPE_CHECKING:
     from .store import Account
 
 log = logging.getLogger(__name__)
+
+_BACKOFF_STATE_KEY = "token_refresh_next_attempt"
+_FAILURE_BACKOFF_SEC = 30 * 60
 
 
 @dataclass
@@ -39,6 +36,46 @@ class RefreshResult:
     ok: bool
     source: str = ""
     message: str = ""
+
+
+def _load_next_attempts() -> dict[str, float]:
+    try:
+        from .health_state import load_health_state
+
+        raw = dict(load_health_state().get(_BACKOFF_STATE_KEY) or {})
+        return {k: float(v or 0) for k, v in raw.items()}
+    except Exception:
+        return {}
+
+
+def _next_attempt_not_due(account_name: str, bucket: dict[str, float]) -> bool:
+    return float(bucket.get(account_name.strip().lower()) or 0) > time.time()
+
+
+def _save_next_attempt(account_name: str, *, delay_sec: float = _FAILURE_BACKOFF_SEC) -> None:
+    try:
+        from .health_state import load_health_state, save_health_state
+
+        state = load_health_state()
+        bucket = dict(state.get(_BACKOFF_STATE_KEY) or {})
+        bucket[account_name.strip().lower()] = time.time() + max(60.0, delay_sec)
+        state[_BACKOFF_STATE_KEY] = bucket
+        save_health_state(state)
+    except Exception:
+        pass
+
+
+def _clear_next_attempt(account_name: str) -> None:
+    try:
+        from .health_state import load_health_state, save_health_state
+
+        state = load_health_state()
+        bucket = dict(state.get(_BACKOFF_STATE_KEY) or {})
+        if bucket.pop(account_name.strip().lower(), None) is not None:
+            state[_BACKOFF_STATE_KEY] = bucket
+            save_health_state(state)
+    except Exception:
+        pass
 
 
 def should_refresh_account(acc: "Account", *, lead_sec: float | None = None) -> bool:
@@ -109,6 +146,8 @@ def _try_sources_for_account(
     inbox: dict[str, str],
     legacy_token: str | None,
 ) -> RefreshResult | None:
+    from .token_watch import pick_inbox_token, token_matches_account
+
     if legacy_token and token_matches_account(
         legacy_token, player_id=acc.player_id, account_name=acc.name
     ):
@@ -136,6 +175,8 @@ def _try_sources_for_account(
 
 
 def refresh_account(acc: "Account", *, force: bool = False) -> RefreshResult:
+    from .token_watch import read_legacy_auth_token, scan_token_inbox
+
     if not force and not should_refresh_account(acc):
         left = expires_in_sec(acc.token or "")
         return RefreshResult(
@@ -144,12 +185,16 @@ def refresh_account(acc: "Account", *, force: bool = False) -> RefreshResult:
             "",
             f"gerek yok (kalan {int(left or 0)}s)",
         )
+    if not force and _next_attempt_not_due(acc.name, _load_next_attempts()):
+        return RefreshResult(acc.name, False, "", "backoff aktif")
 
     inbox = scan_token_inbox(force=force)
     legacy = read_legacy_auth_token(force=force)
     hit = _try_sources_for_account(acc, inbox=inbox, legacy_token=legacy)
     if hit:
+        _clear_next_attempt(acc.name)
         return hit
+    _save_next_attempt(acc.name)
     return RefreshResult(acc.name, False, "", "kaynak bulunamadı")
 
 
@@ -160,19 +205,25 @@ def try_silent_refresh(acc: "Account") -> bool:
 
 
 def run_refresh_cycle(*, force_all: bool = False) -> list[RefreshResult]:
+    from .token_watch import read_legacy_auth_token, scan_token_inbox
     from .store import list_accounts
 
     results: list[RefreshResult] = []
     inbox = scan_token_inbox()
     legacy = read_legacy_auth_token()
+    next_attempts = {} if force_all else _load_next_attempts()
     for acc in list_accounts():
         if not force_all and not should_refresh_account(acc):
             continue
+        if not force_all and _next_attempt_not_due(acc.name, next_attempts):
+            continue
         hit = _try_sources_for_account(acc, inbox=inbox, legacy_token=legacy)
         if hit:
+            _clear_next_attempt(acc.name)
             results.append(hit)
             continue
         if force_all or should_refresh_account(acc):
+            _save_next_attempt(acc.name)
             results.append(RefreshResult(acc.name, False, "", "kaynak bulunamadı"))
     return results
 

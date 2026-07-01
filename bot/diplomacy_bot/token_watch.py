@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .config import DATA_DIR, LEGACY_AUTH
 from .jwt_meta import player_id_from_token
-from .token_recovery import extract_jwt_from_text
+from .token_extract import extract_jwt_from_text
 
 log = logging.getLogger(__name__)
 

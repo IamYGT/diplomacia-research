@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import base64
 import json
+import sys
 import time
 import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 def _fake_jwt(*, exp_offset: int, player_id: str = "pid1") -> str:
@@ -157,6 +161,68 @@ class ApiLoginRefreshTests(unittest.TestCase):
             self.assertIsNotNone(res)
             self.assertTrue(res.ok)
             mock_apply.assert_called_once_with(acc, new_tok, "api_login")
+
+
+class TokenRefreshBackoffTests(unittest.TestCase):
+    def _acc(self):
+        from diplomacy_bot.store import Account
+
+        return Account(
+            id=1,
+            name="backoff_acc",
+            token=_fake_jwt(exp_offset=10),
+            player_id="p1",
+            username="u",
+            autofarm=False,
+            last_farm_at=0.0,
+            last_balance=0,
+            proxy_id="direct",
+            proxy_url="",
+            status="active",
+            telegram_user_id=1,
+        )
+
+    def test_run_refresh_cycle_skips_account_until_backoff_due(self):
+        from unittest.mock import patch
+
+        from diplomacy_bot.token_refresh_service import run_refresh_cycle
+
+        with (
+            patch("diplomacy_bot.store.list_accounts", return_value=[self._acc()]),
+            patch("diplomacy_bot.token_refresh_service.should_refresh_account", return_value=True),
+            patch(
+                "diplomacy_bot.token_refresh_service._load_next_attempts",
+                return_value={"backoff_acc": time.time() + 600},
+            ),
+            patch("diplomacy_bot.token_watch.scan_token_inbox", return_value={}),
+            patch("diplomacy_bot.token_watch.read_legacy_auth_token", return_value=None),
+            patch("diplomacy_bot.token_refresh_service._try_sources_for_account") as try_sources,
+        ):
+            results = run_refresh_cycle()
+
+        self.assertEqual(results, [])
+        try_sources.assert_not_called()
+
+    def test_run_refresh_cycle_schedules_backoff_when_sources_missing(self):
+        from unittest.mock import patch
+
+        from diplomacy_bot.token_refresh_service import run_refresh_cycle
+
+        with (
+            patch("diplomacy_bot.store.list_accounts", return_value=[self._acc()]),
+            patch("diplomacy_bot.token_refresh_service.should_refresh_account", return_value=True),
+            patch("diplomacy_bot.token_refresh_service._load_next_attempts", return_value={}),
+            patch("diplomacy_bot.token_watch.scan_token_inbox", return_value={}),
+            patch("diplomacy_bot.token_watch.read_legacy_auth_token", return_value=None),
+            patch("diplomacy_bot.token_refresh_service._try_sources_for_account", return_value=None),
+            patch("diplomacy_bot.token_refresh_service._save_next_attempt") as save_next,
+        ):
+            results = run_refresh_cycle()
+
+        self.assertEqual(len(results), 1)
+        self.assertFalse(results[0].ok)
+        self.assertEqual(results[0].message, "kaynak bulunamadı")
+        save_next.assert_called_once_with("backoff_acc")
 
 
 class CoachTokenLineTests(unittest.TestCase):
