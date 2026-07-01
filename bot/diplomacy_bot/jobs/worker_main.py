@@ -25,10 +25,13 @@ def run_worker_loop(*, once: bool = False) -> None:
 
 
 def _tick() -> None:
-    from diplomacy_bot.config import AUTOFARM_INTERVAL_SEC
+    from diplomacy_bot.config import AUTOFARM_INTERVAL_SEC, FLEET_INBOX_AUTO_SETUP
     from diplomacy_bot.jobs.worker_autofarm import run_autofarm_tick
+    from diplomacy_bot.jobs.worker_inbox_setup import run_worker_inbox_setup_once
     from diplomacy_bot.jobs.worker_training import run_training_tick
 
+    if FLEET_INBOX_AUTO_SETUP:
+        run_worker_inbox_setup_once()
     run_training_tick()
     run_autofarm_tick(interval_sec=AUTOFARM_INTERVAL_SEC)
     try:
