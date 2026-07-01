@@ -32,6 +32,23 @@ class TravelModuleTests(unittest.TestCase):
             self.assertTrue(r["ok"])
             self.assertEqual(r.get("skipped"), "already_there")
 
+    def test_start_travel_falls_back_to_province_id(self):
+        calls = []
+
+        def api(m, p, t, body=None, delay=0):
+            calls.append((m, p, body))
+            if p == "/provinces/all":
+                return 200, {"provinces": [{"id": 42, "name": "Hürmüz"}]}
+            if p == "/provinces/travel/start" and body and body.get("province_id") == 42:
+                return 200, {"ok": True}
+            if p == "/provinces/travel/start":
+                return 400, {"error": "province_id required"}
+            return 404, {}
+
+        r = travel.start_travel("tok", "Hürmüz", _api=api)
+        self.assertTrue(r["ok"])
+        self.assertTrue(any((body or {}).get("province_id") == 42 for _, _, body in calls))
+
 
 class WarResolverTests(unittest.TestCase):
     def test_parse_url(self):

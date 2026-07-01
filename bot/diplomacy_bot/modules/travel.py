@@ -94,8 +94,11 @@ def find_provinces_by_country(provinces: list[dict], country_query: str) -> list
     return out
 
 
-def _travel_body(province_name: str) -> dict:
-    return {"province_name": province_name}
+def _travel_body(province_name: str, province_id: object | None = None) -> dict:
+    body: dict[str, object] = {"province_name": province_name}
+    if province_id is not None:
+        body["province_id"] = province_id
+    return body
 
 
 def start_travel(token: str, province_name: str, *, _api: ApiFn = default_api) -> dict:
@@ -107,6 +110,21 @@ def start_travel(token: str, province_name: str, *, _api: ApiFn = default_api) -
         delay=0.3,
     )
     body = data if isinstance(data, dict) else {"raw": str(data)[:200]}
+    if st not in (200, 201):
+        found = find_province_by_name(list_provinces(token, _api=_api), province_name)
+        pid = (found or {}).get("id") or (found or {}).get("province_id")
+        if pid is not None:
+            st2, data2 = _api(
+                "POST",
+                "/provinces/travel/start",
+                token,
+                _travel_body(province_name, pid),
+                delay=0.3,
+            )
+            body2 = data2 if isinstance(data2, dict) else {"raw": str(data2)[:200]}
+            if st2 in (200, 201):
+                return {"ok": True, "status": st2, "province_name": province_name, "data": body2}
+            st, body = st2, body2
     return {"ok": st in (200, 201), "status": st, "province_name": province_name, "data": body}
 
 

@@ -157,7 +157,7 @@ def patch_fleet_region_callbacks() -> None:
         if data == "fleet:cmd:aod":
             steps = run_aod_setup(uid)
             if query and query.message:
-                await query.message.reply_text(_format_aod_html(steps), parse_mode="HTML")
+                await query.message.reply_text(_format_aod_html(steps, uid), parse_mode="HTML")
             return
         if data == "fleet:cmd:residence":
             batch = set_fleet_residence(uid, DEFAULT_RESIDENCE_PROVINCE)
