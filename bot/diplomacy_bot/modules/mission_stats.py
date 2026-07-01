@@ -15,7 +15,7 @@ def stat_actions(
     _api: ApiFn = default_api,
 ) -> list[dict]:
     """Run stat automation and return mission action entries."""
-    if not cfg.stat_auto_enabled:
+    if not getattr(cfg, "stat_auto_enabled", False):
         return []
     result = stats.run_stat_automation(token, cfg, _api=_api)
     actions: list[dict] = []
