@@ -2,8 +2,8 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.23.0 ✅ Faz 4.3–4.4
-**Son güncelleme:** 2026-06-30
+**Sürüm:** 4.26.0 ✅ Faz 4.5–4.7
+**Son güncelleme:** 2026-07-01
 
 ---
 
@@ -13,7 +13,7 @@
 |---|------|--------|----------------|
 | 1.1 | Fleet factory assign (`/fleetfactory`) | ✅ | `fleet_command.py`, `fleet_command_hooks.py` |
 | 1.2 | Kapalı ekonomi döngüsü (hap work CD'den bağımsız) | ✅ | `modules/factory.py`, `modules/orchestrator.py` |
-| 1.3 | Training watch (saatlik saldırı) | ✅ | `training_watch.py`, `feature_scheduler.py` |
+| 1.3 | Worker training sidecar (saatlik saldırı) | ✅ | `jobs/worker_training.py`, cooldown-aware next attempt |
 | 1.4 | Fleet bootstrap (`/fleetbootstrap`) | ✅ | `fleet_command.py` |
 | 1.5 | Fleet status (fabrika modu satırı) | ✅ | `fleet_command_hooks.py` `/fleetops` |
 | 1.6 | `MAX_ACCOUNTS_PER_USER=20` dokümantasyon | ✅ | `.env.example`, bu dosya |
@@ -36,6 +36,8 @@
 | 3.2 | Seçim oyu | ✅ | `/fleetvote`, `cast_election_vote` |
 | 3.3 | Vize / vatandaşlık API | ✅ | `/fleetcitizen`, `/fleetvisa` |
 | 3.4 | `/fleetaod` tek komut zinciri | ✅ | `fleet_region_hooks.py` |
+| 3.5 | Durable bölge mission (`travel→residence→vote/visa/citizen→farm`) | ✅ | `/fleetregion`, `modules/mission_region.py` |
+| 3.6 | Çalışma izni | 🟡 | API registry'de ayrı endpoint yok; keşif bekliyor |
 
 ## Faz 4 — Otomasyon & UAT (sıradaki)
 
@@ -45,6 +47,9 @@
 | 4.2 | Filo hata runbook (JWT süresi, kapasite dolu, seyahat CD) | ✅ | `/fleethelp`, `/help filo` |
 | 4.3 | Canlı UAT — 5→20 hesap kademeli | 🟡 | U1/U2/U4 headless teyit |
 | 4.4 | Filo metrik özeti (günlük farm/attack sayacı) | ✅ | `fleet_metrics.py`, `/fleet status` |
+| 4.5 | Worker stat queue | ✅ | `jobs/worker_stat_queue.py` |
+| 4.6 | Craft→hap→work invariant | ✅ | `test_modules_orchestrator.py` |
+| 4.7 | Training cooldown retry scheduler | ✅ | `test_worker_training.py` |
 
 ---
 
@@ -63,6 +68,7 @@ export MAX_ACCOUNTS_PER_USER=20
 /fleettravel Hürmüz         # toplu seyahat
 /fleet status               # detaylı komuta tablosu
 /fleetaod                   # tek komut: bootstrap+fabrika+seyahat+ikamet
+/fleetregion Hürmüz vote    # kalıcı mission: seyahat+ikamet+oy+farm
 /fleetresidence Hürmüz      # toplu ikamet
 /fleetvote                  # aktif seçime oy
 /fleetcitizen               # vatandaşlık başvurusu (ana ülke)
@@ -86,7 +92,8 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik import+AOD+Telegram ö
 | U4 | `/fleet status` | rol, mod, bakiye, kapasite + 24s metrik | ✅ 2 hesap tablosu |
 | U5 | ⚙️ İşlemler menüsü | alt klavye açılır | 🔲 canlı |
 | U6 | 20 hesap limit | 21. hesap reddedilir | 🔲 canlı |
-| U7 | `training_watch` | saatlik free attack denemesi | 🔲 canlı |
+| U7 | `worker_training` | cooldown bitince free attack denemesi | ✅ unit, 🔲 canlı |
+| U8 | `/fleetregion Hürmüz vote` | kalıcı region mission kuyruğu | ✅ unit, 🔲 canlı |
 
 ---
 
@@ -95,10 +102,13 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik import+AOD+Telegram ö
 - [x] Yeni hesap bağlanınca auto_defaults + autofarm açık
 - [x] `/fleetfactory main` tüm alt hesaplarda `work_mode=fixed` + UUID
 - [x] Work CD varken düşük canda hap kullanılıyor
-- [x] `training_watch` free_attack_available iken saldırı deniyor
+- [x] Hap yok + can 0 iken `craft-pills → use-pills → factories/work`
+- [x] `worker_training` free_attack_available iken saldırı deniyor
+- [x] `worker_training` cooldown ms dönerse next-attempt planlıyor
 - [x] İkamet `province_id` fallback (`test_fleet_residence`)
+- [x] Durable mission: `citizenship_apply`, `visa_apply`, `election_vote`
 - [x] `fleet_ui_markup` + `fleet_callbacks` 350 satır altında
-- [x] Test suite: **53 geçti** (filo + api_replay)
+- [x] Targeted tests: fleet missions, region UI, worker training, orchestrator, arch_check
 
 ---
 
@@ -111,6 +121,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik import+AOD+Telegram ö
 | Inbox boş | Yanlış dosya adı | `data/token_inbox/u{telegram_uid}_01.jwt` |
 | JWT expired | Token süresi | `/loginkaydet` veya yeni token inbox |
 | 21. hesap | Limit | `MAX_ACCOUNTS_PER_USER=20` env |
+| Çalışma izni yok | API endpoint keşfedilmedi | `api_route_registry.py` güncellenmeden otomasyon ekleme |
 
 ---
 
@@ -130,12 +141,16 @@ fleet_callbacks.py     — inline callback zinciri
 fleet_ui_markup.py     — kompakt panel + alt menü
 fleet_residence.py     — ikamet, oy, vize, run_aod_setup
 fleet_region_hooks.py  — bölge komutları + AOD callback
+fleet_region_mission_ui.py — /fleetregion parse + format
 fleet_inbox_import.py  — headless inbox bağlama
 fleet_inbox_watch.py   — 300s job, otomatik AOD (env ile)
 fleet_metrics.py     — 24s farm/antrenman özeti
 action_log_query.py  — action_log sayım sorguları
 connect_core.py      — ortak hesap bağlama
 fleet_help.py        — /fleethelp runbook
+domain/fleet_missions.py — AOD/region mission phase planı
+modules/mission_region.py — vote/visa/citizen mission fazları
+jobs/worker_training.py — cooldown-aware antrenman sidecar
 ```
 
 ---
@@ -144,6 +159,7 @@ fleet_help.py        — /fleethelp runbook
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.26.0 | durable `/fleetregion`, mission region phases, training cooldown scheduler, craft→hap→work test |
 | 2026-06-30 | 4.25.0 | M0 bootstrap.py, main sırası, dashboard token-dead fix, arch_check |
 | 2026-06-30 | 4.24.0 | token_db — DB tek kaynak, inbox consume |
 | 2026-06-30 | 4.23.3 | /accounts canlı bakiye + ~ stale + 🔑 token uyarısı |
