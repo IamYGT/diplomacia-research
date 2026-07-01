@@ -117,7 +117,35 @@ class WorkerTrainingTests(unittest.TestCase):
         save_next.assert_called_once()
         self.assertEqual(save_next.call_args.args[0], "w1")
         save_attack.assert_not_called()
-        log_action.assert_not_called()
+        log_action.assert_called_once()
+        self.assertEqual(log_action.call_args.args[0], "training_skip")
+        self.assertEqual(log_action.call_args.kwargs["result"], "free_attack_cooldown")
+        self.assertFalse(log_action.call_args.kwargs["success"])
+
+    def test_training_tick_logs_no_training_war_skip(self):
+        from diplomacy_bot.jobs.worker_training import run_training_tick
+
+        cfg = SimpleNamespace(role="hybrid", training_enabled=True)
+        with (
+            patch("diplomacy_bot.store.list_accounts", return_value=[_acc()]),
+            patch("diplomacy_bot.account_config.get_config", return_value=cfg),
+            patch("diplomacy_bot.account_config.normalize_role", return_value="hybrid"),
+            patch("diplomacy_bot.account_runtime.account_context", return_value=nullcontext()),
+            patch(
+                "diplomacy_bot.modules.training.try_free_attack",
+                return_value={"skipped": "no_training_war"},
+            ),
+            patch("diplomacy_bot.jobs.worker_training._load_last_attacks", return_value={}),
+            patch("diplomacy_bot.jobs.worker_training._load_next_attempts", return_value={}),
+            patch("diplomacy_bot.jobs.worker_training._save_next_attempt_ts"),
+            patch("diplomacy_bot.store.log_action") as log_action,
+        ):
+            ok, checked = run_training_tick()
+
+        self.assertEqual((ok, checked), (0, 1))
+        log_action.assert_called_once()
+        self.assertEqual(log_action.call_args.args[0], "training_skip")
+        self.assertEqual(log_action.call_args.kwargs["result"], "no_training_war")
 
     def test_worker_main_runs_training_sidecar_before_autofarm(self):
         from diplomacy_bot.jobs import worker_main

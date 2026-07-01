@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.26.3 ✅ Faz 4.5–4.10
+**Sürüm:** 4.26.4 ✅ Faz 4.5–4.11
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -53,6 +53,7 @@
 | 4.8 | 20 hesap dry-run goal testi | ✅ | `test_fleet_goal_dryrun.py` |
 | 4.9 | Token refresh backoff + Telegram deps | ✅ | `token_refresh_service.py`, `requirements.txt` kurulum teyidi |
 | 4.10 | Kolay/program callback fresh panel | ✅ | `telegram_navigation.py`, `telegram_easy.py`, `telegram_mission.py` |
+| 4.11 | Training skip görünürlüğü | ✅ | `training_skip` action_log + `/fleet status` 24s bekleme metriği |
 
 ---
 
@@ -112,6 +113,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik import+AOD+Telegram ö
 - [x] Hap yok + can 0 iken `craft-pills → use-pills → factories/work`
 - [x] `worker_training` free_attack_available iken saldırı deniyor
 - [x] `worker_training` cooldown ms dönerse next-attempt planlıyor
+- [x] `worker_training` no-war/cooldown skip nedenini action_log'a yazar
 - [x] İkamet `province_id` fallback (`test_fleet_residence`)
 - [x] Durable mission: `citizenship_apply`, `visa_apply`, `election_vote`
 - [x] 20 worker dry-run: main skip, repair, audit, AOD/region enqueue, training tick
@@ -170,6 +172,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.26.4 | Training skip action_log + fleet metrics bekleme sayacı |
 | 2026-07-01 | 4.26.3 | Kolay/program/onboarding eski callback'lerinde görünür yeni panel fallback |
 | 2026-07-01 | 4.26.2 | Telegram paketleri kuruldu, token refresh backoff, token_extract domain helper |
 | 2026-07-01 | 4.26.1 | Telegram stale panel fallback, 20 hesap dry-run testi, `/fleetrepair` doküman netliği |

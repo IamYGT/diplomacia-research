@@ -5,8 +5,11 @@ from __future__ import annotations
 import tempfile
 import time
 import unittest
+import sys
 from pathlib import Path
 from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from diplomacy_bot.fleet_metrics import format_fleet_metrics_line
 
@@ -17,6 +20,7 @@ class FleetMetricsTests(unittest.TestCase):
             patch("diplomacy_bot.fleet_metrics.scoped_list_accounts", return_value=[]),
             patch("diplomacy_bot.fleet_metrics.count_fleet_farms_24h", return_value=0),
             patch("diplomacy_bot.fleet_metrics.count_fleet_training_attacks_24h", return_value=0),
+            patch("diplomacy_bot.fleet_metrics.count_fleet_training_skips_24h", return_value=0),
         ):
             self.assertEqual(format_fleet_metrics_line(1), "")
 
@@ -24,10 +28,12 @@ class FleetMetricsTests(unittest.TestCase):
         with (
             patch("diplomacy_bot.fleet_metrics.count_fleet_farms_24h", return_value=12),
             patch("diplomacy_bot.fleet_metrics.count_fleet_training_attacks_24h", return_value=3),
+            patch("diplomacy_bot.fleet_metrics.count_fleet_training_skips_24h", return_value=2),
         ):
             line = format_fleet_metrics_line(42)
         self.assertIn("12", line)
         self.assertIn("3", line)
+        self.assertIn("2 bekleme", line)
 
     def test_count_actions_since(self):
         import sqlite3

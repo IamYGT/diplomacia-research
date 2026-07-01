@@ -103,6 +103,14 @@ def run_training_tick(*, min_interval_sec: float = _DEFAULT_MIN_INTERVAL_SEC) ->
                 ok += 1
             else:
                 _schedule_retry_from_result(name, result, min_interval_sec)
+                skipped = (result or {}).get("skipped") or "no_result"
+                log_action(
+                    "training_skip",
+                    account_name=name,
+                    telegram_user_id=acc.telegram_user_id or 0,
+                    result=str(skipped),
+                    success=False,
+                )
         except Exception as e:
             log.debug("worker_training %s: %s", name, e)
     if checked:

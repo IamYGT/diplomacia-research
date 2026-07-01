@@ -48,9 +48,28 @@ def count_fleet_training_attacks_24h(telegram_user_id: int) -> int:
     return max(logged, state_count)
 
 
+def count_fleet_training_skips_24h(telegram_user_id: int) -> int:
+    names = _account_names(telegram_user_id)
+    if not names:
+        return 0
+    since = time.time() - 86400
+    from .action_log_query import count_actions_since
+
+    return count_actions_since(
+        account_names=names,
+        action="training_skip",
+        since_unix=since,
+        success_only=False,
+    )
+
+
 def format_fleet_metrics_line(telegram_user_id: int) -> str:
     farms = count_fleet_farms_24h(telegram_user_id)
     attacks = count_fleet_training_attacks_24h(telegram_user_id)
-    if farms == 0 and attacks == 0:
+    skips = count_fleet_training_skips_24h(telegram_user_id)
+    if farms == 0 and attacks == 0 and skips == 0:
         return ""
-    return f"📊 Son 24s: 🌾 {farms} farm · ⚔️ {attacks} antrenman"
+    line = f"📊 Son 24s: 🌾 {farms} farm · ⚔️ {attacks} antrenman"
+    if skips:
+        line += f" · ⏳ {skips} bekleme"
+    return line
