@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.28.3 ✅ Faz 4.5–4.30
+**Sürüm:** 4.28.4 ✅ Faz 4.5–4.31
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -73,6 +73,7 @@
 | 4.28 | Autopilot hedef politikası | ✅ | Argümanlı `/fleetstart`/`/fleetregion` sonraki otomatik token hedefini kaydeder |
 | 4.29 | Filo menü edit/reply kuralı | ✅ | Eski menü yeni mesaj açar, yeni menü yerinde güncellenir |
 | 4.30 | Worker darboğaz özeti | ✅ | `/fleet status` hazır değil/runtime/training skip sebeplerini tek satır özetler |
+| 4.31 | Permit API keşif kapsamı | ✅ | Discovery `/employment` ve `/work-permits` aday path'lerini de tarar |
 
 ---
 
@@ -109,7 +110,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.28.3):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. `/fleet status` antrenman cooldown bekleyen hesapları ve worker darboğaz özetini sayar. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder.
+**Filo paneli (v4.28.4):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; yeni menü tıklamaları yerinde güncellenir. `/fleet status` antrenman cooldown bekleyen hesapları ve worker darboğaz özetini sayar. Başarısız inbox token importu processed olmaz, sonraki otomatik turda yeniden denenir. Argümanlı `/fleetstart Hürmüz vote` ve `/fleetregion ...` sonraki otomatik inbox/Start akışının hedef politikasını kaydeder.
 
 ---
 
@@ -122,7 +123,7 @@ python3 scripts/discover_frontend_api.py --show-missing
 | U3 | `/fleetvote` | aktif seçimde oy veya net hata | 🔲 canlı |
 | U4 | `/fleet status` | rol, mod, bakiye, kapasite + 24s metrik | ✅ 2 hesap tablosu |
 | U5 | ⚙️ İşlemler menüsü | alt klavye açılır | 🔲 canlı |
-| U6 | 20 hesap limit | 21. hesap reddedilir | 🔲 canlı |
+| U6 | 20 hesap limit | 21. hesap reddedilir | ✅ unit `test_connect_core.py`, 🔲 canlı |
 | U7 | `worker_training` | cooldown bitince free attack denemesi | ✅ unit, 🔲 canlı |
 | U8 | `/fleetregion Hürmüz vote` | kalıcı region mission kuyruğu | ✅ unit, 🔲 canlı |
 | U9 | 1 ana + 20 worker dry-run | repair + audit + AOD/region + training | ✅ `test_fleet_goal_dryrun.py` |
@@ -174,9 +175,10 @@ Operatör Diplomacia domaininde API keşfine izin verdi. Rutin akış:
 4. Endpoint bulunmadan bot ekranında kabiliyeti "hazır" gösterme.
 
 2026-07-01 bundle teyidi: keşif çıktısı `capability:work` ve
-`capability:training` aday sayılarını yazdırır. Ayrı `work permit/employment` endpointi ve
-`training-wars create` endpointi görünmedi; `/fleet status` bunları bekleyen
-gelişmiş kabiliyet olarak gösterir.
+`capability:training` aday sayılarını yazdırır. Discovery `/employment` ve
+`/work-permits` prefix'lerini de tarar. Ayrı `work permit/employment` endpointi ve
+`training-wars create` endpointi canlı bundle'da görünmedi; `/fleet status`
+bunları bekleyen gelişmiş kabiliyet olarak gösterir.
 
 ---
 
@@ -214,6 +216,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.28.4 | API discovery `/employment` ve `/work-permits` prefix'lerini tarar; U6 unit kanıtı dokümana işlendi |
 | 2026-07-01 | 4.28.3 | `/fleet status` hazır değil/runtime/training skip darboğazlarını tek satır özetler |
 | 2026-07-01 | 4.28.2 | Filo menü callback'leri stale navigation kuralını gerçekten uygular |
 | 2026-07-01 | 4.28.1 | Argümanlı fleetstart/region hedefi kaydedilir; parametresiz autopilot bu policy'yi kullanır |

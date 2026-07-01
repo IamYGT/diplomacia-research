@@ -27,6 +27,7 @@ _PATH_KEYWORDS = (
     "/chat",
     "/citizenship",
     "/countries",
+    "/employment",
     "/elections",
     "/factories",
     "/market",
@@ -40,6 +41,7 @@ _PATH_KEYWORDS = (
     "/training-wars",
     "/visas",
     "/wars",
+    "/work-permits",
 )
 CAPABILITY_KEYWORDS = {
     "work": ("work", "employment", "permit"),

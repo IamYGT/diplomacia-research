@@ -16,6 +16,8 @@ def test_discover_paths_from_static_bundle(monkeypatch):
     bundle = (
         "const api={"
         "getStatus:e=>h('/factories/work-status',{token:e}),"
+        "permit:e=>h('/employment/apply',{method:'POST',token:e}),"
+        "workPermit:e=>h('/work-permits/request',{method:'POST',token:e}),"
         "move:(e,t)=>h('/factories/move',{method:'POST',token:e,body:{factory_id:t}}),"
         "attack:(e,t)=>h(`/training-wars/${t}/attack`,{method:'POST',token:e})"
         "};"
@@ -29,6 +31,8 @@ def test_discover_paths_from_static_bundle(monkeypatch):
     report = disc.discover_paths()
     routes = {(r["method"], r["path"]) for r in report["routes"]}
     assert ("GET", "/factories/work-status") in routes
+    assert ("POST", "/employment/apply") in routes
+    assert ("POST", "/work-permits/request") in routes
     assert ("POST", "/factories/move") in routes
     assert ("POST", "/training-wars/{id}/attack") in routes
 
