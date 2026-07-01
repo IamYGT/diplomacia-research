@@ -10,7 +10,7 @@ from .fleet_command import (
     format_next_steps_footer,
     travel_fleet,
 )
-from .fleet_ui_markup import fleet_more_inline_markup
+from .fleet_ui_markup import fleet_more_inline_markup, fleet_nav_inline_markup
 
 
 def install_fleet_command_callbacks() -> None:
@@ -45,6 +45,7 @@ def install_fleet_command_callbacks() -> None:
                         footer=format_next_steps_footer(uid),
                     ),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         if data == "fleet:cmd:inbox":
@@ -59,6 +60,7 @@ def install_fleet_command_callbacks() -> None:
                         footer=format_inbox_import_footer(uid, batch),
                     ),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         if data == "fleet:cmd:factory":
@@ -71,6 +73,7 @@ def install_fleet_command_callbacks() -> None:
                         footer=format_next_steps_footer(uid),
                     ),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         if data == "fleet:cmd:travel":
@@ -79,6 +82,7 @@ def install_fleet_command_callbacks() -> None:
                 await query.message.reply_text(
                     format_batch_html("🚶 Filo seyahat → Hürmüz", batch),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         if data == "fleet:cmd:bootstrap":
@@ -91,11 +95,16 @@ def install_fleet_command_callbacks() -> None:
                         footer=format_next_steps_footer(uid),
                     ),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         if data == "fleet:cmd:ops":
             if query and query.message:
-                await query.message.reply_text(format_fleet_ops_status(uid), parse_mode="HTML")
+                await query.message.reply_text(
+                    format_fleet_ops_status(uid),
+                    parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
+                )
             return
         if data == "fleet:cmd:repair":
             from .fleet_autonomy_repair import repair_fleet_autonomy_for_uid
@@ -109,6 +118,7 @@ def install_fleet_command_callbacks() -> None:
                         footer=format_next_steps_footer(uid),
                     ),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         return await _orig(update, context, data, default, query, uid)

@@ -18,6 +18,7 @@ from .fleet_command import (
     travel_fleet,
 )
 from .telegram_helpers import user_required
+from .fleet_ui_markup import fleet_nav_inline_markup
 
 log = logging.getLogger(__name__)
 _REGISTERED = False
@@ -49,6 +50,7 @@ async def cmd_fleetfactory(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             footer=format_next_steps_footer(uid),
         ),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -65,7 +67,11 @@ async def cmd_fleettravel(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         return
     province = " ".join(context.args)
     batch = travel_fleet(uid, province)
-    await msg.reply_text(format_batch_html(f"🚶 Filo seyahat → {province}", batch), parse_mode="HTML")
+    await msg.reply_text(
+        format_batch_html(f"🚶 Filo seyahat → {province}", batch),
+        parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
+    )
 
 
 @user_required
@@ -95,6 +101,7 @@ async def cmd_fleetbootstrap(update: Update, context: ContextTypes.DEFAULT_TYPE)
             footer=format_next_steps_footer(uid),
         ),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -115,7 +122,11 @@ async def cmd_fleetroles(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     role = context.args[0]
     limit = int(context.args[1]) if len(context.args) > 1 and context.args[1].isdigit() else None
     batch = set_fleet_roles(uid, role, limit=limit)
-    await msg.reply_text(format_batch_html(f"👥 Filo rol → {role}", batch), parse_mode="HTML")
+    await msg.reply_text(
+        format_batch_html(f"👥 Filo rol → {role}", batch),
+        parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
+    )
 
 
 @user_required
@@ -135,6 +146,7 @@ async def cmd_fleetinbox(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             footer=format_inbox_import_footer(uid, batch),
         ),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -155,7 +167,7 @@ async def cmd_fleetops(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     msg = update.effective_message
     if not msg:
         return
-    await msg.reply_text(format_fleet_ops_status(uid), parse_mode="HTML")
+    await msg.reply_text(format_fleet_ops_status(uid), parse_mode="HTML", reply_markup=fleet_nav_inline_markup())
 
 
 @user_required
@@ -172,6 +184,7 @@ async def cmd_fleetrepair(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await msg.reply_text(
         format_batch_html("🛠 Filo otonomi onarım", batch, footer=format_next_steps_footer(uid)),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -235,7 +248,11 @@ def install_fleet_command_hooks() -> None:
             uid = ta._uid(update)
             msg = update.effective_message
             if msg:
-                await msg.reply_text(format_fleet_ops_status(uid), parse_mode="HTML")
+                await msg.reply_text(
+                    format_fleet_ops_status(uid),
+                    parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
+                )
             return
         await _orig_fleet(update, context)
 

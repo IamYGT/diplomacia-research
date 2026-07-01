@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from diplomacy_bot.fleet_command import FleetBatchResult, FleetOpResult
 from diplomacy_bot.fleet_help import format_fleet_help_html
 from diplomacy_bot.fleet_inbox_import import format_inbox_import_footer
+from diplomacy_bot.fleet_ui_markup import fleet_nav_inline_markup
 from diplomacy_bot.inbox_processed_state import (
     clear_inbox_processed_for_uid,
     is_inbox_processed,
@@ -73,6 +74,18 @@ class FleetHelpTests(unittest.TestCase):
         batch.add(FleetOpResult("-", False, "inbox boş"))
         footer = format_inbox_import_footer(515491882, batch)
         self.assertIn("u515491882_01.jwt", footer)
+
+    def test_fleet_result_nav_markup_has_return_paths(self):
+        markup = fleet_nav_inline_markup()
+        callbacks = [
+            btn.callback_data
+            for row in markup.inline_keyboard
+            for btn in row
+        ]
+        self.assertEqual(
+            callbacks,
+            ["fleet:cmd:ops", "fleet:cmd:start", "fleet:menu:more", "fleet:menu:main"],
+        )
 
 
 if __name__ == "__main__":

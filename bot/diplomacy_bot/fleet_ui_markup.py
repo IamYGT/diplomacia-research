@@ -29,6 +29,22 @@ def fleet_more_inline_markup() -> InlineKeyboardMarkup:
     )
 
 
+def fleet_nav_inline_markup() -> InlineKeyboardMarkup:
+    """Small return rail shown under fleet result messages."""
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("📋 Durum", callback_data="fleet:cmd:ops"),
+                InlineKeyboardButton("▶️ Başlat", callback_data="fleet:cmd:start"),
+            ],
+            [
+                InlineKeyboardButton("⚙️ İşlemler", callback_data="fleet:menu:more"),
+                InlineKeyboardButton("◀️ Ana panel", callback_data="fleet:menu:main"),
+            ],
+        ]
+    )
+
+
 def patch_fleet_ui_buttons() -> None:
     from . import telegram_ui as ui
 

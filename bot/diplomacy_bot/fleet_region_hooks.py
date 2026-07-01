@@ -17,6 +17,7 @@ from .fleet_residence import (
     set_fleet_residence,
 )
 from .telegram_helpers import user_required
+from .fleet_ui_markup import fleet_nav_inline_markup
 
 log = logging.getLogger(__name__)
 _REGISTERED = False
@@ -79,6 +80,7 @@ async def cmd_fleetresidence(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await msg.reply_text(
         format_batch_html(f"🏠 Filo ikamet → {prov}", batch, footer=format_next_steps_footer(uid)),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -95,6 +97,7 @@ async def cmd_fleetvote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await msg.reply_text(
         format_batch_html("🗳 Filo seçim oyu", batch, footer=format_next_steps_footer(uid)),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -111,6 +114,7 @@ async def cmd_fleetcitizen(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await msg.reply_text(
         format_batch_html("🪪 Filo vatandaşlık başvurusu", batch, footer=format_next_steps_footer(uid)),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -127,6 +131,7 @@ async def cmd_fleetvisa(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await msg.reply_text(
         format_batch_html("📋 Filo vize başvurusu", batch, footer=format_next_steps_footer(uid)),
         parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
     )
 
 
@@ -142,7 +147,11 @@ async def cmd_fleetaod(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     from .fleet_mission_service import enqueue_aod_missions_for_uid
 
     result = enqueue_aod_missions_for_uid(uid, province=prov)
-    await msg.reply_text(_format_aod_mission_html(result), parse_mode="HTML")
+    await msg.reply_text(
+        _format_aod_mission_html(result),
+        parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
+    )
 
 
 @user_required
@@ -157,7 +166,11 @@ async def cmd_fleetregion(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         return
     province, opts = parse_region_args(list(context.args or []))
     result = enqueue_region_missions_for_uid(uid, province=province, **opts)
-    await msg.reply_text(format_region_mission_html(result, province), parse_mode="HTML")
+    await msg.reply_text(
+        format_region_mission_html(result, province),
+        parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
+    )
 
 
 @user_required
@@ -172,7 +185,11 @@ async def cmd_fleetstart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
     province, opts = parse_region_args(list(context.args or []))
     result = start_fleet_autopilot_for_uid(uid, province=province, **opts)
-    await msg.reply_text(format_autopilot_html(result), parse_mode="HTML")
+    await msg.reply_text(
+        format_autopilot_html(result),
+        parse_mode="HTML",
+        reply_markup=fleet_nav_inline_markup(),
+    )
 
 
 def register_fleet_region_handlers(application: Application) -> None:
@@ -208,14 +225,22 @@ def patch_fleet_region_callbacks() -> None:
 
             result = start_fleet_autopilot_for_uid(uid)
             if query and query.message:
-                await query.message.reply_text(format_autopilot_html(result), parse_mode="HTML")
+                await query.message.reply_text(
+                    format_autopilot_html(result),
+                    parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
+                )
             return
         if data == "fleet:cmd:aod":
             from .fleet_mission_service import enqueue_aod_missions_for_uid
 
             result = enqueue_aod_missions_for_uid(uid)
             if query and query.message:
-                await query.message.reply_text(_format_aod_mission_html(result), parse_mode="HTML")
+                await query.message.reply_text(
+                    _format_aod_mission_html(result),
+                    parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
+                )
             return
         if data == "fleet:cmd:residence":
             batch = set_fleet_residence(uid, DEFAULT_RESIDENCE_PROVINCE)
@@ -223,6 +248,7 @@ def patch_fleet_region_callbacks() -> None:
                 await query.message.reply_text(
                     format_batch_html("🏠 Filo ikamet", batch, footer=format_next_steps_footer(uid)),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         if data == "fleet:cmd:vote":
@@ -231,6 +257,7 @@ def patch_fleet_region_callbacks() -> None:
                 await query.message.reply_text(
                     format_batch_html("🗳 Filo oy", batch, footer=format_next_steps_footer(uid)),
                     parse_mode="HTML",
+                    reply_markup=fleet_nav_inline_markup(),
                 )
             return
         return await _orig(update, context, data, default, query, uid)
