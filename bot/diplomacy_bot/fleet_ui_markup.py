@@ -13,15 +13,14 @@ def fleet_more_inline_markup() -> InlineKeyboardMarkup:
                 InlineKeyboardButton("🚶 Hürmüz", callback_data="fleet:cmd:travel"),
             ],
             [
-                InlineKeyboardButton("🚀 Bootstrap", callback_data="fleet:cmd:bootstrap"),
-                InlineKeyboardButton("🔀 Hybrid", callback_data="fleet:af:on:hybrid"),
+                InlineKeyboardButton("📥 Token inbox", callback_data="fleet:cmd:inbox"),
+                InlineKeyboardButton("🚀 Hazırla", callback_data="fleet:cmd:bootstrap"),
             ],
             [
-                InlineKeyboardButton("📥 Inbox", callback_data="fleet:cmd:inbox"),
                 InlineKeyboardButton("🏠 İkamet", callback_data="fleet:cmd:residence"),
+                InlineKeyboardButton("🛠 Onar", callback_data="fleet:cmd:repair"),
             ],
             [
-                InlineKeyboardButton("🛠 Onar", callback_data="fleet:cmd:repair"),
                 InlineKeyboardButton("🗳 Oy ver", callback_data="fleet:cmd:vote"),
             ],
             [InlineKeyboardButton("◀️ Filo paneli", callback_data="fleet:menu:main")],

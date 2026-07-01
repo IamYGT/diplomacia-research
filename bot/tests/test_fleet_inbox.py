@@ -64,6 +64,15 @@ class FleetInboxImportTests(unittest.TestCase):
         self.assertEqual(back.callback_data, "fleet:menu:main")
         self.assertIn("Filo", back.text)
 
+    def test_fleet_more_menu_has_no_duplicate_hybrid_bootstrap(self):
+        rows = fleet_more_inline_markup().inline_keyboard
+        callbacks = [button.callback_data for row in rows for button in row]
+        labels = [button.text for row in rows for button in row]
+
+        self.assertIn("fleet:cmd:bootstrap", callbacks)
+        self.assertNotIn("fleet:af:on:hybrid", callbacks)
+        self.assertIn("🚀 Hazırla", labels)
+
     def test_fleet_main_menu_has_start_button(self):
         from diplomacy_bot import telegram_ui as ui
 
