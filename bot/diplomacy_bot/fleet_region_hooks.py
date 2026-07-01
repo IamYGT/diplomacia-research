@@ -14,7 +14,6 @@ from .fleet_residence import (
     fleet_citizenship_apply,
     fleet_visa_apply,
     fleet_vote,
-    run_aod_setup,
     set_fleet_residence,
 )
 from .telegram_helpers import user_required
@@ -47,6 +46,22 @@ def _format_aod_html(steps: dict, telegram_user_id: int) -> str:
         else:
             lines.append(f"{label}: {batch.ok}/{batch.total} başarılı")
     lines.append("\n<i>Detay: /fleet status</i>")
+    lines.append(f"\n{format_post_aod_footer()}")
+    return "\n".join(lines)
+
+
+def _format_aod_mission_html(result) -> str:
+    import html
+
+    lines = [
+        "<b>🇦🇴 AOD mission kuyruğu</b>",
+        f"<code>{html.escape(result.fleet_id)}</code>",
+        f"{result.batch.ok}/{result.batch.total} hesap kalıcı plana alındı\n",
+    ]
+    for r in result.batch.results[:20]:
+        icon = "✅" if r.ok else "❌"
+        lines.append(f"{icon} <code>{html.escape(r.account_name)}</code> — {html.escape(r.message)}")
+    lines.append("\n<i>Worker seyahat, ikamet ve farm adımlarını kaldığı yerden sürdürecek.</i>")
     lines.append(f"\n{format_post_aod_footer()}")
     return "\n".join(lines)
 
@@ -124,9 +139,10 @@ async def cmd_fleetaod(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if not msg:
         return
     prov = " ".join(context.args) if context.args else DEFAULT_RESIDENCE_PROVINCE
-    steps = run_aod_setup(uid, province=prov)
-    body = _format_aod_html(steps, uid)
-    await msg.reply_text(body, parse_mode="HTML")
+    from .fleet_mission_service import enqueue_aod_missions_for_uid
+
+    result = enqueue_aod_missions_for_uid(uid, province=prov)
+    await msg.reply_text(_format_aod_mission_html(result), parse_mode="HTML")
 
 
 def register_fleet_region_handlers(application: Application) -> None:
@@ -155,9 +171,11 @@ def patch_fleet_region_callbacks() -> None:
 
     async def handle_callback_patched(update, context, data, default, query, uid):
         if data == "fleet:cmd:aod":
-            steps = run_aod_setup(uid)
+            from .fleet_mission_service import enqueue_aod_missions_for_uid
+
+            result = enqueue_aod_missions_for_uid(uid)
             if query and query.message:
-                await query.message.reply_text(_format_aod_html(steps, uid), parse_mode="HTML")
+                await query.message.reply_text(_format_aod_mission_html(result), parse_mode="HTML")
             return
         if data == "fleet:cmd:residence":
             batch = set_fleet_residence(uid, DEFAULT_RESIDENCE_PROVINCE)

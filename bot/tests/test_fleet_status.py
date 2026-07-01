@@ -2,12 +2,23 @@
 
 from __future__ import annotations
 
+import sys
 import unittest
+from pathlib import Path
+from types import ModuleType
 from unittest.mock import MagicMock, patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+if "telegram" not in sys.modules:
+    telegram_stub = ModuleType("telegram")
+    telegram_stub.InlineKeyboardButton = MagicMock
+    telegram_stub.InlineKeyboardMarkup = MagicMock
+    sys.modules["telegram"] = telegram_stub
 
 from diplomacy_bot.fleet_status import (
     compute_fleet_next_steps,
     format_factory_capacity_line,
+    format_fleet_ops_status,
     format_next_steps_footer,
 )
 from diplomacy_bot.store import Account
@@ -60,6 +71,26 @@ class FleetStatusTests(unittest.TestCase):
         with patch("diplomacy_bot.fleet_status.compute_fleet_next_steps", return_value=["<code>/fleetinbox</code>"]):
             footer = format_next_steps_footer(1)
         self.assertIn("Sonraki adım", footer)
+
+    def test_status_includes_active_mission_phase(self):
+        acc = _acc()
+        cfg = MagicMock(role="hybrid", work_mode="fixed", preferred_factory_id="factory-uuid")
+        phase = MagicMock()
+        phase.phase.value = "travel_to_province"
+        rt = MagicMock(phase_index=0, phase_status=MagicMock(value="waiting"))
+        rt.plan.phases = [phase]
+        with (
+            patch("diplomacy_bot.fleet_status.scoped_list_accounts", return_value=[acc]),
+            patch("diplomacy_bot.fleet_command.resolve_operator_factory", return_value=("factory-uuid", "Hürmüz", "")),
+            patch("diplomacy_bot.fleet_status.get_config", return_value=cfg),
+            patch("diplomacy_bot.fleet_status.resolve_display_balance", return_value=MagicMock(format=lambda: "1,000")),
+            patch("diplomacy_bot.fleet_status.format_factory_capacity_line", return_value=""),
+            patch("diplomacy_bot.fleet_metrics.format_fleet_metrics_line", return_value=""),
+            patch("diplomacy_bot.fleet_status.format_next_steps_footer", return_value=""),
+            patch("diplomacy_bot.mission_store.get_active_mission", return_value=rt),
+        ):
+            html = format_fleet_ops_status(99)
+        self.assertIn("travel_to_province:waiting", html)
 
 
 class TokenInboxFleetTests(unittest.TestCase):

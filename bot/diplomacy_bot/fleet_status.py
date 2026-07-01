@@ -132,6 +132,23 @@ def format_factory_capacity_line(telegram_user_id: int, factory_id: str) -> str:
     return f"🟢 {html.escape(line)}"
 
 
+def _mission_label(account_name: str) -> str:
+    try:
+        from .mission_store import get_active_mission
+
+        rt = get_active_mission(account_name)
+        if not rt:
+            return ""
+        if rt.phase_index >= len(rt.plan.phases):
+            phase = "done"
+        else:
+            phase = rt.plan.phases[rt.phase_index].phase.value
+        status = rt.phase_status.value
+        return f"{phase}:{status}"
+    except Exception:
+        return ""
+
+
 def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> str:
     import html
 
@@ -170,17 +187,18 @@ def format_fleet_ops_status(telegram_user_id: int, *, detailed: bool = True) -> 
         head.append(metrics)
     head.append("")
     if detailed:
-        head.append("<b>Hesap</b>  af  rol  mod  fabrika  bakiye")
+        head.append("<b>Hesap</b>  af  rol  mod  fabrika  bakiye  mission")
         for acc in accs[:20]:
             cfg = get_config(acc.name)
             af = "🟢" if acc.autofarm else "⚪"
             pref = (cfg.preferred_factory_id or "")[:6]
             fab = f"{pref}…" if pref else "—"
             bal = resolve_display_balance(acc).format()
+            mission = _mission_label(acc.name) or "—"
             head.append(
                 f"{af} <code>{html.escape(acc.name)}</code> "
                 f"{html.escape(cfg.role[:4])} {html.escape(cfg.work_mode[:5])} "
-                f"{html.escape(fab)} {bal}"
+                f"{html.escape(fab)} {bal} {html.escape(mission)}"
             )
     else:
         for acc in accs[:15]:
