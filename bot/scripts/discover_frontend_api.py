@@ -41,6 +41,10 @@ _PATH_KEYWORDS = (
     "/visas",
     "/wars",
 )
+CAPABILITY_KEYWORDS = {
+    "work": ("work", "employment", "permit"),
+    "training": ("training-wars",),
+}
 
 
 def _fetch(url: str, *, timeout: int = 30) -> str:
@@ -91,6 +95,25 @@ def discover_paths(base_url: str = HOME) -> dict:
     return {"home": base_url, "bundles": bundles, "routes": paths}
 
 
+def summarize_capability_candidates(report: dict) -> list[dict]:
+    routes = list(report.get("routes") or [])
+    summary: list[dict] = []
+    for label, needles in CAPABILITY_KEYWORDS.items():
+        hits = [
+            r
+            for r in routes
+            if any(needle in str(r.get("path", "")).lower() for needle in needles)
+        ]
+        summary.append(
+            {
+                "label": label,
+                "count": len(hits),
+                "routes": hits,
+            }
+        )
+    return summary
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--base-url", default=HOME)
@@ -103,6 +126,10 @@ def main() -> int:
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     missing = [r for r in report["routes"] if not r["registered"]]
     print(f"bundles={len(report['bundles'])} routes={len(report['routes'])} missing={len(missing)}")
+    for item in summarize_capability_candidates(report):
+        sample = ", ".join(f"{r['method']} {r['path']}" for r in item["routes"][:4])
+        suffix = f" — {sample}" if sample else ""
+        print(f"capability:{item['label']} candidates={item['count']}{suffix}")
     if args.show_missing:
         for r in missing:
             print(f"{r['method']:6} {r['path']}")

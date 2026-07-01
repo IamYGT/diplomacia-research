@@ -2,7 +2,7 @@
 
 **Vizyon:** Google hesap → token yapıştır → dokunma. ~20 işçi hesap AOD/Hürmüz'de ana fabrikada çalışır; premium yok; elmas→hap→can→farm; saatte 1 antrenman.
 
-**Sürüm:** 4.27.8 ✅ Faz 4.5–4.25
+**Sürüm:** 4.27.9 ✅ Faz 4.5–4.26
 **Son güncelleme:** 2026-07-01
 
 ---
@@ -68,6 +68,7 @@
 | 4.23 | Fabrika eksik uyarısı | ✅ | Region/autopilot sonucu ana fabrika UUID eksikse uyarır |
 | 4.24 | Filo menü tazeliği | ✅ | Eski `İşlemler/Ana panel` butonu yeni görünür panel açar |
 | 4.25 | Training bekleme görünürlüğü | ✅ | `/fleet status` sıradaki antrenman denemesi bekleyen hesap sayısını gösterir |
+| 4.26 | API keşif kabiliyet özeti | ✅ | Keşif çıktısı work/permit ve training aday route sayılarını gösterir |
 
 ---
 
@@ -104,7 +105,7 @@ export FLEET_INBOX_AUTO_SETUP=1   # yeni jwt → otomatik autopilot+Telegram öz
 python3 scripts/discover_frontend_api.py --show-missing
 ```
 
-**Filo paneli (v4.27.8):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; `/fleet status` antrenman cooldown bekleyen hesapları da sayar.
+**Filo paneli (v4.27.9):** ana ekranda `▶️ Başlat | 📋 Durum | 🇦🇴 AOD | ⚙️ İşlemler` ve hesap rol seçimi var. Teknik tick/autofarm aksiyonları ana ekrandan kaldırıldı; alt menüde fabrika, Hürmüz, token inbox, hazırla, ikamet, onar, oy. Filo sonuç/status mesajları gerçek mission planını, doğru `data/token_inbox/u{uid}_01.jwt` yolunu ve ana fabrika UUID eksikse görünür uyarıyı gösterir. Eski filo menü butonları 3 dakikadan sonra yeni görünür panel açar; `/fleet status` antrenman cooldown bekleyen hesapları da sayar.
 
 ---
 
@@ -168,7 +169,8 @@ Operatör Diplomacia domaininde API keşfine izin verdi. Rutin akış:
 3. State değiştiren route'ları önce `api_route_registry.py` + replay cassette'e ekle.
 4. Endpoint bulunmadan bot ekranında kabiliyeti "hazır" gösterme.
 
-2026-07-01 bundle teyidi: ayrı `work permit/employment` endpointi ve
+2026-07-01 bundle teyidi: keşif çıktısı `capability:work` ve
+`capability:training` aday sayılarını yazdırır. Ayrı `work permit/employment` endpointi ve
 `training-wars create` endpointi görünmedi; `/fleet status` bunları bekleyen
 gelişmiş kabiliyet olarak gösterir.
 
@@ -208,6 +210,7 @@ jobs/worker_training.py — cooldown-aware antrenman sidecar
 
 | Tarih | Sürüm | Not |
 |-------|-------|-----|
+| 2026-07-01 | 4.27.9 | API keşif script'i work/permit ve training candidate özet satırları yazar |
 | 2026-07-01 | 4.27.8 | `/fleet status` training next-attempt bekleyen hesapları metrik satırında gösterir |
 | 2026-07-01 | 4.27.7 | Eski filo `İşlemler/Ana panel` callback'leri görünür yeni panel açar |
 | 2026-07-01 | 4.27.6 | Region/autopilot sonucunda ana fabrika UUID eksikliği görünür uyarı olur |

@@ -31,3 +31,18 @@ def test_discover_paths_from_static_bundle(monkeypatch):
     assert ("GET", "/factories/work-status") in routes
     assert ("POST", "/factories/move") in routes
     assert ("POST", "/training-wars/{id}/attack") in routes
+
+
+def test_summarize_capability_candidates_groups_goal_routes():
+    report = {
+        "routes": [
+            {"method": "GET", "path": "/factories/work-status", "registered": True},
+            {"method": "POST", "path": "/training-wars/{id}/attack", "registered": True},
+            {"method": "GET", "path": "/players/profile", "registered": True},
+        ]
+    }
+
+    summary = {item["label"]: item for item in disc.summarize_capability_candidates(report)}
+
+    assert summary["work"]["count"] == 1
+    assert summary["training"]["count"] == 1
